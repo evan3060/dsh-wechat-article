@@ -1,30 +1,46 @@
 import type { Translate } from '../lib/context';
 import { Icon } from '../components/Icon';
 import { cardT } from './card-text';
+import { WECHAT_ARTICLE_TURN_DATA_KEY } from './deliverables';
 import type { WeChatArticleDeliverableArticle } from './deliverables';
 import { isOverlayAvailable, openOverlayWithArticle } from './overlay-bridge';
 
 /**
  * turnTail 产物行组件（architecture §5.1 / uiux §1.0，M2）。
  *
- * chain 挂载纪律：selectWeChatArticleArticles 在挂载前裁决（decline-before-mount），
- * 本组件只在 matched 非空时被挂载；每行 = 文章标题 + 状态 chip（成稿/已推送），
- * 点击 → openOverlayWithArticle（AC-M2-04，overlayAvailable=false 时行降为纯文本）。
+ * [rc.2] rc.2 变更：`conversation.chat.turnTail` 的 kind 由 **chain 变成 list**
+ * （rc.2 权威声明：dsh-client-ui-chat/lib/client.js:6855-6858
+ *   `"conversation.chat.turnTail": { kind: "list", scope: "session" }`）。
+ * chain 时代靠 `select` 做 decline-before-mount、结果经 `matched` prop 注入；
+ * list 槽不再有 select/matched，组件**自己**从 owner 的 turn 数据里读，并在无数据时
+ * 返回 null（等价的零成本挂载）。owner 形状见 dsh-client-ui-chat renderSlot 调用：
+ *   renderSlot("conversation.chat.turnTail", { turn, seq, openFile })
+ *
+ * 每行 = 文章标题 + 状态 chip（成稿/已推送）；点击 → openOverlayWithArticle
+ * （AC-M2-04，overlayAvailable=false 时行降为纯文本）。
  */
 
 export interface DeliverablesRowProps {
-  /** chain 选择器结果（selectWeChatArticleArticles 的非空返回）。 */
-  readonly matched?: readonly WeChatArticleDeliverableArticle[];
-  /** turnTail owner 透传面（openFile 本行不使用——文章非 workspace 文件，ADR-012）。 */
+  /** turnTail owner 的 turn 面（rc.2 list 槽直接透传 owner）。 */
+  readonly turn?: TurnFaceLike;
   readonly seq?: number;
   readonly openFile?: (path: string) => void;
   readonly t?: Translate;
 }
 
-export function DeliverablesRow({ matched, t }: DeliverablesRowProps) {
+/** owner.turn 的最小读取面（只取 data.get，避免依赖宿主完整类型）。 */
+interface TurnFaceLike {
+  readonly data?: { get(key: string): unknown };
+}
+
+export function DeliverablesRow({ turn, t }: DeliverablesRowProps) {
   const tt = cardT(t);
-  const articles = matched;
-  if (!articles || articles.length === 0) return null;
+  const data = turn?.data?.get(WECHAT_ARTICLE_TURN_DATA_KEY) as { articles?: unknown } | undefined;
+  const articles =
+    data && typeof data === 'object' && Array.isArray(data.articles) && data.articles.length > 0
+      ? (data.articles as WeChatArticleDeliverableArticle[])
+      : null;
+  if (!articles) return null;
   const clickable = isOverlayAvailable();
   return (
     <div className="wa-chatcard wa-chatcard--tail">

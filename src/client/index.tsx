@@ -137,33 +137,41 @@ export function apply(ctx: ClientContext): void {
   let disposeSlot: (() => void) | undefined;
   let disposeFooter: (() => void) | undefined;
   let disposeOverlay: (() => void) | undefined;
+  // [rc.2] rc.2：register 必须包在 ctx.slots.inject(<槽位>, cb) 里 —— 向未声明槽直接
+  // register 会抛。样板见 dsh-client-ui-chat/lib/client.js:6865。
   try {
-    disposeSlot = ctx.slots.register(
-      {
-        name: 'conversation.view',
-        id: 'wechat-article',
-        order: 50,
-        locale: 'zh',
-        label: () => fallbackT('panel.label'),
-        inject: (sessionId: string) => ({ sessionId }),
-      },
-      View,
+    disposeSlot = ctx.slots.inject('conversation.view', () =>
+      ctx.slots.register(
+        {
+          name: 'conversation.view',
+          id: 'wechat-article',
+          order: 50,
+          locale: 'zh',
+          label: () => fallbackT('panel.label'),
+          inject: (sessionId: string) => ({ sessionId }),
+        },
+        View,
+      ),
     );
   } catch (error) {
     warnDegraded('slots.register（conversation.view）', error);
   }
   try {
-    disposeFooter = ctx.slots.register(
-      { name: 'sidebar.footer.action', id: 'wechat-article', order: 100, label: () => fallbackT('panel.label') },
-      WeChatArticleSidebarEntry,
+    disposeFooter = ctx.slots.inject('sidebar.footer.action', () =>
+      ctx.slots.register(
+        { name: 'sidebar.footer.action', id: 'wechat-article', order: 100, label: () => fallbackT('panel.label') },
+        WeChatArticleSidebarEntry,
+      ),
     );
   } catch (error) {
     warnDegraded('slots.register（sidebar.footer.action）', error);
   }
   try {
-    disposeOverlay = ctx.slots.register(
-      { name: 'shell.overlay', id: 'wechat-article', order: 100, label: () => fallbackT('panel.label') },
-      WeChatArticleOverlay,
+    disposeOverlay = ctx.slots.inject('shell.overlay', () =>
+      ctx.slots.register(
+        { name: 'shell.overlay', id: 'wechat-article', order: 100, label: () => fallbackT('panel.label') },
+        WeChatArticleOverlay,
+      ),
     );
     markOverlayAvailable(true);
   } catch (error) {

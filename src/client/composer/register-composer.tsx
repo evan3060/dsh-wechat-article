@@ -27,10 +27,13 @@ export function registerComposer(ctx: ClientContext, rpc: WeChatArticleRpc): voi
     }
   };
 
+  // [rc.2] rc.2：register 必须包在 ctx.slots.inject 里（未声明槽直接 register 会抛）。
   safeRegister('slots.register（conversation.input.right）', () =>
-    ctx.slots.register(
-      { name: 'conversation.input.right', id: 'wechat-article', order: 100 },
-      WeChatArticleComposerButton as ComponentType<InputZonePropsLike>,
+    ctx.slots.inject('conversation.input.right', () =>
+      ctx.slots.register(
+        { name: 'conversation.input.right', id: 'wechat-article', order: 100 },
+        WeChatArticleComposerButton as ComponentType<InputZonePropsLike>,
+      ),
     ),
   );
 
@@ -38,7 +41,9 @@ export function registerComposer(ctx: ClientContext, rpc: WeChatArticleRpc): voi
     return <WeChatArticleCommandRow node={props.node} rpc={rpc} />;
   };
   safeRegister('slots.register（conversation.chat.commandview wechat-article）', () =>
-    ctx.slots.register({ name: 'conversation.chat.commandview', key: 'wechat-article' }, CommandRowAdapter),
+    ctx.slots.inject('conversation.chat.commandview', () =>
+      ctx.slots.register({ name: 'conversation.chat.commandview', key: 'wechat-article' }, CommandRowAdapter),
+    ),
   );
 
   // D10：inputTriggers 经 ctx.inject 动态子 fiber 探测（P0-1 修复方案 b，理由见

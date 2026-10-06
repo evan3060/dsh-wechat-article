@@ -4,7 +4,7 @@ import type { WeChatArticleRpc } from '../lib/rpc';
 import { LOCALE_NAMESPACE } from '../lib/i18n';
 import { setCardTranslator } from './card-text';
 import { DeliverablesRow } from './deliverables-row';
-import { selectWeChatArticles, wechatArticleDeliverablesDefinition } from './deliverables';
+import { wechatArticleDeliverablesDefinition } from './deliverables';
 import { PushToolCard, RewriteToolCard } from './edit-tool-cards';
 import { RunToolCard } from './run-tool-card';
 import '../styles/chatcard.css';
@@ -14,7 +14,7 @@ import '../styles/chatcard.css';
  * - 3× toolview（keyed wechat_run / wechat_rewrite / wechat_push_draft）——
  *   各自独立 try/catch：任一失败 → 官方通用工具行 + 声明式卡兜底（D3）。
  * - conversationEvents.register（deliverables Definition）——宿主缺服务时降级（D4）。
- * - turnTail chain（select=selectWeChatArticles 挂载前裁决）——槽缺失降级（D5）。
+ * - turnTail list 条目（rc.2：kind 由 chain 变 list，组件自读 turn.data 判空）——槽缺失降级（D5）。
  * - 卡片文案统一本插件 ns 的 bind（坑#dsh-slot-props-t），bind 失败回退 zh 词典。
  * 卡片样式 chatcard.css 随本模块 import 注入（宿主无插件 css 通道，build.mjs 同款）。
  */
@@ -59,38 +59,58 @@ export function registerChat(ctx: ClientContext, rpc: WeChatArticleRpc): void {
     }
   };
 
+  // [rc.2] rc.2：所有 slots.register 必须包在 ctx.slots.inject(<槽位>, cb) 里 ——
+  // 向**未声明**的槽直接 register 会抛 "registering into an undeclared slot"。
+  // 官方用法样板：dsh-client-ui-chat/lib/client.js:6865
+  //   ctx.slots.inject("conversation.chat.node", () => ctx.slots.register({...}))
   safeRegister('slots.register（tool.call.toolview wechat_run）', () =>
-    ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_run' }, runCardAdapter(rpc)),
+    ctx.slots.inject('tool.call.toolview', () =>
+      ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_run' }, runCardAdapter(rpc)),
+    ),
   );
   safeRegister('slots.register（tool.call.toolview wechat_rewrite）', () =>
-    ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_rewrite' }, rewriteCardAdapter()),
+    ctx.slots.inject('tool.call.toolview', () =>
+      ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_rewrite' }, rewriteCardAdapter()),
+    ),
   );
   safeRegister('slots.register（tool.call.toolview wechat_push_draft）', () =>
-    ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_push_draft' }, pushCardAdapter()),
+    ctx.slots.inject('tool.call.toolview', () =>
+      ctx.slots.register({ name: 'tool.call.toolview', key: 'wechat_push_draft' }, pushCardAdapter()),
+    ),
   );
 
-  // conversationEvents（D4）：经 ctx.inject 动态子 fiber 探测，不进模块级 inject 数组。
+  // uiConversation.events（D4）：经 ctx.inject 动态子 fiber 探测，不进模块级 inject 数组。
   // P0-1 教训（2026-08-20 QA 打回）：rc.7 的 cordis（@deepseek-ai/cordis 4.0.1）
-  // Inject.resolve 对数组项原样入表、不解析 `?` 可选后缀——静态声明 conversationEvents?
+  // Inject.resolve 对数组项原样入表、不解析 `?` 可选后缀——静态声明 uiConversation?
   // 会被当真服务名永久等待（fiber PENDING，boot sweep fail-loud → 整个 client 不激活，
   // 写作台陪葬，违反 spec §10 降级底线）。改必选名（方案 a）在缺该服务的 bundle 会
   // 重演同类死亡。方案 b（选定）：动态子 fiber 等服务到位再注册；服务永不到位时子
   // fiber 休眠（非 loader entry，不进 assertEntriesActive 扫描），主插件与写作台零影响。
+  //
+  // [rc.2] rc.2 变更：顶层 `conversationEvents` 服务**已删除**（全仓 grep 0 命中），
+  // 注册面改由 `ctx.uiConversation.events` 提供（UiConversation extends Service，
+  // 运行时服务名 'uiConversation'）。沿用动态子 fiber 的原因不变。
   try {
-    ctx.inject?.(['conversationEvents'], function wechatArticleDeliverablesRegister(subCtx: ClientContext) {
-      const registry = subCtx.conversationEvents;
+    ctx.inject?.(['uiConversation'], function wechatArticleDeliverablesRegister(subCtx: ClientContext) {
+      const registry = subCtx.uiConversation?.events;
       if (!registry) return; // 防御：动态注入到位即应有值
       const dispose = registry.register(wechatArticleDeliverablesDefinition);
       subCtx.effect(() => dispose, 'wechat-article-deliverables');
     });
   } catch (error) {
-    warnDegraded('ctx.inject（conversationEvents）', error);
+    warnDegraded('ctx.inject（uiConversation.events）', error);
   }
 
+  // [rc.2] rc.2：turnTail 是 **list** 槽（权威声明 dsh-client-ui-chat/lib/client.js:6855-6858
+  // `{"conversation.chat.turnTail": { kind: "list", scope: "session" }}`），
+  // 不再有 chain 的 select/priority —— 旧的 {select, priority:100} 形状在 rc.2 非法。
+  // 零成本挂载改由组件自己判空（DeliverablesRow 读 turn.data，无数据返回 null）。
   safeRegister('slots.register（conversation.chat.turnTail）', () =>
-    ctx.slots.register(
-      { name: 'conversation.chat.turnTail', select: selectWeChatArticles as (owner: unknown) => unknown, priority: 100 },
-      DeliverablesRow as ComponentType<TurnTailComponentPropsLike>,
+    ctx.slots.inject('conversation.chat.turnTail', () =>
+      ctx.slots.register(
+        { name: 'conversation.chat.turnTail', id: 'wechat-article', order: 100 },
+        DeliverablesRow as ComponentType<TurnTailComponentPropsLike>,
+      ),
     ),
   );
 

@@ -52,6 +52,13 @@ export interface ClientContext {
     bind(namespace: string): Translate;
   };
   slots: {
+    /**
+     * [rc.2] rc.2 新增：声明式槽位注入。向**未声明**的槽直接 `register` 会抛
+     * "registering into an undeclared slot"；必须在同名的 inject 回调里注册。
+     * 官方用法样板：`ctx.slots.inject("conversation.chat.node", () => ctx.slots.register({...}))`
+     * （dsh-client-ui-chat/lib/client.js:6865）。返回值是**宿主侧的**回收函数。
+     */
+    inject(slot: string, callback: () => unknown): () => void;
     /** conversation.view：会话内工作台 tab（主入口）。 */
     register(
       options: {
@@ -99,12 +106,18 @@ export interface ClientContext {
       },
       component: ComponentType<ToolviewOwnerPropsLike>,
     ): () => void;
-    /** conversation.chat.turnTail：chain（select 挂载前裁决，decline-before-mount）。 */
+    /**
+     * [rc.2] rc.2 变更：turnTail 由 **chain** 改为 **list**
+     * （权威声明 dsh-client-ui-chat/lib/client.js:6855-6858
+     *   `"conversation.chat.turnTail": { kind: "list", scope: "session" }`）。
+     * list 槽没有 select/priority，条目形如 `{id, order, label?}`；组件自行从
+     * owner 的 turn 面读数据并在无数据时返回 null。
+     */
     register(
       options: {
         readonly name: 'conversation.chat.turnTail';
-        readonly select: (owner: unknown) => unknown;
-        readonly priority?: number;
+        readonly id: string;
+        readonly order?: number;
       },
       component: ComponentType<TurnTailComponentPropsLike>,
     ): () => void;
@@ -128,18 +141,22 @@ export interface ClientContext {
     ): () => void;
   };
   /**
-   * conversationEvents：ConversationNodeDefinition 注册面（S5，M2）。
+   * uiConversation：[rc.2] rc.2 起，顶层 `conversationEvents` 服务**已删除**（全仓 grep 0 命中），
+   * 注册面改由 `ctx.uiConversation.events` 提供（UiConversation extends Service，
+   * 运行时服务名 'uiConversation'）。
    * 可选——宿主缺该服务（D4）时 registerChat 走 try/catch 降级（无产物行）。
    */
-  conversationEvents?: {
-    register(definition: {
-      readonly kind: string;
-      readonly target?: string;
-      match(event: unknown): { readonly id: string; readonly role: 'start' | 'update' } | null;
-      start(context: unknown, match: unknown, reader: unknown): unknown;
-      update(context: unknown, match: unknown): unknown;
-      buildLocationData?(context: unknown, scope: 'step' | 'turn'): unknown;
-    }): () => void;
+  uiConversation?: {
+    readonly events: {
+      register(definition: {
+        readonly kind: string;
+        readonly target?: string;
+        match(event: unknown): { readonly id: string; readonly role: 'start' | 'update' } | null;
+        start(context: unknown, match: unknown, reader: unknown): unknown;
+        update(context: unknown, match: unknown): unknown;
+        buildLocationData?(context: unknown, scope: 'step' | 'turn'): unknown;
+      }): () => void;
+    };
   };
   /**
    * 运行时动态注入（cordis ctx.inject(deps, callback)，P0-1 修复方案 b）：
