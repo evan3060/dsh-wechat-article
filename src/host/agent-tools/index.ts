@@ -66,7 +66,7 @@ export function registerAgentTools(ctx: HostContext, service: WeChatArticleServi
         if (typeof stop === 'function') mountedStops.push(stop as () => void);
       }
     } catch (error) {
-      warn(`Agent 工具注册降级（agent ${String(agent.id)}）：${error instanceof Error ? error.message : String(error)}`);
+      warn(`Agent 工具注册降级（agent ${String(agent?.id)}）：${error instanceof Error ? error.message : String(error)}`);
     }
   };
 
@@ -75,7 +75,11 @@ export function registerAgentTools(ctx: HostContext, service: WeChatArticleServi
     const stopCreated = ctx.on?.(
       'agent/created',
       ((event: unknown) => {
-        const agent = (event as { agent?: AgentScope }).agent;
+        // B3（rc.2）：agent/created 是**串行**监听，且 agents.register() 会在任一监听器
+        // 抛错时 reject（dsh-agent lib/types/index.d.ts:289 逐字：「Rejects if the id is
+        // already registered or a serial `agent/created` listener fails」）。所以本监听器
+        // 在任何异常载荷下都不得抛出：载荷为 null/undefined 时静默跳过。
+        const agent = (event as { agent?: AgentScope } | null | undefined)?.agent;
         if (agent) mount(agent);
       }) as (...args: unknown[]) => unknown,
     );
