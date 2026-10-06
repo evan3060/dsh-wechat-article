@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WeWriteService } from '@/host/service';
+import { WeChatArticleService } from '@/host/service';
 import { unwrapCredential } from '@/host/platform';
 import { ArticleRecordSchema, ImageRecordSchema } from '@/host/domain';
 import { MemoryDomain, json, makeCredentials, makeFetch, makeLlm, silentLogger, type Route } from './service-harness';
@@ -63,7 +63,7 @@ describe('信封宿主下的真实推送链路', () => {
     const domain = new MemoryDomain();
     const llm = makeLlm(MARKDOWN);
     const fetch = makeFetch(routes);
-    const service = await WeWriteService.open({
+    const service = await WeChatArticleService.open({
       domain,
       credentials: envelopeCredentials,
       llm: { stream: llm.stream },
@@ -72,7 +72,7 @@ describe('信封宿主下的真实推送链路', () => {
       logger: silentLogger,
     });
 
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     const article = ArticleRecordSchema.parse({
       v: 1, id: 'art_env_push', slug: 'env-push', title: '信封宿主推送验证', digest: '摘要',

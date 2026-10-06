@@ -36,8 +36,8 @@ export const DEFAULT_PROVIDER_MODELS: Readonly<Record<ImageProviderId, string>> 
 
 /** 凭据引用（ctx.credentials 的 POSIX 环境变量名，F19/F20）。 */
 export const CREDENTIAL_REFS = {
-  wechatSecret: 'WEWRITE_WECHAT_SECRET',
-  image: (providerId: ImageProviderId): string => `WEWRITE_IMG_${providerId.toUpperCase()}`,
+  wechatSecret: 'WECHAT_ARTICLE_WECHAT_SECRET',
+  image: (providerId: ImageProviderId): string => `WECHAT_ARTICLE_IMG_${providerId.toUpperCase()}`,
 } as const;
 
 export function isImageProviderId(value: string): value is ImageProviderId {

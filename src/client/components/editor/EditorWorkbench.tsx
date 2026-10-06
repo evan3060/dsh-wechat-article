@@ -13,8 +13,8 @@ import type { RewriteTarget } from './RewritePopover';
 /**
  * 编辑区（EditorWorkbench，DESIGN §4.2）：CodeMirror 6 + 顶部 sticky 格式工具条。
  * v0.3 R3：updateListener 监听选区，非空选区上方浮「AI 改写」chip（wand-sparkles，
- * 浮现语言同 .ww-hotspot__write），点击开 RewritePopover；完成以单 transaction
- * 替换选区（进 undo 历史）。等宽 --ww-font-code；主题视觉在 editor.css 覆写。
+ * 浮现语言同 .wa-hotspot__write），点击开 RewritePopover；完成以单 transaction
+ * 替换选区（进 undo 历史）。等宽 --wa-font-code；主题视觉在 editor.css 覆写。
  */
 
 type ToolAction =
@@ -74,7 +74,7 @@ function applyTool(view: EditorView | undefined, action: ToolAction): void {
   view.focus();
 }
 
-/** chip/popover 锚点（相对 .ww-editor 容器坐标，§D2-4 定位与避让规则）。 */
+/** chip/popover 锚点（相对 .wa-editor 容器坐标，§D2-4 定位与避让规则）。 */
 interface RewriteAnchor {
   left: number;
   top: number;
@@ -118,7 +118,7 @@ export function EditorWorkbench({
     const toCoords = view.coordsAtPos(selection.to);
     if (!box || !fromCoords || !toCoords) return;
     const rect = box.getBoundingClientRect();
-    const toolbar = box.querySelector<HTMLElement>('.ww-editor__toolbar');
+    const toolbar = box.querySelector<HTMLElement>('.wa-editor__toolbar');
     const minTop = toolbar ? toolbar.offsetHeight + CHIP_GAP : FLIP_THRESHOLD;
     let top = fromCoords.top - rect.top - CHIP_HEIGHT - CHIP_GAP;
     if (top < Math.max(FLIP_THRESHOLD, minTop)) top = Math.max(toCoords.bottom - rect.top + CHIP_GAP, minTop);
@@ -139,10 +139,10 @@ export function EditorWorkbench({
     const el = chipRef.current;
     if (!el) return;
     if (chipVisible) {
-      const raf = requestAnimationFrame(() => el.classList.add('ww-rewrite-chip--shown'));
+      const raf = requestAnimationFrame(() => el.classList.add('wa-rewrite-chip--shown'));
       return () => cancelAnimationFrame(raf);
     }
-    el.classList.remove('ww-rewrite-chip--shown');
+    el.classList.remove('wa-rewrite-chip--shown');
   }, [chipVisible, anchor]);
 
   function openRewrite(): void {
@@ -177,13 +177,13 @@ export function EditorWorkbench({
   }
 
   return (
-    <div className="ww-editor" ref={editorBoxRef}>
-      <div className="ww-editor__toolbar" role="toolbar" aria-label="Markdown 格式工具">
+    <div className="wa-editor" ref={editorBoxRef}>
+      <div className="wa-editor__toolbar" role="toolbar" aria-label="Markdown 格式工具">
         {TOOLS.map((tool) => (
           <Tooltip key={tool.id} label={tool.tooltip} side="bottom">
             <button
               type="button"
-              className="ww-editor__tool"
+              className="wa-editor__tool"
               aria-label={tool.tooltip}
               onClick={() => applyTool(editorRef.current?.view, tool.action)}
             >
@@ -196,8 +196,8 @@ export function EditorWorkbench({
         <button
           ref={chipRef}
           type="button"
-          className="ww-rewrite-chip"
-          data-testid="ww-rewrite-chip"
+          className="wa-rewrite-chip"
+          data-testid="wa-rewrite-chip"
           aria-label="AI 改写选中内容"
           aria-expanded={rewriteOpen}
           style={{ left: anchor.left, top: anchor.top }}
@@ -222,7 +222,7 @@ export function EditorWorkbench({
         ref={editorRef}
         value={value}
         height="100%"
-        className="ww-editor__cm"
+        className="wa-editor__cm"
         theme="light"
         extensions={extensions}
         basicSetup={{ lineNumbers: false, foldGutter: false, highlightActiveLine: false }}

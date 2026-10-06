@@ -1,22 +1,22 @@
 /**
- * wewrite_list_articles（Spec §5 / architecture §4.2）：文章轻量清单，供模型选择 article_id。
+ * wechat_list_articles（Spec §5 / architecture §4.2）：文章轻量清单，供模型选择 article_id。
  * AC-M1-04：轻投影——不含 markdown 全文、不含任何凭据命名字段（ArticleListItem 本身即轻面）。
  * canonical value 包成 {articles:[...]}（object-root，契约修正：宿主 createSuccessResult 按
  * output.schema 校验 canonical value，裸数组会被拒成 D2 降级）。不提供 presentCall/presentResult
  * （默认 generic 呈现，raw 结果即列表文本）。
  */
 
-import type { ToolRunContext, WewriteToolDefinition } from '../platform';
-import type { WeWriteService } from '../service';
+import type { ToolRunContext, WeChatArticleToolDefinition } from '../platform';
+import type { WeChatArticleService } from '../service';
 import { asArgsRecord, coerceInteger, jsonSchema, textBlocks, toolError } from './output-helpers';
 
 const LIMIT_DEFAULT = 10;
 const LIMIT_MAX = 100;
 
-export function buildListTool(service: WeWriteService): WewriteToolDefinition {
+export function buildListTool(service: WeChatArticleService): WeChatArticleToolDefinition {
   return {
-    name: 'wewrite_list_articles',
-    description: '查询 WeWrite 文章库的轻量清单（id、标题、状态、摘要、更新时间），用于选择 article_id 做后续推送或引用。不返回全文。',
+    name: 'wechat_list_articles',
+    description: '查询 公众号文章库的轻量清单（id、标题、状态、摘要、更新时间），用于选择 article_id 做后续推送或引用。不返回全文。',
     timeoutMs: 15000,
     parameters: {
       limit: { type: 'integer', description: `返回条数（1-${LIMIT_MAX}，默认 ${LIMIT_DEFAULT}，按更新时间新→旧）` },

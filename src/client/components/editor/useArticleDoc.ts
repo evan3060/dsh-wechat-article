@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ArticleDetail } from '@/shared/contract';
-import type { WewriteRpc } from '../../lib/rpc';
+import type { WeChatArticleRpc } from '../../lib/rpc';
 
 /**
  * 文章文档 hook（编辑器数据面，自 editor-panel 拆出）：
@@ -14,7 +14,7 @@ const AUTOSAVE_DEBOUNCE_MS = 1200;
 
 export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-export function useArticleDoc(rpc: WewriteRpc, articleId: string) {
+export function useArticleDoc(rpc: WeChatArticleRpc, articleId: string) {
   const [article, setArticle] = useState<ArticleDetail | undefined>();
   const [loadError, setLoadError] = useState<string | undefined>();
   const [retryCount, setRetryCount] = useState(0);

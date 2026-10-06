@@ -1,9 +1,9 @@
 import type { ArticleDetail, ArticleListItem } from '@/shared/contract';
 import type { InputTriggerCandidateLike, InputTriggerSourceLike } from '../lib/context';
-import type { WewriteRpc } from '../lib/rpc';
+import type { WeChatArticleRpc } from '../lib/rpc';
 
 /**
- * `@` 文章引用源（ctx.inputTriggers，name 'wewrite-articles'，M3 / S11）。
+ * `@` 文章引用源（ctx.inputTriggers，name 'wechat-article-articles'，M3 / S11）。
  *
  * - warm：会话 scope 诞生时预拉 article/list（轻投影），候选/lexicon 走内存缓存。
  * - onPick：insert ReferenceInsert {ref=articleId, label=标题, clipboardText='@'+slug}。
@@ -25,7 +25,7 @@ function formatReference(article: ArticleDetail): string {
     .join('\n');
 }
 
-export function createWewriteAtSource(rpc: WewriteRpc): InputTriggerSourceLike {
+export function createWeChatArticleAtSource(rpc: WeChatArticleRpc): InputTriggerSourceLike {
   /** articleId → list item（warm 后可用）。 */
   const articlesById = new Map<string, ArticleListItem>();
   const byTitle = new Map<string, string>();
@@ -48,7 +48,7 @@ export function createWewriteAtSource(rpc: WewriteRpc): InputTriggerSourceLike {
 
   return {
     trigger: '@',
-    name: 'wewrite-articles',
+    name: 'wechat-article-articles',
     order: 50,
 
     warm() {
@@ -71,7 +71,7 @@ export function createWewriteAtSource(rpc: WewriteRpc): InputTriggerSourceLike {
       const item = articlesById.get(articleId) as ArticleListItem;
       return {
         insert: {
-          source: 'wewrite-articles',
+          source: 'wechat-article-articles',
           ref: articleId,
           label: item.title,
           clipboardText: `@${item.slug}`,

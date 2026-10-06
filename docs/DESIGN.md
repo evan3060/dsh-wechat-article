@@ -1,4 +1,4 @@
-# dsh-wewrite 设计契约（DESIGN.md）
+# dsh-wechat-article 设计契约（DESIGN.md）
 
 > 生成日期：2026-08-18 | 设计师：颜好看（MVP 开发专家团）
 > 基于：docs/FACTS.md + docs/spec.md v0.1.0（§7 页面清单 / §8 设计 Token 为锁定契约）+ docs/uiux-direction.md v0.1（Phase 1 方向）
@@ -19,7 +19,7 @@
 
 ### 2.1 引用链与构造保证
 
-所有颜色经 `--ww-*` 语义名 → 宿主 `--dsw-*` token 引用（三层体系：`--dsw-static-*` → `--dsw-alias-*` → `--dsw-specific-*`，浅色挂 `body`、深色挂 `body[data-ds-dark-theme]`）。宿主缺位处（阴影/画布/焦点环）用自有值，见 tokens.css 注释。
+所有颜色经 `--wa-*` 语义名 → 宿主 `--dsw-*` token 引用（三层体系：`--dsw-static-*` → `--dsw-alias-*` → `--dsw-specific-*`，浅色挂 `body`、深色挂 `body[data-ds-dark-theme]`）。宿主缺位处（阴影/画布/焦点环）用自有值，见 tokens.css 注释。
 
 - **零 gradient token**：design-tokens.json 与 tokens.css 不含任何渐变定义——P0-2 由构造保证，非事后扫描保证。
 - **紫粉四色 `#7C3AED` / `#A855F7` / `#EC4899` / `#6366F1` 不出现**在任何 token 值。
@@ -30,25 +30,25 @@
 
 | 角色 | Token | 宿主引用 | light | dark | 用途 |
 |---|---|---|---|---|---|
-| 品牌强调 | `--ww-accent` | `--dsw-alias-button-info-fill` | `#4176E6` | `#679EFE` | 主 CTA、选中 Tab（每屏 ≤2 处） |
-| 强调悬停 | `--ww-accent-hover` | `--dsw-alias-button-info-hover` | `#679EFE` | `#4176E6` | 悬停态 |
-| 强调按下 | `--ww-accent-active` | `--dsw-static-deepseek-600` | `#4868B2` | `#4868B2` | 按下态 |
-| 强调前景 | `--ww-accent-on` | `--dsw-static-neutral-bluish-00` | `#FFFFFF` | `#FFFFFF` | accent 上的文字 |
-| 强调浅底 | `--ww-accent-subtle` | `--dsw-static-deepseek-50` | `#EDF3FE` | `#EDF3FE` | 选中行/命中标签底 |
-| 焦点环色 | `--ww-accent-ring` | 自有值 | `rgba(65,118,230,.32)` | `rgba(103,158,254,.40)` | 组装 `--ww-focus-ring` |
-| 页面基底 | `--ww-bg` | `--dsw-alias-bg-base` | `#FFFFFF` | `#151517` | 面板底 |
-| 卡片表面 | `--ww-surface` | `--dsw-alias-bg-layer-2` | `#FFFFFF` | `#2C2C2E` | 卡片/表格/输入框 |
-| 凹区表面 | `--ww-surface-sunken` | `--dsw-specific-sidebar-fill` | `#F9FAFB` | `#1B1B1C` | 表头/画布外圈/阶段视图 |
-| 主文字 | `--ww-fg` | `--dsw-alias-label-primary` | `#0F1115` | `#F9FAFB` | 正文（≈17:1） |
-| 次级文字 | `--ww-fg-secondary` | `--dsw-alias-label-secondary` | `#61666B` | `#CFD3D6` | 来源/摘要/表头（≈4.9:1） |
-| 默认边框 | `--ww-border` | `--dsw-alias-border-l2` | `rgba(0,0,0,.10)` | `rgba(255,255,255,.12)` | 卡片/输入框 |
-| 分隔线 | `--ww-divider` | `--dsw-alias-border-l1` | `rgba(0,0,0,.04)` | `rgba(255,255,255,.06)` | 列表行间 |
-| 成功 | `--ww-success` | `--dsw-alias-state-success-primary` | `#22C55E` | `#22C55E` | 门禁通过/已进草稿箱 |
-| 警示 | `--ww-warn` | `--dsw-alias-state-warn-primary` | `#F59E0B` | `#F59E0B` | 门禁未过/定时拦停 |
-| 失败 | `--ww-danger` | `--dsw-alias-state-error-primary` | `#EC1313` | `#F25A5A` | 推送失败/管线错误 |
-| 交互悬停 | `--ww-interactive-hover` | `--dsw-alias-interactive-bg-hover` | `rgba(38,49,72,.06)` | `rgba(255,255,255,.08)` | 列表行/菜单项 |
-| 等宽带底 | `--ww-code-bg` | `--dsw-alias-markdown-inline-code` | `#EBEEF2` | `#2C2C2E` | slug/RRULE/规则 ID 底 |
-| 画布底 | `--ww-canvas-bg` | 自有固定值 | `#FFFFFF` | `#FFFFFF` | 预览画布（不随主题，UGC 域） |
+| 品牌强调 | `--wa-accent` | `--dsw-alias-button-info-fill` | `#4176E6` | `#679EFE` | 主 CTA、选中 Tab（每屏 ≤2 处） |
+| 强调悬停 | `--wa-accent-hover` | `--dsw-alias-button-info-hover` | `#679EFE` | `#4176E6` | 悬停态 |
+| 强调按下 | `--wa-accent-active` | `--dsw-static-deepseek-600` | `#4868B2` | `#4868B2` | 按下态 |
+| 强调前景 | `--wa-accent-on` | `--dsw-static-neutral-bluish-00` | `#FFFFFF` | `#FFFFFF` | accent 上的文字 |
+| 强调浅底 | `--wa-accent-subtle` | `--dsw-static-deepseek-50` | `#EDF3FE` | `#EDF3FE` | 选中行/命中标签底 |
+| 焦点环色 | `--wa-accent-ring` | 自有值 | `rgba(65,118,230,.32)` | `rgba(103,158,254,.40)` | 组装 `--wa-focus-ring` |
+| 页面基底 | `--wa-bg` | `--dsw-alias-bg-base` | `#FFFFFF` | `#151517` | 面板底 |
+| 卡片表面 | `--wa-surface` | `--dsw-alias-bg-layer-2` | `#FFFFFF` | `#2C2C2E` | 卡片/表格/输入框 |
+| 凹区表面 | `--wa-surface-sunken` | `--dsw-specific-sidebar-fill` | `#F9FAFB` | `#1B1B1C` | 表头/画布外圈/阶段视图 |
+| 主文字 | `--wa-fg` | `--dsw-alias-label-primary` | `#0F1115` | `#F9FAFB` | 正文（≈17:1） |
+| 次级文字 | `--wa-fg-secondary` | `--dsw-alias-label-secondary` | `#61666B` | `#CFD3D6` | 来源/摘要/表头（≈4.9:1） |
+| 默认边框 | `--wa-border` | `--dsw-alias-border-l2` | `rgba(0,0,0,.10)` | `rgba(255,255,255,.12)` | 卡片/输入框 |
+| 分隔线 | `--wa-divider` | `--dsw-alias-border-l1` | `rgba(0,0,0,.04)` | `rgba(255,255,255,.06)` | 列表行间 |
+| 成功 | `--wa-success` | `--dsw-alias-state-success-primary` | `#22C55E` | `#22C55E` | 门禁通过/已进草稿箱 |
+| 警示 | `--wa-warn` | `--dsw-alias-state-warn-primary` | `#F59E0B` | `#F59E0B` | 门禁未过/定时拦停 |
+| 失败 | `--wa-danger` | `--dsw-alias-state-error-primary` | `#EC1313` | `#F25A5A` | 推送失败/管线错误 |
+| 交互悬停 | `--wa-interactive-hover` | `--dsw-alias-interactive-bg-hover` | `rgba(38,49,72,.06)` | `rgba(255,255,255,.08)` | 列表行/菜单项 |
+| 等宽带底 | `--wa-code-bg` | `--dsw-alias-markdown-inline-code` | `#EBEEF2` | `#2C2C2E` | slug/RRULE/规则 ID 底 |
+| 画布底 | `--wa-canvas-bg` | 自有固定值 | `#FFFFFF` | `#FFFFFF` | 预览画布（不随主题，UGC 域） |
 
 ### 2.3 每屏 accent ≤2 处
 
@@ -60,19 +60,19 @@
 
 | Token | 栈 | 用途 |
 |---|---|---|
-| `--ww-font-ui` | `var(--dsw-font-family)` = -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', … | 全部界面文字 |
-| `--ww-font-code` | `var(--ds-font-family-code)` = 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas, …（宿主刻意不带裸 monospace 尾巴，防 Windows CJK 回落宋体） | slug、模型名、时间戳、RRULE 原文、门禁规则 ID、流式输出、状态栏信息带 |
-| `--ww-font-canvas` | 系统中文栈（自有值） | 预览画布默认字体；文章实际字体由排版主题 CSS 接管（作用域限定画布内） |
+| `--wa-font-ui` | `var(--dsw-font-family)` = -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', … | 全部界面文字 |
+| `--wa-font-code` | `var(--ds-font-family-code)` = 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas, …（宿主刻意不带裸 monospace 尾巴，防 Windows CJK 回落宋体） | slug、模型名、时间戳、RRULE 原文、门禁规则 ID、流式输出、状态栏信息带 |
+| `--wa-font-canvas` | 系统中文栈（自有值） | 预览画布默认字体；文章实际字体由排版主题 CSS 接管（作用域限定画布内） |
 
-**等宽应用域是本产品的视觉签名**（工程编辑风）：凡「机器生成/机器可读」的信息一律等宽 + `--ww-code-bg` 底，与「人读的中文」形成材质对比。
+**等宽应用域是本产品的视觉签名**（工程编辑风）：凡「机器生成/机器可读」的信息一律等宽 + `--wa-code-bg` 底，与「人读的中文」形成材质对比。
 
 ### 3.2 字号 8 级（正文基准 14px，面板级密度）
 
-`12 / 13 / 14（正文基准）/ 16 / 18 / 20 / 24 / 32`，对应 `--ww-text-xs` 至 `--ww-text-3xl`。32px 仅用于门禁报告分数一处。画布内文章字号由排版主题控制，不走本阶梯。
+`12 / 13 / 14（正文基准）/ 16 / 18 / 20 / 24 / 32`，对应 `--wa-text-xs` 至 `--wa-text-3xl`。32px 仅用于门禁报告分数一处。画布内文章字号由排版主题控制，不走本阶梯。
 
 ### 3.3 行高 / 字重 / 字距
 
-- 行高：UI 文本 1.5（`--ww-leading-ui`）、中文阅读文本 1.7（`--ww-leading-body`，每行 ≤34 字）、标题 1.3
+- 行高：UI 文本 1.5（`--wa-leading-ui`）、中文阅读文本 1.7（`--wa-leading-body`，每行 ≤34 字）、标题 1.3
 - 字重：**仅 400 / 500 / 700**（宿主约束：Figma 510 一律渲染 CSS 500，禁 510/590 幻想值）——400 正文、500 表头/按钮/Tab 激活、700 门禁分数等关键强调
 - 字距：中文正文一律 0（禁给中文加字距）；全大写拉丁标签 `0.06em`（RRULE 标签行、版本号）；≥24px 标题 `-0.01em`
 
@@ -102,18 +102,18 @@
 | `MarkdownText` | 待办/历史记录里的富文本 | — |
 | `use-copy-feedback` | 复制按钮反馈 | — |
 
-**蓝色主 CTA 实现口径**：官方 `Button variant="primary"` 默认是宿主近黑填充（`--dsw-alias-button-primary-fill`）。本项目主 CTA 用品牌蓝：`<Button variant="primary" className="ww-btn-accent">`，`.ww-btn-accent` 仅覆写填充三态（`background: var(--ww-accent)` / hover `--ww-accent-hover` / active `--ww-accent-active`，文字 `--ww-accent-on`）——结构、字号、focus 环、禁用态全部继承官方件，不重写按钮。
+**蓝色主 CTA 实现口径**：官方 `Button variant="primary"` 默认是宿主近黑填充（`--dsw-alias-button-primary-fill`）。本项目主 CTA 用品牌蓝：`<Button variant="primary" className="wa-btn-accent">`，`.wa-btn-accent` 仅覆写填充三态（`background: var(--wa-accent)` / hover `--wa-accent-hover` / active `--wa-accent-active`，文字 `--wa-accent-on`）——结构、字号、focus 环、禁用态全部继承官方件，不重写按钮。
 
-### 4.2 自建组件清单（官方缺位处，全部挂 `--ww-*` token）
+### 4.2 自建组件清单（官方缺位处，全部挂 `--wa-*` token）
 
 | 自建组件 | 用途 | 要点 |
 |---|---|---|
-| `PanelTabBar` | 面板顶栏 5 Tab + 右侧连接状态 | 高 `--ww-header-h` 48px；Tab 激活 = 500 字重 + 下沿 2px `--ww-accent` 指示条（全栏唯一 accent 位之一） |
+| `PanelTabBar` | 面板顶栏 5 Tab + 右侧连接状态 | 高 `--wa-header-h` 48px；Tab 激活 = 500 字重 + 下沿 2px `--wa-accent` 指示条（全栏唯一 accent 位之一） |
 | `PipelineStepper` | 生成中六阶段进度（选题→研究→写作→门禁→排版→配图） | 完成项折叠单行摘要；当前项展开子状态；失败阶段红 + 续跑按钮 |
-| `HotspotRow` | 热榜条目行 | 行高 44px；展开摘要 + 相关链接；命中关键词行底 `--ww-accent-subtle` |
+| `HotspotRow` | 热榜条目行 | 行高 44px；展开摘要 + 相关链接；命中关键词行底 `--wa-accent-subtle` |
 | `ArticleTable` | 文章库数据表 | 等宽列 = slug/分数/定时；状态点三态（见 4.4） |
-| `EditorWorkbench` | CodeMirror 6 编辑区 + 浮动格式工具条 | `@uiw/react-codemirror`；等宽 `--ww-font-code` |
-| `PreviewCanvas` | 375px 微信预览画布 | 底 `--ww-canvas-bg` 固定浅色；排版主题 CSS 作用域限定画布容器；与 API 载荷字节一致 |
+| `EditorWorkbench` | CodeMirror 6 编辑区 + 浮动格式工具条 | `@uiw/react-codemirror`；等宽 `--wa-font-code` |
+| `PreviewCanvas` | 375px 微信预览画布 | 底 `--wa-canvas-bg` 固定浅色；排版主题 CSS 作用域限定画布容器；与 API 载荷字节一致 |
 | `ScheduleCard` | 定时队列卡片 | RRULE 等宽原文 + 人类可读翻译双行 |
 | `SettingsNav` | 设置页左栏 5 组竖导航 | 结构同宿主设置页 |
 | `CredentialField` | 凭据掩码输入 | 掩码回显（前4后4）；eye 切换；「仅存本机」标注 |
@@ -163,15 +163,15 @@
 
 ### 4.5 按钮与卡片基线
 
-- Primary（蓝 CTA）：见 4.1 覆写口径；Secondary（次动作）：`variant="outline"`；Ghost（行内轻动作）：`variant="ghost"`；Danger（删除/停队列）：danger 文字 + `--ww-danger-subtle` hover 底，不整块红底。
-- 卡片：`--ww-surface` 底 + 1px `--ww-border` + `--ww-radius-lg`(8px) 圆角 + **无默认阴影**；hover 只变 `border-color`，不加发光。禁止 >1px 彩色左边框/侧边条。
-- 输入框：1px `--ww-border`，focus 时 `--ww-border-strong` + `--ww-focus-ring`；错误态 border `--ww-danger` + 字段下方具体错误文字（不只在顶部报错）。
+- Primary（蓝 CTA）：见 4.1 覆写口径；Secondary（次动作）：`variant="outline"`；Ghost（行内轻动作）：`variant="ghost"`；Danger（删除/停队列）：danger 文字 + `--wa-danger-subtle` hover 底，不整块红底。
+- 卡片：`--wa-surface` 底 + 1px `--wa-border` + `--wa-radius-lg`(8px) 圆角 + **无默认阴影**；hover 只变 `border-color`，不加发光。禁止 >1px 彩色左边框/侧边条。
+- 输入框：1px `--wa-border`，focus 时 `--wa-border-strong` + `--wa-focus-ring`；错误态 border `--wa-danger` + 字段下方具体错误文字（不只在顶部报错）。
 
 ## 5. Layout & Spacing（布局与间距）
 
-- **间距**：4px 网格 8 级（`--ww-space-1`…`--ww-space-12` = 4/8/12/16/20/24/32/48px）；禁非标值。
+- **间距**：4px 网格 8 级（`--wa-space-1`…`--wa-space-12` = 4/8/12/16/20/24/32/48px）；禁非标值。
 - **圆角**：4 / 6 / 8px 三档 + 9999 胶囊；**8px 是上限**。
-- **面板骨架**：顶栏 48px（Tab 条）+ 内容区；内容区左右 `--ww-page-pad` 24px。
+- **面板骨架**：顶栏 48px（Tab 条）+ 内容区；内容区左右 `--wa-page-pad` 24px。
 - **列表行高 44px**（触摸底线）；等宽列（slug/分数/RRULE）与中文列用材质对比分组。
 - **编辑器双栏**：默认 `1fr / minmax(420px, 45vw)`，右侧 = 375px 画布 + 45px padding；拖拽调宽。
 - **面板内断点**（按面板内容区宽，非视口）：≥1200 双栏全开；900–1200 窄双栏；<900 编辑器三视图退化单栏 Tab 切换、列表降列。
@@ -179,8 +179,8 @@
 
 ## 6. Depth & Elevation（深度与阴影）
 
-- **线框分层优先于阴影**：卡片、表格、列表全部靠 `--ww-divider` / `--ww-border` / `--ww-border-strong` 三层 1px 线表达层级，深色主题靠宿主亮度递进（bg #151517 → surface #2C2C2E → raised #353638）而非阴影。
-- **阴影仅两级且仅浮层用**：`--ww-shadow-overlay`（下拉/Tooltip）、`--ww-shadow-modal`（模态/抽屉/生成视图）。宿主无 shadow token（Phase 1 草案此处为勘误），此两级为自有 primitive，深色下加深。
+- **线框分层优先于阴影**：卡片、表格、列表全部靠 `--wa-divider` / `--wa-border` / `--wa-border-strong` 三层 1px 线表达层级，深色主题靠宿主亮度递进（bg #151517 → surface #2C2C2E → raised #353638）而非阴影。
+- **阴影仅两级且仅浮层用**：`--wa-shadow-overlay`（下拉/Tooltip）、`--wa-shadow-modal`（模态/抽屉/生成视图）。宿主无 shadow token（Phase 1 草案此处为勘误），此两级为自有 primitive，深色下加深。
 - **禁幽灵卡片**：带 1px 边框的元素不再叠 blur ≥16px 阴影。
 - **无发光、无毛玻璃、无渐变**：`backdrop-filter` 仅宿主自身使用，插件一律不用。
 - **z-index 梯**：dropdown 1000 / sticky 1100 / modal 1200 / toast 1300。
@@ -189,8 +189,8 @@
 
 ### Do（应该做）
 
-1. 颜色一律经 `--ww-*` token 引用（host 引用自动跟主题翻转）；换肤零适配。
-2. 等宽字体 + `--ww-code-bg` 承载一切机器味信息（slug/模型名/RRULE/规则 ID/时间戳）。
+1. 颜色一律经 `--wa-*` token 引用（host 引用自动跟主题翻转）；换肤零适配。
+2. 等宽字体 + `--wa-code-bg` 承载一切机器味信息（slug/模型名/RRULE/规则 ID/时间戳）。
 3. 空状态 = 图标 + 真实中文文案 + 具体动作按钮（各页文案已写死在 §9，前端照抄不造句）。
 4. 长时异步操作用阶段化状态视图（PipelineStepper），支持转入后台 + 失败续跑。
 5. 凭据永远掩码回显（前4后4）+「仅存本机」标注；错误信息给出分类 + 出路（如 40164 → 出口 IP + 配代理/加白名单两步）。
@@ -225,8 +225,8 @@ rg 'linear-gradient' src/ --glob '!**/canvas-themes/**'                         
 - **断点**：面板内容区 900 / 1200 两档（寄生 UI 无自有视口）；<900 编辑器退化单栏三视图 Tab、表格隐藏次要列（slug 等宽列优先保）。
 - **触摸目标**：列表行 44px 底线；图标按钮命中区 ≥44×44px；按钮间距 ≥8px。
 - **键盘**：表格/编辑器是键盘主战场——Tab 序 = 视觉序；CodeMirror 原生键位保留；所有动作按钮键盘可达；`Tab`/`ArrowUp/Down` 走官方 primitives 自带。
-- **焦点**：统一 `--ww-focus-ring`（3px accent 半透明环）；官方件自带 focus-visible，自建组件必须同款；禁移除焦点环。
-- **对比度**：正文 `--ww-fg` on `--ww-bg` ≈17:1（light）/≈15:1（dark）；次级 ≈4.9:1，全部过 WCAG AA 4.5:1。`--ww-fg-caption` 仅用于 ≥12px 非关键元信息。
+- **焦点**：统一 `--wa-focus-ring`（3px accent 半透明环）；官方件自带 focus-visible，自建组件必须同款；禁移除焦点环。
+- **对比度**：正文 `--wa-fg` on `--wa-bg` ≈17:1（light）/≈15:1（dark）；次级 ≈4.9:1，全部过 WCAG AA 4.5:1。`--wa-fg-caption` 仅用于 ≥12px 非关键元信息。
 - **reduced-motion**：tokens.css 已写全局关闭块（animation/transition 0.01ms）；StateDot ongoing 的环动画同样被关。
 - **5 态覆盖**：每个交互组件覆盖 Loading（骨架/spinner/流式输出）/ Empty（§9 各页文案）/ Error（分类 + 重试/出路）/ Populated / Edge（超长标题截断 + title 提示、零结果、超限提示）。
 - **屏幕阅读器**：StateDot aria-hidden 配文字；纯图标按钮必须有 aria-label；状态变化用 aria-live（生成完成/推送结果）。
@@ -235,8 +235,8 @@ rg 'linear-gradient' src/ --glob '!**/canvas-themes/**'                         
 
 ### 9.0 全局实现要点
 
-1. **入口**：React 挂载根元素带 `class="dsh-wewrite-panel"`，面板内 `import './styles/tokens.css'`（--ww-* 作用域即生效；深色自动跟随宿主）。
-2. **颜色纪律**：组件样式只写 `var(--ww-*)`；design-tokens.json 是查 token 的真源，不手抄色值。
+1. **入口**：React 挂载根元素带 `class="dsh-wechat-article-panel"`，面板内 `import './styles/tokens.css'`（--wa-* 作用域即生效；深色自动跟随宿主）。
+2. **颜色纪律**：组件样式只写 `var(--wa-*)`；design-tokens.json 是查 token 的真源，不手抄色值。
 3. **图标**：`<Icon name="pen-line" size={16|20}>` 封装；name 必须来自 §4.3 表；新增图标先核验 lucide-react 真实导出名。
 4. **文案**：以下各页文案为写死的真源，照抄；新文案遵循「具体动词 + 真实对象」句式，禁模板句。
 5. **已知坑**（摘自 spec §11）：React 必须 peerDep 不捆绑（双实例破坏 slots）；`dsh.bundle` 声明缺失 = 装而不活；md2html 真身 vendored 进 `src/render/`（预览与推送载荷字节一致的前提）。
@@ -250,7 +250,7 @@ rg 'linear-gradient' src/ --glob '!**/canvas-themes/**'                         
 - **状态**：
   - 空（新用户）：待办区 `还没有排队中的任务。先去选题中心挑一条热榜，或直接输入主题。` + `[去选题中心]`；未配置公众号时该按钮换 `[配置公众号]`。
   - 空（无文章）：`第一篇还没诞生。上面输入主题，3 分钟后回来预览。`
-  - 加载：snapshot 拉取中用骨架行（`--ww-skeleton` 底），不用 spinner 转圈。
+  - 加载：snapshot 拉取中用骨架行（`--wa-skeleton` 底），不用 spinner 转圈。
   - 生成中（转入后台后）：待办区显示 `◐ 正在生成《…》` 行，完成后 aria-live 通知 + 红点。
   - 成功：输入主题 → 进生成流程（§9.4 编辑器页内 PipelineStepper 全屏态）。
 - **文案示例**（待办行，真实数据格式）：`09:30 排队发布《DSH 插件开发指南（三）》` ／ `门禁未过 1 篇 ·《V4 Pro 实测补记》` ／ `热榜更新 23 条 · 2 条命中你的关键词`；输入条 placeholder：`输入主题，直接开写…`；主按钮：`开始写作`。
@@ -271,7 +271,7 @@ rg 'linear-gradient' src/ --glob '!**/canvas-themes/**'                         
 
 ### 9.3 文章库（`/articles`）
 
-- **布局**：页头（计数 + 状态筛选下拉 + 搜索框）+ 数据表格（非卡片网格）：列 = 标题 / 状态 / 门禁 / 定时 / 更新 / 操作；等宽列 = slug、门禁分数、定时表达式。行 44px，hover `--ww-interactive-hover`。
+- **布局**：页头（计数 + 状态筛选下拉 + 搜索框）+ 数据表格（非卡片网格）：列 = 标题 / 状态 / 门禁 / 定时 / 更新 / 操作；等宽列 = slug、门禁分数、定时表达式。行 44px，hover `--wa-interactive-hover`。
 - **组件**：`ArticleTable`、状态 `StateDot` + `Pill`（4.4 状态点语言）、`SearchBlock`、筛选 `Menu`、行操作（编辑/去修复/删除确认 `Modal`）。
 - **状态**：
   - 空：`还没有文章。去选题中心挑一条热榜，或在写作台输入主题开始第一篇。` + `[去选题中心]`。
@@ -330,7 +330,7 @@ rg 'linear-gradient' src/ --glob '!**/canvas-themes/**'                         
 扫描对象 = 本 Phase 三个产物：`docs/design/design-tokens.json`、`src/client/styles/tokens.css`、`docs/DESIGN.md`。
 
 ```bash
-cd /Users/mac/Documents/workspace/apps/dsh-wewrite
+cd /Users/mac/Documents/workspace/apps/dsh-wechat-article
 
 # ① emoji 扫描（P0-1，人格指定正则）
 rg -n '[\x{1F300}-\x{1F9FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]' \
@@ -366,6 +366,6 @@ rg -in 'lorem|ipsum|welcome to|sign up today|get started|欢迎使用|敬请期�
 | 产物 | 路径 | 统计 |
 |---|---|---|
 | Design Token（机器可读真源） | `docs/design/design-tokens.json` | 81 个 leaf token（颜色 30 / 字体 20 / 间距 8 / 圆角 4 / 描边 1 / 阴影 2 / 动效 4 / 布局 5 / 断点 2 / z-index 4 / 焦点 1）；JSON 语法校验通过 |
-| CSS 实现（运行时真源） | `src/client/styles/tokens.css` | 79 个 `--ww-*` 定义 + 3 个深色覆写（accent-ring/shadow-overlay/shadow-modal）；断点 2 项为媒体查询值仅存 JSON（media query 不支持 var()） |
+| CSS 实现（运行时真源） | `src/client/styles/tokens.css` | 79 个 `--wa-*` 定义 + 3 个深色覆写（accent-ring/shadow-overlay/shadow-modal）；断点 2 项为媒体查询值仅存 JSON（media query 不支持 var()） |
 | 设计契约 | `docs/DESIGN.md` | 九节契约 + 6 页实现提示词（写作台/选题中心/文章库/编辑器/定时任务/设置）+ 门禁自检记录 |
 | 图标语义表 | DESIGN.md §4.3 | 64 个 lucide-react 图标名，全部经本机 lucide-react 图标文件逐名核验为真实导出（零「待核验」项） |

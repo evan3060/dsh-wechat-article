@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WeWriteService } from '@/host/service';
+import { WeChatArticleService } from '@/host/service';
 import { registerAgentTools } from '@/host/agent-tools';
 import type { HostContext } from '@/host/platform';
 import { MemoryDomain, makeCredentials, makeLlm, silentLogger } from './service-harness';
@@ -12,8 +12,8 @@ import { MemoryDomain, makeCredentials, makeLlm, silentLogger } from './service-
  * → touched + 翻转通知；config/get 投影闸门真值；持久化跨重启保持显式值。
  */
 
-async function makeService(domain: MemoryDomain, agentToolsConfigDefault?: boolean): Promise<WeWriteService> {
-  return WeWriteService.open({
+async function makeService(domain: MemoryDomain, agentToolsConfigDefault?: boolean): Promise<WeChatArticleService> {
+  return WeChatArticleService.open({
     domain,
     credentials: makeCredentials().service,
     llm: makeLlm(),
@@ -86,7 +86,7 @@ describe('AC-M1-12 单一真源（agentToolsEnabled：显式设置 > 插件 conf
 
   // ── 杀手（QA 二轮 P0-A）：真 service 装配形态对齐 ──────────────────────────────
   // 盲区教训：fake 用实例属性闭包挂闸门面（无 this 依赖），掩盖了「摘取原型方法成裸函数
-  // 调用时 this=undefined → this.agentToolsGate 即炸」的装配缺陷。本例走真 WeWriteService
+  // 调用时 this=undefined → this.agentToolsGate 即炸」的装配缺陷。本例走真 WeChatArticleService
   // （onAgentToolsChanged 是原型方法）+ registerAgentTools 全链，config/set 翻转驱动回收/重挂。
 
   it('杀手：真 service 装配 registerAgentTools → config/set 翻 false 回收已注册工具、翻 true 重挂载', async () => {

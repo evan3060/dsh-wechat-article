@@ -2,7 +2,7 @@
  * tests/e2e/session.mjs —— E2E 宿主驱动 helper（v0.2.0 测试骨架）
  *
  * 职责（架构文档 docs/redesign/test-zhipu-architecture.md §2.2/2.3）：
- *   - launchBrowser/openPanel/sleep/domIs：真浏览器穿越到 WeWrite 面板
+ *   - launchBrowser/openPanel/sleep/domIs：真浏览器穿越到 公众号面板
  *   - 相位 storage 管理：backupStorage/resetStorage/restoreStorage/seedDemo +
  *     phaseFreshStorage/phaseDemoStorage/phaseRestoreStorage（fresh/demo/restore 编排）
  *
@@ -20,8 +20,8 @@ import { findHostPids, startHost, stopHost } from '../../scripts/hostctl.mjs';
 import { seedDemoData } from '../../scripts/seed-demo-data.mjs';
 
 export const BASE = 'http://127.0.0.1:3080';
-const UNIT_PATH = join(homedir(), '.dsh/storages/dsh_wewrite.json');
-const BACKUP_PATH = '/tmp/dsh-wewrite-e2e-backup.json';
+const UNIT_PATH = join(homedir(), '.dsh/storages/dsh_wechat_article.json');
+const BACKUP_PATH = '/tmp/dsh-wechat-article-e2e-backup.json';
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -84,13 +84,13 @@ export async function openPanel(page) {
   }
   await sleep(1500);
 
-  // 1.5) 重进场景早退：宿主恢复上次会话时 WeWrite 面板可能已直接挂载——
+  // 1.5) 重进场景早退：宿主恢复上次会话时 公众号面板可能已直接挂载——
   // 此时跳过 workspace/首消息/tab 步骤直接返回面板。关键防线：下方首消息的
   // composer 回退 locator（textarea/[contenteditable=true] 全页 first()）会命中
   // 面板编辑器 CodeMirror 的 .cm-content（contenteditable=true），把 'e2e-init'
   // 打进文章正文并触发自动保存落库，污染文章数据（二轮 E02/E03「e2e-init」
   // 8 字串扰的真根因——重进前面板已随会话恢复）。
-  const restoredPanel = page.locator('.dsh-wewrite-panel').first();
+  const restoredPanel = page.locator('.dsh-wechat-article-panel').first();
   if (await domIs(restoredPanel, { timeout: 3000 })) {
     return restoredPanel;
   }
@@ -134,7 +134,7 @@ export async function openPanel(page) {
 
   // 3) 找到并点开写作台 tab（locale zh/en 回退）
   let tab = null;
-  for (const n of ['写作台', 'Workbench', 'WeWrite', 'wewrite']) {
+  for (const n of ['写作台', 'Workbench', 'WeChatArticle', 'wechat-article']) {
     const el = page.getByRole('tab', { name: n, exact: false });
     if (await el.count()) { tab = el.first(); break; }
     const btn = page.getByRole('button', { name: n, exact: false });
@@ -147,17 +147,17 @@ export async function openPanel(page) {
   await tab.click();
   await sleep(4000);
 
-  // 终点断言：WeWrite 面板根挂载
-  const panel = page.locator('.dsh-wewrite-panel').first();
+  // 终点断言：公众号面板根挂载
+  const panel = page.locator('.dsh-wechat-article-panel').first();
   if (!(await domIs(panel, { timeout: 10000 }))) {
     await dumpClickable(page);
-    throw new Error('.dsh-wewrite-panel 未出现（v0.2 UI 重构后锚点可能变化，见上方排查输出）');
+    throw new Error('.dsh-wechat-article-panel 未出现（v0.2 UI 重构后锚点可能变化，见上方排查输出）');
   }
   return panel;
 }
 
 // ---------- 相位 storage 管理（§2.3.1） ----------
-// 实测路径：~/.dsh/storages/dsh_wewrite.json（2026-08-19 ls + 结构核实，
+// 实测路径：~/.dsh/storages/dsh_wechat_article.json（2026-08-19 ls + 结构核实，
 // 顶层 {unit, global:{v,settings,claimedOccurrences}, tables:{articles,runs,schedules,images}}）。
 
 /** storage 写操作前置断言：宿主必须已停（host 内存态会覆盖文件） */
@@ -180,7 +180,7 @@ export function backupStorage() {
  * （openJsonUnit 对 ENOENT 用 descriptor.version + INITIAL_GLOBAL 建单元——宿主自己的
  * 权威初始化路径，schema 进化无需本脚本跟随）。
  * 实测踩坑记录：手写「最小空 unit」两处翻车——① unit header 必须是对象
- * {name:'dsh_wewrite', version:1} 而非字符串（否则 missing or foreign unit header）；
+ * {name:'dsh_wechat_article', version:1} 而非字符串（否则 missing or foreign unit header）；
  * ② claimedOccurrences 是 z.array 而非对象（否则 stored global does not match its
  * schema）。删文件一并绕开这两类 schema 耦合。 */
 export function resetStorage() {

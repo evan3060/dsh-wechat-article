@@ -5,7 +5,7 @@
  * 用法：node scripts/dev-install.mjs（或 npm run dev:install）
  * 顺序：
  *   1. npm run build                    —— 复用 package.json 构建（esbuild bundle + tsc types）
- *   2. rm -rf + cp -R lib/ → ~/.dsh/profiles/web/node_modules/dsh-wewrite/lib/
+ *   2. rm -rf + cp -R lib/ → ~/.dsh/profiles/web/node_modules/dsh-wechat-article/lib/
  *   3. hostctl ensure                   —— 宿主未跑则拉起；在跑缺 env 则 restart 补注入
  *
  * 为什么 cp 后必须重启宿主：host 侧 lib/index.js 是宿主进程 require 的 esbuild bundle，
@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const HOSTCTL = join(ROOT, 'scripts/hostctl.mjs');
-const TARGET = join(homedir(), '.dsh/profiles/web/node_modules/dsh-wewrite/lib');
+const TARGET = join(homedir(), '.dsh/profiles/web/node_modules/dsh-wechat-article/lib');
 
 // 1) 构建（复用 package.json 的 scripts.build，不重复实现）
 console.log('[1/3] npm run build ...');

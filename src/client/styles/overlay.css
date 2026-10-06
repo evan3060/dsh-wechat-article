@@ -1,168 +1,168 @@
 /*
  * 浮层样式（v0.2，uiux-workbench-delta §1-5/§1-6）：
  * ProgressCard（右下进度卡，bottom 144px 与 Toast 96px 垂直错开）
- * + GateOverlayPanel（工作区右缘 360px 滑出，非模态）。颜色一律 var(--ww-*)。
+ * + GateOverlayPanel（工作区右缘 360px 滑出，非模态）。颜色一律 var(--wa-*)。
  */
 
 /* ---------- ProgressCard（§1-5） ---------- */
 
-.ww-progress-card {
+.wa-progress-card {
   position: absolute;
-  right: var(--ww-space-6);
-  bottom: calc(var(--ww-content-pad-bottom) + var(--ww-space-12));
+  right: var(--wa-space-6);
+  bottom: calc(var(--wa-content-pad-bottom) + var(--wa-space-12));
   width: 320px;
   display: flex;
   flex-direction: column;
-  gap: var(--ww-space-2);
-  padding: var(--ww-space-3);
-  background: var(--ww-surface);
-  border: var(--ww-border-width) solid var(--ww-border-strong);
-  border-radius: var(--ww-radius-lg);
-  box-shadow: var(--ww-shadow-overlay);
-  z-index: var(--ww-z-sticky);
-  animation: ww-progress-card-in var(--ww-motion-slow) var(--ww-ease);
+  gap: var(--wa-space-2);
+  padding: var(--wa-space-3);
+  background: var(--wa-surface);
+  border: var(--wa-border-width) solid var(--wa-border-strong);
+  border-radius: var(--wa-radius-lg);
+  box-shadow: var(--wa-shadow-overlay);
+  z-index: var(--wa-z-sticky);
+  animation: wa-progress-card-in var(--wa-motion-slow) var(--wa-ease);
 }
 
-@keyframes ww-progress-card-in {
+@keyframes wa-progress-card-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.ww-progress-card__head { display: flex; align-items: center; gap: var(--ww-space-2); min-width: 0; }
-.ww-progress-card__state { color: var(--ww-accent); flex: none; }
+.wa-progress-card__head { display: flex; align-items: center; gap: var(--wa-space-2); min-width: 0; }
+.wa-progress-card__state { color: var(--wa-accent); flex: none; }
 
-.ww-progress-card__topic {
+.wa-progress-card__topic {
   flex: 1;
   min-width: 0;
-  font-size: var(--ww-text-sm);
-  font-weight: var(--ww-weight-medium);
+  font-size: var(--wa-text-sm);
+  font-weight: var(--wa-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ww-progress-card__collapse {
+.wa-progress-card__collapse {
   appearance: none;
   border: none;
   background: none;
-  color: var(--ww-fg-tertiary);
+  color: var(--wa-fg-tertiary);
   /* §D4 O1：icon 钮热区归一 ghost 工具档 28 */
   width: 28px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--ww-radius-sm);
+  border-radius: var(--wa-radius-sm);
   cursor: pointer;
 }
 
-.ww-progress-card__collapse:hover { color: var(--ww-fg); background: var(--ww-interactive-hover); }
+.wa-progress-card__collapse:hover { color: var(--wa-fg); background: var(--wa-interactive-hover); }
 
-.ww-progress-card__body { display: flex; flex-direction: column; gap: var(--ww-space-2); }
-.ww-progress-card__error { margin: 0; font-size: var(--ww-text-sm); color: var(--ww-danger); }
-.ww-progress-card__foot { display: flex; gap: var(--ww-space-2); justify-content: flex-end; }
+.wa-progress-card__body { display: flex; flex-direction: column; gap: var(--wa-space-2); }
+.wa-progress-card__error { margin: 0; font-size: var(--wa-text-sm); color: var(--wa-danger); }
+.wa-progress-card__foot { display: flex; gap: var(--wa-space-2); justify-content: flex-end; }
 
-.ww-stepper--compact .ww-stage { min-height: 30px; padding: var(--ww-space-1) var(--ww-space-2); }
+.wa-stepper--compact .wa-stage { min-height: 30px; padding: var(--wa-space-1) var(--wa-space-2); }
 
 /* ---------- GateOverlayPanel（§1-6） ---------- */
 
-.ww-gate-overlay {
+.wa-gate-overlay {
   position: absolute;
   inset: 0 0 0 auto;
   width: 360px;
   max-width: 85%;
   display: flex;
   flex-direction: column;
-  background: var(--ww-surface);
-  border-left: var(--ww-border-width) solid var(--ww-border-strong);
-  box-shadow: var(--ww-shadow-card);
-  z-index: var(--ww-z-sticky);
-  animation: ww-gate-overlay-in var(--ww-motion-slow) var(--ww-ease);
+  background: var(--wa-surface);
+  border-left: var(--wa-border-width) solid var(--wa-border-strong);
+  box-shadow: var(--wa-shadow-card);
+  z-index: var(--wa-z-sticky);
+  animation: wa-gate-overlay-in var(--wa-motion-slow) var(--wa-ease);
 }
 
-@keyframes ww-gate-overlay-in {
+@keyframes wa-gate-overlay-in {
   from { transform: translateX(40px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
-.ww-gate-overlay__head {
+.wa-gate-overlay__head {
   display: flex;
   align-items: center;
-  gap: var(--ww-space-2);
-  min-height: var(--ww-toolrow-h);
-  padding: var(--ww-space-2) var(--ww-space-3);
-  border-bottom: var(--ww-border-width) solid var(--ww-border);
+  gap: var(--wa-space-2);
+  min-height: var(--wa-toolrow-h);
+  padding: var(--wa-space-2) var(--wa-space-3);
+  border-bottom: var(--wa-border-width) solid var(--wa-border);
 }
 
-.ww-gate-overlay__state { color: var(--ww-success); flex: none; }
-.ww-gate-overlay__state--fail { color: var(--ww-warn); }
-.ww-gate-overlay__title { font-weight: var(--ww-weight-medium); }
-.ww-gate-overlay__label {
-  font-family: var(--ww-font-code);
-  font-size: var(--ww-text-sm);
-  color: var(--ww-fg-tertiary);
+.wa-gate-overlay__state { color: var(--wa-success); flex: none; }
+.wa-gate-overlay__state--fail { color: var(--wa-warn); }
+.wa-gate-overlay__title { font-weight: var(--wa-weight-medium); }
+.wa-gate-overlay__label {
+  font-family: var(--wa-font-code);
+  font-size: var(--wa-text-sm);
+  color: var(--wa-fg-tertiary);
   font-variant-numeric: tabular-nums;
 }
 
-.ww-gate-overlay__close {
+.wa-gate-overlay__close {
   appearance: none;
   border: none;
   background: none;
-  color: var(--ww-fg-tertiary);
+  color: var(--wa-fg-tertiary);
   width: 28px;
   height: 28px;
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--ww-radius-sm);
+  border-radius: var(--wa-radius-sm);
   cursor: pointer;
 }
 
-.ww-gate-overlay__close:hover { color: var(--ww-fg); background: var(--ww-interactive-hover); }
+.wa-gate-overlay__close:hover { color: var(--wa-fg); background: var(--wa-interactive-hover); }
 
-.ww-gate-overlay__body {
+.wa-gate-overlay__body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--ww-space-4);
+  padding: var(--wa-space-4);
 }
 
 /* ---------- 侧边栏入口（v0.3 R2，uiux-v0.3-design §D3） ----------
  * 几何照抄宿主 cordis footer badge（dsh-client-ui-cordis 内联 CSS 实测）：
  * wide 42px 高 / radius 12 / gap 8 / padding 0 10 0 8；rail 36×36 圆。
- * 颜色走 --ww-*（与宿主 --dsw-* 同源，宿主 sidebar 域内值等同；
- * token 作用域由 tokens.css 的 .ww-sidebar-entry 选择器扩展承载）。 */
+ * 颜色走 --wa-*（与宿主 --dsw-* 同源，宿主 sidebar 域内值等同；
+ * token 作用域由 tokens.css 的 .wa-sidebar-entry 选择器扩展承载）。 */
 
-.ww-sidebar-entry { width: 100%; display: flex; }
+.wa-sidebar-entry { width: 100%; display: flex; }
 
-.ww-sidebar-entry__btn {
+.wa-sidebar-entry__btn {
   appearance: none;
   font: inherit;
-  font-size: var(--ww-text-base);
+  font-size: var(--wa-text-base);
   display: inline-flex;
   align-items: center;
-  gap: var(--ww-space-2);
+  gap: var(--wa-space-2);
   width: calc(100% + 4px);
   height: 42px;
   margin: 0 -2px;
   padding: 0 10px 0 8px;      /* 宿主 badge 同款微距，不进 4px 宏观网格（chrome 对齐优先） */
-  color: var(--ww-fg);
+  color: var(--wa-fg);
   background: none;
   border: none;
-  border-radius: var(--ww-radius-footer);
+  border-radius: var(--wa-radius-footer);
   cursor: pointer;
   overflow: hidden;
   text-align: left;
-  transition: background var(--ww-motion-fast) var(--ww-ease);
+  transition: background var(--wa-motion-fast) var(--wa-ease);
 }
 
-.ww-sidebar-entry__btn:hover,
-.ww-sidebar-entry__btn[aria-expanded='true'] {
-  background: var(--ww-interactive-hover);
+.wa-sidebar-entry__btn:hover,
+.wa-sidebar-entry__btn[aria-expanded='true'] {
+  background: var(--wa-interactive-hover);
 }
 
-.ww-sidebar-entry__label {
+.wa-sidebar-entry__label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -171,79 +171,79 @@
 
 /* Bluewash §4-5（uiux-color-theme-design）：
  * 入口 icon 染品牌蓝——宿主灰 footer 里的品牌锚点（Linear/Slack 嵌入面板先例）。
- * 文字保持 --ww-fg（chrome 语境不整行变色）；hover/active 态不变。 */
-.ww-sidebar-entry__btn svg { color: var(--ww-accent); }
+ * 文字保持 --wa-fg（chrome 语境不整行变色）；hover/active 态不变。 */
+.wa-sidebar-entry__btn svg { color: var(--wa-accent); }
 
 /* rail 形态（wide=false，宿主 56px rail 列）：36×36 圆 icon-only */
-.ww-sidebar-entry--rail { width: auto; }
+.wa-sidebar-entry--rail { width: auto; }
 
-.ww-sidebar-entry--rail .ww-sidebar-entry__btn {
+.wa-sidebar-entry--rail .wa-sidebar-entry__btn {
   width: 36px;
   height: 36px;
   margin: 0;
   padding: 0;
   gap: 0;
   justify-content: center;
-  border-radius: var(--ww-radius-full);
+  border-radius: var(--wa-radius-full);
 }
 
 /* ---------- 写作台全屏浮层（v0.3 R2，uiux-v0.3-design §D3） ----------
  * 宿主 overlayLayer（absolute inset:0 z:20）容器内填满；无进入动效（Motion=3）。 */
 
-.ww-overlay {
+.wa-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: var(--ww-bg-page);
+  background: var(--wa-bg-page);
 }
 
-.ww-overlay__head {
+.wa-overlay__head {
   display: flex;
   align-items: center;
-  gap: var(--ww-space-2);
-  height: var(--ww-toolrow-h);
-  min-height: var(--ww-toolrow-h);
-  padding: 0 var(--ww-page-pad);
-  background: var(--ww-bg);
-  border-bottom: var(--ww-border-width) solid var(--ww-border-strong);
+  gap: var(--wa-space-2);
+  height: var(--wa-toolrow-h);
+  min-height: var(--wa-toolrow-h);
+  padding: 0 var(--wa-page-pad);
+  background: var(--wa-bg);
+  border-bottom: var(--wa-border-width) solid var(--wa-border-strong);
 }
 
-.ww-overlay__head > svg { color: var(--ww-fg-secondary); }
+.wa-overlay__head > svg { color: var(--wa-fg-secondary); }
 
-.ww-overlay__title {
+.wa-overlay__title {
   margin: 0;
-  font-size: var(--ww-text-md);
-  font-weight: var(--ww-weight-medium);
+  font-size: var(--wa-text-md);
+  font-weight: var(--wa-weight-medium);
 }
 
-.ww-overlay__spacer { flex: 1; }
+.wa-overlay__spacer { flex: 1; }
 
-.ww-overlay__esc {
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-caption);
+.wa-overlay__esc {
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-caption);
   white-space: nowrap;
 }
 
-.ww-overlay__close {
+.wa-overlay__close {
   appearance: none;
   border: none;
   background: none;
-  color: var(--ww-fg-secondary);
+  color: var(--wa-fg-secondary);
   width: 28px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--ww-radius-md);
+  border-radius: var(--wa-radius-md);
   cursor: pointer;
-  transition: background var(--ww-motion-fast) var(--ww-ease),
-    color var(--ww-motion-fast) var(--ww-ease);
+  transition: background var(--wa-motion-fast) var(--wa-ease),
+    color var(--wa-motion-fast) var(--wa-ease);
 }
 
-.ww-overlay__close:hover { background: var(--ww-interactive-hover); color: var(--ww-fg); }
+.wa-overlay__close:hover { background: var(--wa-interactive-hover); color: var(--wa-fg); }
 
-.ww-overlay__body {
+.wa-overlay__body {
   flex: 1;
   min-height: 0;
   display: flex;
@@ -251,12 +251,12 @@
   overflow: hidden;
 }
 
-.ww-overlay__body > .dsh-wewrite-panel { flex: 1; min-height: 0; }
+.wa-overlay__body > .dsh-wechat-article-panel { flex: 1; min-height: 0; }
 
 /* 浮层内不需要吸收宿主 composer 遮挡（overlay z:20 全屏，composer 盖不进来）——
  * 96px 的 pad 在浮层里只剩底部一条空灰带（08-23 Jerry 实看反馈，探针实证
  * y≥820 全为 bg-page 空 paint）。压到 24px 呼吸位；对话内 tab 视图不受影响
- * （该规则只匹配 .ww-overlay 内的面板，优先级 (0,2,0) 压过 tokens.css 面板内声明）。 */
-.ww-overlay .dsh-wewrite-panel {
-  --ww-content-pad-bottom: 24px;
+ * （该规则只匹配 .wa-overlay 内的面板，优先级 (0,2,0) 压过 tokens.css 面板内声明）。 */
+.wa-overlay .dsh-wechat-article-panel {
+  --wa-content-pad-bottom: 24px;
 }

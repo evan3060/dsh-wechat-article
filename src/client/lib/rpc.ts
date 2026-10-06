@@ -2,15 +2,15 @@ import { RPC_CHANNEL } from '@/shared/contract';
 import type { ClientContext } from './context';
 
 /**
- * connection.rpc.call('dsh-wewrite', endpoint, payload) 封装。
+ * connection.rpc.call('dsh-wechat-article', endpoint, payload) 封装。
  *
  * - 通道名取自共享契约（RPC_CHANNEL），endpoint 受 rpcContract 双端 zod 校验，
  *   前端不做二次校验（宿主侧已拒非法形状）。
- * - 错误统一归一为 WewriteRpcError，message 保留宿主原始信息；
+ * - 错误统一归一为 WeChatArticleRpcError，message 保留宿主原始信息；
  *   微信 errcode 分类（AC-1/AC-6）由 describeRpcError 解析展示层文案。
  */
 
-export class WewriteRpcError extends Error {
+export class WeChatArticleRpcError extends Error {
   readonly endpoint: string;
   /** 微信侧 errcode（如 40164 IP 白名单），非微信错误为 undefined。 */
   readonly errcode?: number;
@@ -18,7 +18,7 @@ export class WewriteRpcError extends Error {
 
   constructor(endpoint: string, message: string, options?: { errcode?: number; cause?: unknown }) {
     super(message);
-    this.name = 'WewriteRpcError';
+    this.name = 'WeChatArticleRpcError';
     this.endpoint = endpoint;
     this.errcode = options?.errcode;
     this.causeUnknown = options?.cause;
@@ -68,11 +68,11 @@ function extractStructured(raw: unknown): StructuredRpcError {
   return {};
 }
 
-export interface WewriteRpc {
+export interface WeChatArticleRpc {
   call<T>(endpoint: string, payload?: unknown, signal?: AbortSignal): Promise<T>;
 }
 
-export function createRpc(ctx: ClientContext): WewriteRpc {
+export function createRpc(ctx: ClientContext): WeChatArticleRpc {
   return {
     async call<T>(endpoint: string, payload: unknown = {}, signal?: AbortSignal): Promise<T> {
       try {
@@ -81,13 +81,13 @@ export function createRpc(ctx: ClientContext): WewriteRpc {
         const envelope = (raw as { result?: { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } } }).result ?? (raw as { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } });
         if (envelope && envelope.ok === true) return envelope.value as T;
         if (envelope && envelope.ok === false) {
-          throw new WewriteRpcError(endpoint, `${envelope.error?.code ? `[${envelope.error.code}] ` : ''}${envelope.error?.message ?? `调用 ${endpoint} 失败`}`);
+          throw new WeChatArticleRpcError(endpoint, `${envelope.error?.code ? `[${envelope.error.code}] ` : ''}${envelope.error?.message ?? `调用 ${endpoint} 失败`}`);
         }
         return raw as T;
       } catch (cause) {
-        if (cause instanceof WewriteRpcError) throw cause;
+        if (cause instanceof WeChatArticleRpcError) throw cause;
         const structured = extractStructured(cause);
-        throw new WewriteRpcError(endpoint, structured.message ?? `调用 ${endpoint} 失败`, {
+        throw new WeChatArticleRpcError(endpoint, structured.message ?? `调用 ${endpoint} 失败`, {
           errcode: structured.errcode,
           cause,
         });

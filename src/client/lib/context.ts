@@ -9,7 +9,7 @@ import type { ComponentType } from 'react';
  *   - ctx.effect        插件级副作用生命周期（返回清理函数）
  *   - ctx.connection.rpc  loopback RPC 通道
  *   - ctx.locale        zh/en 词典注册与绑定
- *   - ctx.slots.register conversation.view tab 注册（WeWrite 工作台挂载点）
+ *   - ctx.slots.register conversation.view tab 注册（公众号工作台挂载点）
  *
  * 不 import @dsh-external/* 产物：宿主侧由 src/host/ 在联调时提供真实 ctx，
  * 此处只钉定前端编译期形状。字段比宿主真实面窄是刻意的（结构化子集），
@@ -22,14 +22,14 @@ export interface ClientRpc {
   call(channel: string, endpoint: string, payload: unknown, signal?: AbortSignal): Promise<unknown>;
 }
 
-/** WeWrite 视图组件 props（slots.register 注入面）。 */
-export interface WewriteViewProps {
+/** 公众号视图组件 props（slots.register 注入面）。 */
+export interface WeChatArticleViewProps {
   readonly sessionId: string;
   readonly t: Translate;
 }
 
 /** slots.register 的注入运行时：宿主按 sessionId 提供上下文，前端按需消费。 */
-export interface WewriteSlotRuntime {
+export interface WeChatArticleSlotRuntime {
   readonly sessionId: string;
 }
 
@@ -60,9 +60,9 @@ export interface ClientContext {
         readonly order: number;
         readonly locale: string;
         readonly label: () => string;
-        readonly inject: (sessionId: string) => WewriteSlotRuntime;
+        readonly inject: (sessionId: string) => WeChatArticleSlotRuntime;
       },
-      component: ComponentType<WewriteViewProps>,
+      component: ComponentType<WeChatArticleViewProps>,
     ): () => void;
     /** sidebar.footer.action：宿主侧栏 footer「写作台」入口（v0.3 R2）。 */
     register(
@@ -226,7 +226,7 @@ export interface TurnTailComponentPropsLike {
   readonly t?: Translate;
 }
 
-/** /wewrite 命令行节点（CommandNode 的消费面）。 */
+/** /wechat-article 命令行节点（CommandNode 的消费面）。 */
 export interface CommandRowOwnerPropsLike {
   readonly node: {
     readonly kind: 'command';

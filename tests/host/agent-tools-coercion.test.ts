@@ -4,7 +4,7 @@
  * 覆盖 coerceInteger / coerceStringArray 与「垃圾值仍结构化拒绝」边界。
  */
 import { describe, expect, it } from 'vitest';
-import type { WeWriteService } from '@/host/service';
+import type { WeChatArticleService } from '@/host/service';
 import { registerAgentTools } from '@/host/agent-tools';
 import { makeFakeService, makeAgent, makeCtx } from './agent-tools.test';
 
@@ -12,11 +12,11 @@ const SIGNAL = new AbortController().signal;
 type ExecFn = (args: unknown, exec: unknown) => Promise<unknown>;
 
 function setupRunTool() {
-  const service = makeFakeService() as unknown as WeWriteService;
+  const service = makeFakeService() as unknown as WeChatArticleService;
   const agent = makeAgent('agent_coerce');
   const harness = makeCtx({ agents: [agent] });
   registerAgentTools(harness.ctx, service, { enabled: true });
-  const tool = agent.tool('wewrite_run') as unknown as { execute: ExecFn };
+  const tool = agent.tool('wechat_run') as unknown as { execute: ExecFn };
   const runArgs = (extra: Record<string, unknown>) => ({ topic: '宽容转换主题', ...extra });
   const invoke = (extra: Record<string, unknown>) => tool.execute(runArgs(extra), { signal: SIGNAL });
   return { service, invoke };

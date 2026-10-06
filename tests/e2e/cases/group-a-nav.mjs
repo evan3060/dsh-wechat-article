@@ -1,6 +1,6 @@
 /**
  * A 组 导航（5 条，fresh）——蓝本 §2.4 A01-A05 按 v0.2 新 IA 重锚。
- * 锚点：TopBar 4 导航对象（ww-topbar / 3 tab / 设置齿轮），DOM 契约 §1-1。
+ * 锚点：TopBar 4 导航对象（wa-topbar / 3 tab / 设置齿轮），DOM 契约 §1-1。
  * 相位：fresh（storage 重置为空 unit——空态断言与「未配置」徽标态的确定性保证）。
  */
 import {
@@ -25,10 +25,10 @@ export default [
     //       写作 tab 激活（aria-current=page）；旧 5 Tab 的「文章库」不存在（负向）。
     fn: async (page) => {
       const topbar = page.locator(LOC.topbar).first();
-      await expectVisible(topbar, { msg: '顶栏 [data-testid=ww-topbar] 未挂载（AC-1）' });
+      await expectVisible(topbar, { msg: '顶栏 [data-testid=wa-topbar] 未挂载（AC-1）' });
 
       const nav = page.locator(LOC.topbarNav).first();
-      await expectVisible(nav, { msg: 'nav[aria-label="WeWrite 导航"] 未出现' });
+      await expectVisible(nav, { msg: 'nav[aria-label="公众号导航"] 未出现' });
       const navButtons = nav.locator('button');
       assert.equal(await navButtons.count(), 3, '导航 tab 数应为 3（写作/选题/定时），AC-1');
       for (const word of ['写作', '选题', '定时']) {
@@ -39,7 +39,7 @@ export default [
       }
 
       const gear = page.locator(LOC.settingsGear).first();
-      await expectVisible(gear, { msg: '设置齿轮 [data-testid=ww-topbar-settings] 未出现' });
+      await expectVisible(gear, { msg: '设置齿轮 [data-testid=wa-topbar-settings] 未出现' });
       assert.equal(
         await gear.getAttribute('aria-label'),
         '设置',
@@ -52,13 +52,13 @@ export default [
         '默认视图写作 tab 应 aria-current=page',
       );
 
-      // 高度 ≤40px（AC-1；--ww-toolrow-h）
+      // 高度 ≤40px（AC-1；--wa-toolrow-h）
       const box = await topbar.boundingBox();
       assert.ok(box && box.height <= 40.5, `顶栏高 ${box?.height}px，应 ≤40px（AC-1）`);
 
       // 负向：旧 5 Tab 的文章库入口不存在（导航对象恰 4 个）
       await expectAbsent(nav.getByText('文章库'), '导航内不应再出现「文章库」（5 Tab 已退役）');
-      await expectAbsent(page.locator('.ww-topic'), 'TopicPanel（.ww-topic）已退役不应渲染');
+      await expectAbsent(page.locator('.wa-topic'), 'TopicPanel（.wa-topic）已退役不应渲染');
     },
   },
   {
@@ -71,14 +71,14 @@ export default [
     fn: async (page) => {
       const cases = [
         ['home', LOC.workbench, '写作工作区'],
-        ['hotspots', '.ww-hotspots', '选题中心'],
-        ['schedule', '.ww-schedule', '定时任务'],
+        ['hotspots', '.wa-hotspots', '选题中心'],
+        ['schedule', '.wa-schedule', '定时任务'],
       ];
       for (const [key, sel, name] of cases) {
         const btn = await clickTab(page, key);
         assert.equal(await btn.getAttribute('aria-current'), 'page', `${name} aria-current 应跟随`);
         await expectVisible(page.locator(sel).first(), { msg: `切到${name}后容器 ${sel} 未出现` });
-        await expectVisible(page.locator(LOC.content).first(), { msg: `${name} 下 #wewrite-panel-content 消失` });
+        await expectVisible(page.locator(LOC.content).first(), { msg: `${name} 下 #wechat-article-panel-content 消失` });
       }
       // 设置齿轮（第 4 个导航对象，aria-current 同语义）
       const gear = page.locator(LOC.settingsGear).first();
@@ -102,12 +102,12 @@ export default [
     // 断言：home 即「列表+主区」工作区（rail 即文章列表）；旧文章库表格/返回按钮不渲染。
     fn: async (page) => {
       await clickTab(page, 'home');
-      await expectVisible(page.locator(LOC.workbench).first(), { msg: 'home 应渲染 .ww-workbench' });
-      await expectVisible(page.locator(LOC.rail).first(), { msg: 'home 应渲染左栏 .ww-rail（文章列表并入工作区）' });
+      await expectVisible(page.locator(LOC.workbench).first(), { msg: 'home 应渲染 .wa-workbench' });
+      await expectVisible(page.locator(LOC.rail).first(), { msg: 'home 应渲染左栏 .wa-rail（文章列表并入工作区）' });
       // 负向：旧文章库表格与编辑器「返回文章库」箭头均退役
-      await expectAbsent(page.locator('.ww-articles'), '旧文章库面板容器不应渲染（/articles 重定向 home）');
+      await expectAbsent(page.locator('.wa-articles'), '旧文章库面板容器不应渲染（/articles 重定向 home）');
       await expectAbsent(page.getByRole('button', { name: /返回文章库/ }), '「返回文章库」按钮应退役（列表常驻左栏）');
-      await expectPresent(page.locator(LOC.railList), '.ww-rail__list 应存在（列表语义落地）');
+      await expectPresent(page.locator(LOC.railList), '.wa-rail__list 应存在（列表语义落地）');
     },
   },
   {
@@ -116,25 +116,25 @@ export default [
     phase: 'fresh',
     // 前置：fresh（空库）。窄态断点 <900（App NARROW_BREAKPOINT）。
     // 步骤：viewport 860 → 观察 → 恢复 1440。
-    // 断言：AC-3 —— 窄态左栏退化为顶部下拉（ww-rail-select），空态主区启动卡不消失；
+    // 断言：AC-3 —— 窄态左栏退化为顶部下拉（wa-rail-select），空态主区启动卡不消失；
     //       恢复宽态后 rail 回归。
     // 视口卫生：压窄操作包 try/finally，finally 无条件恢复 1440x900——E2E 首轮教训：
     // 断言失败时 viewport 停在 860，同一 page 贯穿后续相位，窄态级联毒死 10+ 用例。
     fn: async (page) => {
       await clickTab(page, 'home');
-      await expectVisible(page.locator(LOC.rail).first(), { msg: '宽态下 .ww-rail 应可见' });
+      await expectVisible(page.locator(LOC.rail).first(), { msg: '宽态下 .wa-rail 应可见' });
       try {
         await page.setViewportSize({ width: 860, height: 900 });
-        await expectNotVisible(page.locator(LOC.rail), { msg: '窄态下 .ww-rail 应整体退化为下拉' });
-        await expectVisible(page.locator('[data-testid="ww-rail-select"]').first(), {
+        await expectNotVisible(page.locator(LOC.rail), { msg: '窄态下 .wa-rail 应整体退化为下拉' });
+        await expectVisible(page.locator('[data-testid="wa-rail-select"]').first(), {
           timeout: 6000,
-          msg: '窄态下 button.ww-rail-select（顶部下拉）未出现（AC-3）',
+          msg: '窄态下 button.wa-rail-select（顶部下拉）未出现（AC-3）',
         });
         await expectVisible(page.locator(LOC.startup).first(), { msg: '窄态空库主区启动卡不应消失' });
       } finally {
         await page.setViewportSize({ width: 1440, height: 900 });
       }
-      await expectVisible(page.locator(LOC.rail).first(), { timeout: 6000, msg: '恢复宽态后 .ww-rail 应回归' });
+      await expectVisible(page.locator(LOC.rail).first(), { timeout: 6000, msg: '恢复宽态后 .wa-rail 应回归' });
     },
   },
   {
@@ -147,7 +147,7 @@ export default [
     // 断言：aria-label 含「公众号未配置」；点击进设置页。
     fn: async (page) => {
       const conn = page.locator(LOC.conn).first();
-      await expectVisible(conn, { msg: '顶栏连接徽标 [data-testid=ww-topbar-conn] 未出现' });
+      await expectVisible(conn, { msg: '顶栏连接徽标 [data-testid=wa-topbar-conn] 未出现' });
       const label = await conn.getAttribute('aria-label');
       assert.ok(label?.includes('公众号未配置'), `连接徽标 aria-label 应含「公众号未配置」，实际：${label}`);
       await conn.click();

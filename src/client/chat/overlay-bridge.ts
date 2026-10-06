@@ -59,7 +59,7 @@ export function isOverlayAvailable(): boolean {
 export function openOverlayWithArticle(articleId: string): void {
   overlayIntent = { articleId };
   setOverlayOpen(true);
-  // 先存意图再广播：已挂载的 WewriteApp 订阅者收到通知即消费；
+  // 先存意图再广播：已挂载的 WeChatArticleApp 订阅者收到通知即消费；
   // 浮层刚打开、App 尚未挂载时意图留存，由挂载时的一次性消费取走。
   overlayIntentListeners.forEach((listener) => listener());
 }

@@ -55,24 +55,24 @@ export function GateReport({
   const passedLabel = passed.map((rule) => rule.name).join(' / ');
 
   return (
-    <div className="ww-gate">
-      <div className="ww-gate__head">
-        <span className={report.passed ? 'ww-gate__score ww-gate__score--pass' : 'ww-gate__score ww-gate__score--fail'}>
+    <div className="wa-gate">
+      <div className="wa-gate__head">
+        <span className={report.passed ? 'wa-gate__score wa-gate__score--pass' : 'wa-gate__score wa-gate__score--fail'}>
           {report.score}
-          <span className="ww-gate__denominator">/100</span>
+          <span className="wa-gate__denominator">/100</span>
         </span>
-        <div className="ww-gate__verdict">
+        <div className="wa-gate__verdict">
           {report.passed ? (
-            <p className="ww-gate__pass-line">
+            <p className="wa-gate__pass-line">
               <Icon name="shield-check" size={16} /> 门禁通过，可直接推送。
             </p>
           ) : (
-            <p className="ww-gate__fail-line">
+            <p className="wa-gate__fail-line">
               <Icon name="shield-alert" size={16} /> {failed.length} 项未过
             </p>
           )}
           {passed.length > 0 ? (
-            <div className="ww-gate__passed">
+            <div className="wa-gate__passed">
               <DisclosureRow
                 icon={<Icon name="list-checks" size={16} />}
                 title={`已过 ${passed.length} 项`}
@@ -80,24 +80,24 @@ export function GateReport({
                 expandable
                 onToggle={() => setPassedOpen((open) => !open)}
               >
-                <p className="ww-gate__passed-list">{passedLabel}</p>
+                <p className="wa-gate__passed-list">{passedLabel}</p>
               </DisclosureRow>
             </div>
           ) : null}
         </div>
       </div>
       {failed.length > 0 ? (
-        <ul className="ww-gate__rules">
+        <ul className="wa-gate__rules">
           {failed.map((rule) => (
-            <li key={rule.ruleId} className="ww-gate__rule">
-              <div className="ww-gate__rule-head">
+            <li key={rule.ruleId} className="wa-gate__rule">
+              <div className="wa-gate__rule-head">
                 <Icon name="triangle-alert" size={16} />
-                <span className="ww-gate__rule-name">{rule.name}</span>
-                <CodeChip className="ww-gate__rule-id">{rule.ruleId}</CodeChip>
+                <span className="wa-gate__rule-name">{rule.name}</span>
+                <CodeChip className="wa-gate__rule-id">{rule.ruleId}</CodeChip>
               </div>
-              {rule.detail ? <p className="ww-gate__rule-detail">{rule.detail}</p> : null}
-              {rule.location ? <p className="ww-gate__rule-location">{rule.location}</p> : null}
-              <div className="ww-gate__rule-actions">
+              {rule.detail ? <p className="wa-gate__rule-detail">{rule.detail}</p> : null}
+              {rule.location ? <p className="wa-gate__rule-location">{rule.location}</p> : null}
+              <div className="wa-gate__rule-actions">
                 {rule.location ? (
                   <Button variant="ghost" size="sm" onClick={() => onLocate(rule.ruleId)}>
                     定位到段落
@@ -112,11 +112,11 @@ export function GateReport({
         </ul>
       ) : null}
       {failed.length > 0 ? (
-        <div className="ww-gate__foot">
-          <Button variant="primary" size="sm" className="ww-btn-accent" icon={<Icon name="wand-sparkles" size={16} />} onClick={onFixAll} disabled={fixing}>
+        <div className="wa-gate__foot">
+          <Button variant="primary" size="sm" className="wa-btn-accent" icon={<Icon name="wand-sparkles" size={16} />} onClick={onFixAll} disabled={fixing}>
             AI 修这稿（全部）
           </Button>
-          <span className="ww-gate__foot-hint">只重写问题段落，已通过部分保留，改动以 diff 展示。</span>
+          <span className="wa-gate__foot-hint">只重写问题段落，已通过部分保留，改动以 diff 展示。</span>
         </div>
       ) : null}
     </div>

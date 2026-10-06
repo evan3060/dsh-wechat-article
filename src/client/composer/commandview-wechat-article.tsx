@@ -1,13 +1,13 @@
 import type { CommandRowOwnerPropsLike } from '../lib/context';
-import type { WewriteRpc } from '../lib/rpc';
+import type { WeChatArticleRpc } from '../lib/rpc';
 import { Icon } from '../components/Icon';
 import { cardT } from '../chat/card-text';
 import { useRunDetail, type RunDetailSelector } from '../chat/run-detail-hook';
 import { projectStages, StageTrack } from '../chat/stage-track';
 
 /**
- * conversation.chat.commandview keyed `wewrite`（M3 / uiux §5.2）：
- * /wewrite 命令的时间线行——一行命令原文（等宽）+ pen-line + 执行状态，
+ * conversation.chat.commandview keyed `wechat-article`（M3 / uiux §5.2）：
+ * /wechat-article 命令的时间线行——一行命令原文（等宽）+ pen-line + 执行状态，
  * 成功后携带 runId 则复用 run-detail-hook 展示六步进度。
  * 未注册本 keyed 行时宿主有 GenericCommandCard 兜底（S9），本组件纯增强。
  * runId 提取按 host commands.ts 落地形态三格式容错（见 parseRunId）。
@@ -34,7 +34,7 @@ function parseRunId(text: string | undefined): string | undefined {
   return inProse?.[1];
 }
 
-export function WewriteCommandRow({ node, rpc }: { node?: CommandRowOwnerPropsLike['node']; rpc: WewriteRpc }) {
+export function WeChatArticleCommandRow({ node, rpc }: { node?: CommandRowOwnerPropsLike['node']; rpc: WeChatArticleRpc }) {
   const t = cardT();
   // hook 先于早退调用（node 为 null 的兜底分支不破坏 hook 顺序）。
   const parsedRunId = node?.outcome?.kind === 'success' ? parseRunId(node.outcome.text) : undefined;
@@ -47,24 +47,24 @@ export function WewriteCommandRow({ node, rpc }: { node?: CommandRowOwnerPropsLi
   const status = executing ? t('chat.commandExecuting') : node.outcome?.kind === 'success' ? t('chat.commandDone') : t('chat.commandFailed');
 
   return (
-    <article className={`ww-chatcard ww-chatcard--command${node.outcome?.kind === 'error' ? ' ww-chatcard--failed' : ''}`}>
-      <header className="ww-chatcard__head">
+    <article className={`wa-chatcard wa-chatcard--command${node.outcome?.kind === 'error' ? ' wa-chatcard--failed' : ''}`}>
+      <header className="wa-chatcard__head">
         <Icon name="pen-line" size={16} />
-        <span className="ww-chatcard__code">
-          /{node.name ?? 'wewrite'}
+        <span className="wa-chatcard__code">
+          /{node.name ?? 'wechat-article'}
           {node.args ? ` ${node.args}` : ''}
         </span>
-        <span className={node.outcome?.kind === 'error' ? 'ww-chatcard__meta ww-chatcard__meta--danger' : 'ww-chatcard__meta'}>{status}</span>
+        <span className={node.outcome?.kind === 'error' ? 'wa-chatcard__meta wa-chatcard__meta--danger' : 'wa-chatcard__meta'}>{status}</span>
       </header>
       {selector ? (
-        <div className="ww-chatcard__body">
+        <div className="wa-chatcard__body">
           <StageTrack progress={progress} t={t} />
-          <p className="ww-chatcard__note">{detail ? t('chat.runEta') : t('chat.seeWorkbench')}</p>
+          <p className="wa-chatcard__note">{detail ? t('chat.runEta') : t('chat.seeWorkbench')}</p>
         </div>
       ) : null}
       {node.outcome?.kind === 'error' && node.outcome.text ? (
-        <div className="ww-chatcard__body">
-          <p className="ww-chatcard__digest">{node.outcome.text}</p>
+        <div className="wa-chatcard__body">
+          <p className="wa-chatcard__digest">{node.outcome.text}</p>
         </div>
       ) : null}
     </article>

@@ -5,7 +5,7 @@
 
 import { convertArticle } from '../render/convert';
 import type { ArticleRecord, ImageRecord } from './domain';
-import { WewriteServiceError } from './service-errors';
+import { WeChatArticleServiceError } from './service-errors';
 import type { KvTable } from './platform';
 import { createWeChatClient, type DiagnoseResult, type WeChatClientDeps } from './wechat/client';
 
@@ -20,13 +20,13 @@ export interface WeChatFlowDeps {
 
 export async function pushArticleDraft(deps: WeChatFlowDeps, articleId: string): Promise<{ mediaId: string; thumbMediaId: string }> {
   const article = deps.articles.get(articleId);
-  if (!article) throw new WewriteServiceError('article-not-found', `文章不存在：${articleId}`);
+  if (!article) throw new WeChatArticleServiceError('article-not-found', `文章不存在：${articleId}`);
   if (article.status === 'editing' || article.status === 'failed') {
-    throw new WewriteServiceError('gates-not-passed', '质量门禁未过：该文章尚未通过管线门禁，完成管线或修改后再推送');
+    throw new WeChatArticleServiceError('gates-not-passed', '质量门禁未过：该文章尚未通过管线门禁，完成管线或修改后再推送');
   }
-  if (!article.coverImageId) throw new WewriteServiceError('cover-missing', '缺少封面图：先运行配图步或绑定封面');
+  if (!article.coverImageId) throw new WeChatArticleServiceError('cover-missing', '缺少封面图：先运行配图步或绑定封面');
   const cover = deps.images.get(article.coverImageId);
-  if (!cover) throw new WewriteServiceError('cover-missing', '封面图记录缺失');
+  if (!cover) throw new WeChatArticleServiceError('cover-missing', '封面图记录缺失');
   const bodyImages = article.bodyImageIds
     .map((id) => deps.images.get(id))
     .filter((image): image is ImageRecord => Boolean(image));

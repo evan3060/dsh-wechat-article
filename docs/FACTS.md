@@ -1,11 +1,11 @@
-# dsh-wewrite — 共享事实包（Phase 0 产出，总监维护，专家只读）
+# dsh-wechat-article — 共享事实包（Phase 0 产出，总监维护，专家只读）
 
 > 所有专家 spawn 前必读。这里是已核实的事实，不要重新调研这些，直接引用。
 > 最后更新：2026-08-18（Jarvis，项目总监）
 
 ## 产品一句话
 
-一个开源 DeepSeek Harness（DSH）插件：把一条经真实生产使用检验的微信公众号 AI 写作管线（选题→研究→写作→质量门禁→排版→配图→草稿箱）产品化，任何 DSH 用户 `npx @deepseek-ai/dsh plugin add github:<owner>/dsh-wewrite` 即装即用。
+一个开源 DeepSeek Harness（DSH）插件：把一条经真实生产使用检验的微信公众号 AI 写作管线（选题→研究→写作→质量门禁→排版→配图→草稿箱）产品化，任何 DSH 用户 `npx @deepseek-ai/dsh plugin add github:<owner>/dsh-wechat-article` 即装即用。
 
 ## 已核实的 DSH 平台事实（2026-08-14 本机实测，来源：apps/dsh-hub field notes）
 
@@ -24,7 +24,7 @@
 
 ## 源管线资产（Jerry 私有，位于本 workspace，产品化时移植）
 
-真身：`workspace-writer/wewrite/`（skill 形态）。可移植的脚本资产（`workspace-writer/wewrite/scripts/`，全 Node ESM）：
+真身：`workspace-writer/wechat-article/`（skill 形态）。可移植的脚本资产（`workspace-writer/wechat-article/scripts/`，全 Node ESM）：
 
 | 脚本 | 作用 |
 |---|---|
@@ -62,4 +62,4 @@
 ## 流程状态
 
 - Phase 0 ✅ 2026-08-18（带案入场：Jerry 功能清单即需求，不再澄清提问）
-- 项目位置：`/Users/mac/Documents/workspace/apps/dsh-wewrite/`（独立 git repo，workspace 侧 gitignore——沿用 apps/sitemap-generator 先例）
+- 项目位置：`/Users/mac/Documents/workspace/apps/dsh-wechat-article/`（独立 git repo，workspace 侧 gitignore——沿用 apps/sitemap-generator 先例）

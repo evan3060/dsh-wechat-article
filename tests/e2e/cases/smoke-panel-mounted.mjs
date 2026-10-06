@@ -1,6 +1,6 @@
 /**
- * 冒烟用例样板：WeWrite 面板挂载。
- * 锚点为 v0.1 旧 DOM（.dsh-wewrite-panel / #wewrite-panel-content），v0.2 UI 重构
+ * 冒烟用例样板：公众号面板挂载。
+ * 锚点为 v0.1 旧 DOM（.dsh-wechat-article-panel / #wechat-article-panel-content），v0.2 UI 重构
  * 后由 QA 按新 IA 重锚全量用例——新用例请照本文件格式写：
  *   export default { id, group, phase: 'fresh' | 'demo' | 'live', fn: async (page, ctx) => {} }
  * ctx = { BASE, sleep, domIs, openPanel }（tests/e2e/session.mjs）。
@@ -11,13 +11,13 @@ export default {
   phase: 'fresh',
   fn: async (page, ctx) => {
     // 相位开始时 runner 已调用 openPanel 完成穿越，这里直接断言终点锚点
-    const panel = page.locator('.dsh-wewrite-panel').first();
+    const panel = page.locator('.dsh-wechat-article-panel').first();
     if (!(await ctx.domIs(panel, { timeout: 5000 }))) {
-      throw new Error('.dsh-wewrite-panel 未挂载');
+      throw new Error('.dsh-wechat-article-panel 未挂载');
     }
-    const content = page.locator('#wewrite-panel-content').first();
+    const content = page.locator('#wechat-article-panel-content').first();
     if (!(await ctx.domIs(content, { timeout: 5000 }))) {
-      throw new Error('#wewrite-panel-content 未出现');
+      throw new Error('#wechat-article-panel-content 未出现');
     }
   },
 };

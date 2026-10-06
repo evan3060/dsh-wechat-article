@@ -185,7 +185,7 @@ async function main() {
       await restoreIfBackedUp();
     } catch (err) {
       console.error(`storage 恢复失败：${err.message}`);
-      console.error(`备份仍在 /tmp/dsh-wewrite-e2e-backup.json，请手动恢复到 ~/.dsh/storages/dsh_wewrite.json（先停宿主）`);
+      console.error(`备份仍在 /tmp/dsh-wechat-article-e2e-backup.json，请手动恢复到 ~/.dsh/storages/dsh_wechat_article.json（先停宿主）`);
     }
     await browser.close().catch(() => {});
   }

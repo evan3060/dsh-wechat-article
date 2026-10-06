@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { WeWriteService } from '@/host/service';
-import { WewriteServiceError } from '@/host/service-errors';
+import { WeChatArticleService } from '@/host/service';
+import { WeChatArticleServiceError } from '@/host/service-errors';
 import type { LlmService } from '@/host/platform';
 import { MemoryDomain, makeCredentials, silentLogger } from './service-harness';
 
@@ -9,7 +9,7 @@ import { MemoryDomain, makeCredentials, silentLogger } from './service-harness';
  *
  * 本文件钉定 src/host/service.ts rewriteText 消费面：
  * - settings.llmDefault 缺 provider/model 时拒绝（llm-not-configured，零 LLM 调用）
- * - 走 streamLlmText（purpose 'wewrite-article-rewrite'、maxTokens=min(4000, text*3+500)、45s AbortController）
+ * - 走 streamLlmText（purpose 'wechat-article-article-rewrite'、maxTokens=min(4000, text*3+500)、45s AbortController）
  * - 指令与可选题名透传进 user 提示；llm error 分流透传、abort/超时归一 rewrite-timeout、空输出 rewrite-empty
  * LLM 按宿主真实 chunk 协议 mock（text-delta + finish.reason），非 mock streamLlmText 本身。
  */
@@ -33,7 +33,7 @@ const userTextOf = (options: Record<string, unknown>): string => {
 };
 
 async function makeService(llm: LlmService, options?: { rewriteTimeoutMs?: number; skipLlmConfig?: boolean }) {
-  const service = await WeWriteService.open({
+  const service = await WeChatArticleService.open({
     domain: new MemoryDomain(),
     credentials: makeCredentials().service,
     llm,
@@ -51,7 +51,7 @@ async function rejectInfo(promise: Promise<unknown>): Promise<{ code: string; me
   try {
     await promise;
   } catch (error) {
-    if (error instanceof WewriteServiceError) return { code: error.code, message: error.message };
+    if (error instanceof WeChatArticleServiceError) return { code: error.code, message: error.message };
     return { code: `non-coded:${error instanceof Error ? error.message : String(error)}`, message: '' };
   }
   return { code: 'no-error-thrown', message: '' };
@@ -82,7 +82,7 @@ describe('rewriteText（uiux v0.3 §3）', () => {
 
     expect(llm.calls.length).toBe(1);
     const options = llm.calls[0];
-    expect(options.purpose).toBe('wewrite-article-rewrite');
+    expect(options.purpose).toBe('wechat-article-article-rewrite');
     expect(options.provider).toBe('zhipu');
     expect(options.model).toBe('glm-4.5-flash');
     expect(String(options.system)).toContain('改稿助手');

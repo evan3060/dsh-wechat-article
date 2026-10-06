@@ -1,4 +1,4 @@
-# dsh-wewrite v0.3 需求 Delta（逐条速览 + 侧边栏直进 + AI 改写 + 全局精修）
+# dsh-wechat-article v0.3 需求 Delta（逐条速览 + 侧边栏直进 + AI 改写 + 全局精修）
 
 > 作者：Jarvis（项目总监，MVP 开发专家团） | 日期：2026-08-20
 > 输入：Jerry 四条需求（2026-08-20 口头）+ grill-with-docs 共识清单（Q1=B 逐条抓原文 / Q2=A 选中即改 / Q3=D 设计师主导精修 / Q4=A 侧边栏入口叫「写作台」）
@@ -16,7 +16,7 @@
 | R3 | AI 修改草稿 | **选中即改**（Notion AI 式）：选区→「AI 改写」→一句指令→只重写选中段→替换可撤销；不做全文指令重写 |
 | R4 | UI 再专业化 | 设计师按 Linear/Stripe 标准全局面精修（间距节奏/层级/字重/动效/噪音清理），Jerry 验收 |
 
-**撤销项**：v0.2.1 §2 的整卡 AI 速览全链路（RPC `hotspots/summarize`、HotspotDigest.tsx、pagebar 按钮、C07 E2E、hotspots-summarize.test.ts、i18n hotspots.aiDigest 族、panels.css digest 段）——本轮 §1 替代。可复用件：digestSystemPrompt/digestUserPrompt 的行结构风格、WewriteServiceError 错误分流模式、llm seam 调用模式。
+**撤销项**：v0.2.1 §2 的整卡 AI 速览全链路（RPC `hotspots/summarize`、HotspotDigest.tsx、pagebar 按钮、C07 E2E、hotspots-summarize.test.ts、i18n hotspots.aiDigest 族、panels.css digest 段）——本轮 §1 替代。可复用件：digestSystemPrompt/digestUserPrompt 的行结构风格、WeChatArticleServiceError 错误分流模式、llm seam 调用模式。
 
 ## 1. R1 逐条 AI 速览（热榜）
 
@@ -27,15 +27,15 @@
 ### host 侧（新模块 `src/host/hotspot-digest.ts`，≤300 行）
 1. **抓取**：fetchImpl GET `url`，8s 超时，重定向跟随，2MB 截断，只接受 text/html（Content-Type 前缀判断）。
 2. **抽取**：零依赖启发式——剥 `<script>/<style>/<noscript>/<nav>/<header>/<footer>/<aside>/<svg>` 块与 HTML 注释；`<article>/<main>` 优先（存在则在其内抽取）；剥全部标签后折叠空白；取前 8000 字符；结果 < 300 字符视为抽取失败。
-3. **LLM**：复用 `streamLlmText` + `settings.llmDefault`；purpose `wewrite-hotspot-item-digest`；maxTokens 800；45s AbortController。
+3. **LLM**：复用 `streamLlmText` + `settings.llmDefault`；purpose `wechat-article-hotspot-item-digest`；maxTokens 800；45s AbortController。
    - article 模式提示：输入=标题+域名+正文节选；输出=中文两段行结构纯文本：首行 `这条在讲什么：` 一句话；后跟 2-4 行 `· 要点`（具体事实/数字/结论，不写套话）。
    - title 模式（降级）提示：输入=标题+域名；输出=首行 `标题解读：` 中文译名+一句话；`· 角度：` 一行，从公众号选题视角给一个可写角度。**输出必须带模式自说明**——`source` 字段由 host 依抽取结果判定，不由模型自报。
-4. 错误分流（WewriteServiceError）：`llm-not-configured`（沿用）/ `digest-timeout` / `digest-empty`；抓取失败**不是错误**——静默降级 title 模式；`digest-item-error`（LLM 供应商错误透传）。
+4. 错误分流（WeChatArticleServiceError）：`llm-not-configured`（沿用）/ `digest-timeout` / `digest-empty`；抓取失败**不是错误**——静默降级 title 模式；`digest-item-error`（LLM 供应商错误透传）。
 5. 日志：成功一行（source/model/耗时/正文字符数）、失败一行（code）。
 
 ### client 侧
-- 热榜行展开区（现 `ww-hotspot__expand`）重构：展开 = 原文链接行（保留）+ AI 速览块。首次展开自动触发生成（懒加载），loading 骨架行；错误显示 ErrorNote+重试。
-- 逐条缓存：localStorage `dsh-wewrite.hotspot-item-digests` = `{ [url]: { digest, source, model, generatedAtIso } }`，单日有效（次日同 URL 重新生成，榜单日更语义）；缓存命中不调 RPC。
+- 热榜行展开区（现 `wa-hotspot__expand`）重构：展开 = 原文链接行（保留）+ AI 速览块。首次展开自动触发生成（懒加载），loading 骨架行；错误显示 ErrorNote+重试。
+- 逐条缓存：localStorage `dsh-wechat-article.hotspot-item-digests` = `{ [url]: { digest, source, model, generatedAtIso } }`，单日有效（次日同 URL 重新生成，榜单日更语义）；缓存命中不调 RPC。
 - 速览块视觉按设计文档（§D1）。
 
 ### E2E
@@ -44,12 +44,12 @@
 ## 2. R2 侧边栏直进（写作台全屏浮层）
 
 - `src/client/index.tsx` 在既有 conversation.view 注册之外**追加两个注册**（同一 apply()，同一 `rpc`/`fallbackT` 闭包）：
-  1. `sidebar.footer.action`（list/root）：`WewriteSidebarEntry`——按官方 `wide` prop 双形态：wide=图标+「写作台」整行、窄=36px 图标钮；点击 `setOverlayOpen(true)`（模块级状态）。
-  2. `shell.overlay`（list/root）：`WewriteOverlay`——closed 渲染 null；open 渲染全屏浮层：`ww-overlay` 容器（inset 全屏、`--ww-bg-page` 底）+ 顶行（pen-line 图标+「写作台」标题 + 收起按钮）+ 内嵌完整 `WewriteApp`（同一组件复用，独立实例）。
+  1. `sidebar.footer.action`（list/root）：`WeChatArticleSidebarEntry`——按官方 `wide` prop 双形态：wide=图标+「写作台」整行、窄=36px 图标钮；点击 `setOverlayOpen(true)`（模块级状态）。
+  2. `shell.overlay`（list/root）：`WeChatArticleOverlay`——closed 渲染 null；open 渲染全屏浮层：`wa-overlay` 容器（inset 全屏、`--wa-bg-page` 底）+ 顶行（pen-line 图标+「写作台」标题 + 收起按钮）+ 内嵌完整 `WeChatArticleApp`（同一组件复用，独立实例）。
 - 关闭路径：顶行收起钮 + Escape（浮层内 keydown）。
 - 宿主契约注：两个 slot 均为官方公开 additive（dsh-client-ui-sidebar slots.d.ts / dsh-app-boot SKILL.md:308 先例 cordis-panel），绑定宿主 0.1.0-rc.7，注册失败降级 console.warn 不炸（沿用 warnDegraded 模式）。
 - 会话内 conversation.view tab 原样保留（双入口）。
-- 新 DOM 命名（不在冻结清单）：`ww-sidebar-entry` / `ww-overlay` / `ww-overlay__head` / `ww-overlay__close` + data-testid 同名族。
+- 新 DOM 命名（不在冻结清单）：`wa-sidebar-entry` / `wa-overlay` / `wa-overlay__head` / `wa-overlay__close` + data-testid 同名族。
 
 ## 3. R3 AI 修改草稿（选中即改）
 

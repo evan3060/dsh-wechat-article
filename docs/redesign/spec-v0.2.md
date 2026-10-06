@@ -1,4 +1,4 @@
-# Spec — dsh-wewrite v0.2.0（写作台工作区化重设计 + 智谱真通道 + E2E 回归）
+# Spec — dsh-wechat-article v0.2.0（写作台工作区化重设计 + 智谱真通道 + E2E 回归）
 
 > 生成日期：2026-08-19 | 状态：**已确认**（Jerry 2026-08-19 指令「制定完善计划后执行」，Phase 1 三文档回传后总监裁决定稿）
 > 基于：`docs/redesign/prd-layout-v2.md`（PM 布局 PRD）+ `docs/redesign/uiux-redesign-v2.md`（设计师视觉系统）+ `docs/redesign/test-zhipu-architecture.md`（架构师智谱/E2E 架构）
@@ -61,7 +61,7 @@
 | **新增** dev loop | scripts/dev-install.mjs | — | build→cp lib→hostctl restart 原子三连 |
 | **新增** E2E | tests/e2e/（裸 playwright + 自研 runner，不加 @playwright/test） | playwright 1.62.1（workspace 根） | ADR-011；CI 探测 process.env.CI 即跳过 |
 
-RPC 契约（src/shared/contract.ts）与存储（dsh_wewrite 单元）**零改动**。
+RPC 契约（src/shared/contract.ts）与存储（dsh_wechat_article 单元）**零改动**。
 
 ## 5. 页面清单（锁定——新 IA）
 
@@ -77,7 +77,7 @@ RPC 契约（src/shared/contract.ts）与存储（dsh_wewrite 单元）**零改�
 
 ## 6. 设计 Token（锁定——增量 5 个，零改名零改值）
 
-`--ww-bg-page` / `--ww-canvas-well` / `--ww-shadow-card` / `--ww-toolrow-h` / `--ww-content-pad-bottom`，定义与宿主引用见 uiux-redesign-v2 §2-2；Phase 2 同步进 `docs/design/design-tokens.json` 与 `src/client/styles/tokens.css`。其余继承 DESIGN.md 九节契约 + P0 三条构造保证（零渐变/紫粉四色/emoji 图标禁令）。
+`--wa-bg-page` / `--wa-canvas-well` / `--wa-shadow-card` / `--wa-toolrow-h` / `--wa-content-pad-bottom`，定义与宿主引用见 uiux-redesign-v2 §2-2；Phase 2 同步进 `docs/design/design-tokens.json` 与 `src/client/styles/tokens.css`。其余继承 DESIGN.md 九节契约 + P0 三条构造保证（零渐变/紫粉四色/emoji 图标禁令）。
 
 ## 7. 验收标准（EARS，QA 测试唯一依据）
 
@@ -101,14 +101,14 @@ RPC 契约（src/shared/contract.ts）与存储（dsh_wewrite 单元）**零改�
 ## 8. 边界与约束
 
 - 断点：≥1200 宽双栏 / 900–1200 窄双栏（视图分段 icon-only）/ <900 单栏+左栏退化下拉（narrow 逻辑沿用）
-- 宿主 composer 遮挡兜底：`.ww-content` padding-bottom 96px + Toast 抬高同值
+- 宿主 composer 遮挡兜底：`.wa-content` padding-bottom 96px + Toast 抬高同值
 - 性能：预览刷新口径不变；左栏列表阈值沿用 MAX_VISIBLE=200
 - localStorage 兼容：既有键不动，新增 `ww.rail.collapsed` 等命名空间键
 - E2E 独占窗口：live 相位 kill/重启宿主并独占 storage，与并行 session 冲突——跑前总监协调
 
 ## 9. 内嵌已知坑（pitfalls.jsonl 指纹交集）
 
-react-dual-instance-breaks-slots（peer external）/ npm-workspaces-hoist-trap（install 加 --workspaces=false）/ dsh-module-loader-wrapper-needs-module-decl（build 壳勿动）/ dsh-rpc-envelope-and-leading-slash（通道前导斜杠）/ dsh-slot-props-t-is-common-namespace（t 绑定本插件 ns）/ dsh-llm-seam-real-protocol（v0.1.5 重写已 validated）/ dsh-storage-unit-name-regex（dsh_wewrite 下划线）。
+react-dual-instance-breaks-slots（peer external）/ npm-workspaces-hoist-trap（install 加 --workspaces=false）/ dsh-module-loader-wrapper-needs-module-decl（build 壳勿动）/ dsh-rpc-envelope-and-leading-slash（通道前导斜杠）/ dsh-slot-props-t-is-common-namespace（t 绑定本插件 ns）/ dsh-llm-seam-real-protocol（v0.1.5 重写已 validated）/ dsh-storage-unit-name-regex（dsh_wechat_article 下划线）。
 
 ## 10. 端到端验证步骤
 

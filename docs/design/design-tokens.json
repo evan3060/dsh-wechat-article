@@ -1,16 +1,16 @@
 {
-  "$comment": "dsh-wewrite Design Token（Phase 2 产出）。CSS 实现见 src/client/styles/tokens.css，二者一一对应。多数 --ww-* 语义 token 指向宿主 --dsw-*（DSH web UI 三层 token 体系：--dsw-static-* → --dsw-alias-* → --dsw-specific-*，浅色挂 body、深色挂 body[data-ds-dark-theme]）；宿主缺位处（间距/圆角/阴影/画布）与 v1.2.0 起 Bluewash 主题自有色（台面 tint / 边框 / 骨架 / 选中底 / 视图识别色，共 11 个，见各条目 darkOverride 标记）用自有 primitive——后者在 tokens.css dark 覆写块显式翻转，不随宿主换肤。light/dark 字段是核对用解析值（宿主引用型来源：@deepseek-ai/dsh-client-ui-theme v0.1.0-rc.6 本机实装源码逐条核实，2026-08-18），运行时真实值以宿主 token 解析为准。",
+  "$comment": "dsh-wechat-article Design Token（Phase 2 产出）。CSS 实现见 src/client/styles/tokens.css，二者一一对应。多数 --wa-* 语义 token 指向宿主 --dsw-*（DSH web UI 三层 token 体系：--dsw-static-* → --dsw-alias-* → --dsw-specific-*，浅色挂 body、深色挂 body[data-ds-dark-theme]）；宿主缺位处（间距/圆角/阴影/画布）与 v1.2.0 起 Bluewash 主题自有色（台面 tint / 边框 / 骨架 / 选中底 / 视图识别色，共 11 个，见各条目 darkOverride 标记）用自有 primitive——后者在 tokens.css dark 覆写块显式翻转，不随宿主换肤。light/dark 字段是核对用解析值（宿主引用型来源：@deepseek-ai/dsh-client-ui-theme v0.1.0-rc.6 本机实装源码逐条核实，2026-08-18），运行时真实值以宿主 token 解析为准。",
   "meta": {
-    "name": "dsh-wewrite",
+    "name": "dsh-wechat-article",
     "version": "1.2.0",
     "date": "2026-08-20",
     "author": "颜好看（MVP 开发专家团设计师）",
     "inputs": ["docs/FACTS.md", "docs/spec.md §7/§8（锁定契约）", "docs/uiux-direction.md（Phase 1 方向）", "docs/redesign/uiux-redesign-v2.md §2-2（v0.2 增量 5 token 真源）", "docs/redesign/uiux-workbench-delta.md（4 Tab 工作区 delta 收口）", "docs/redesign/uiux-color-theme.md + uiux-color-theme-design.md（v1.2.0 Bluewash 色彩主题真源）"],
-    "cssScope": ".dsh-wewrite-panel（面板容器作用域；深色跟随 body[data-ds-dark-theme]，仅自有值 token 需要 dark 覆写，宿主引用型 token 自动翻转）",
+    "cssScope": ".dsh-wechat-article-panel（面板容器作用域；深色跟随 body[data-ds-dark-theme]，仅自有值 token 需要 dark 覆写，宿主引用型 token 自动翻转）",
     "guarantees": [
       "零 gradient token：本文件与 tokens.css 均不含任何 linear-gradient/radial-gradient 定义（P0-2 构造保证）",
       "紫粉四色 #7C3AED / #A855F7 / #EC4899 / #6366F1 不出现在任何 token 值",
-      "组件代码只允许引用 --ww-*，禁止裸 hex（唯一例外域：微信预览画布内的 UGC 排版主题 CSS）",
+      "组件代码只允许引用 --wa-*，禁止裸 hex（唯一例外域：微信预览画布内的 UGC 排版主题 CSS）",
       "图标唯一库 lucide-react，16px 行内 / 20px 按钮内两档，颜色 currentColor",
       "v1.2.0 Bluewash 纪律：视图识别色只染微面积（Tab 激活文字+icon / 页头 8px 点 / 热榜 Top3 名次），永不染大面积底；同屏非中性色相 ≤2 种；台面 tint 限冷蓝 hue 219（禁暖奶油色带）；纸面（编辑器表面/预览画布/输入框内部）不染 tint"
     ],
@@ -70,7 +70,7 @@
       "light": "rgba(65, 118, 230, 0.32)",
       "dark": "rgba(103, 158, 254, 0.40)",
       "type": "color",
-      "usage": "focus ring 色（自有值，深色下换 deepseek-400 基调提亮）；由 --ww-focus-ring 组装为 3px 环",
+      "usage": "focus ring 色（自有值，深色下换 deepseek-400 基调提亮）；由 --wa-focus-ring 组装为 3px 环",
       "darkOverride": true
     },
 
@@ -293,7 +293,7 @@
       "light": "rgba(0, 0, 0, 0.10)",
       "dark": "rgba(255, 255, 255, 0.12)",
       "type": "color",
-      "usage": "预览画布外框（深色主题下画布外圈留 --ww-surface-sunken 凹区）"
+      "usage": "预览画布外框（深色主题下画布外圈留 --wa-surface-sunken 凹区）"
     },
 
     "view-topics": {
@@ -475,7 +475,7 @@
 
   "focus": {
     "focus-ring": {
-      "css": "0 0 0 3px var(--ww-accent-ring)",
+      "css": "0 0 0 3px var(--wa-accent-ring)",
       "host": null,
       "light": "0 0 0 3px rgba(65, 118, 230, 0.32)",
       "dark": "0 0 0 3px rgba(103, 158, 254, 0.40)",

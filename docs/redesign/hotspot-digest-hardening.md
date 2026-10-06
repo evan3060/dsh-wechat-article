@@ -6,7 +6,7 @@ QA 实测确诊报告：`tests/e2e/artifacts/qa-digest/qa-digest-report.json`（
 
 用户报热榜逐条 AI 速览「还是有问题」，三种独立症状：
 
-1. **P0 错误信封被宿主整包拒收**（item-01，sprocketfox.io）：glm-4.5-flash 概率性命中内容过滤（流式 finish_reason:"sensitive"，bigmodel 1301）→ pi-ai SDK 报 error → 插件 `WewriteServiceError('PI_AI_ERROR', ...)` → RPC 错误信封 `{ok:false,error:{code:'PI_AI_ERROR'}}` → 宿主 `rpcResultSchema` 联合校验失败 → zod invalid_union 全文（~1.7KB，含 39 个宿主 code 枚举清单）成为用户看到的错误消息。1305 拥挤 / 429 / 网络错误同链路同症状。
+1. **P0 错误信封被宿主整包拒收**（item-01，sprocketfox.io）：glm-4.5-flash 概率性命中内容过滤（流式 finish_reason:"sensitive"，bigmodel 1301）→ pi-ai SDK 报 error → 插件 `WeChatArticleServiceError('PI_AI_ERROR', ...)` → RPC 错误信封 `{ok:false,error:{code:'PI_AI_ERROR'}}` → 宿主 `rpcResultSchema` 联合校验失败 → zod invalid_union 全文（~1.7KB，含 39 个宿主 code 枚举清单）成为用户看到的错误消息。1305 拥挤 / 429 / 网络错误同链路同症状。
 2. **抽取回退缺失**（item-04，grapheneos.social Mastodon 帖）：首个 article 块只装头像/时间戳（剥壳 <300 字），但整页剥壳 9860 字——按块判失败，白白降级 title 模式（「仅标题」徽章），且 title 模式下角度行编造了原文没有的「健康监测/电池续航」（item-07 Casio 同症状）。
 3. **反爬 403**（item-07，casio.com）：无 UA 裸请求被站点直接 403。
 

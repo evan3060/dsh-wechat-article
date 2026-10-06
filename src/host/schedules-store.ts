@@ -10,7 +10,7 @@ import type { ScheduleRecord } from './domain';
 import { computeNextRunAt, normalizeRrule } from './scheduler/rrule';
 import type { DomainTables } from './store';
 import { scheduleToView } from './views';
-import { WewriteServiceError } from './service-errors';
+import { WeChatArticleServiceError } from './service-errors';
 
 export interface ScheduleStoreDeps {
   readonly tables: DomainTables;
@@ -63,7 +63,7 @@ export class ScheduleStore {
   async toggle(id: string, enabled: boolean): Promise<ScheduleViewModel> {
     return this.deps.serialize(async () => {
       const record = this.deps.tables.schedules.get(id);
-      if (!record) throw new WewriteServiceError('schedule-not-found', `定时任务不存在：${id}`);
+      if (!record) throw new WeChatArticleServiceError('schedule-not-found', `定时任务不存在：${id}`);
       const next = { ...record, enabled, updatedAt: this.deps.nowIso() };
       await this.deps.tables.schedules.put(id, next);
       return scheduleToView(next);
@@ -72,7 +72,7 @@ export class ScheduleStore {
 
   runNow(id: string): { runId: string } {
     const record = this.deps.tables.schedules.get(id);
-    if (!record) throw new WewriteServiceError('schedule-not-found', `定时任务不存在：${id}`);
+    if (!record) throw new WeChatArticleServiceError('schedule-not-found', `定时任务不存在：${id}`);
     return this.deps.startRun(record);
   }
 }

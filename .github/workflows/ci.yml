@@ -79,5 +79,5 @@ jobs:
       - name: 验证 Pages base 前缀
         run: |
           test -f website/dist/index.html
-          grep -q '/dsh-wewrite/' website/dist/index.html
-          echo "website/dist/index.html 存在且资源引用带 /dsh-wewrite/ 前缀"
+          grep -q '/dsh-wechat-article/' website/dist/index.html
+          echo "website/dist/index.html 存在且资源引用带 /dsh-wechat-article/ 前缀"

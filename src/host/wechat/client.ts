@@ -137,7 +137,7 @@ export function createWeChatClient(deps: WeChatClientDeps) {
   function multipart(image: WeChatBinary, field = 'media'): FormData {
     const form = new FormData();
     const blob = new Blob([new Uint8Array(image.buffer)], { type: image.mime });
-    form.append(field, blob, image.filename ?? `wewrite-${field}.${image.mime.split('/')[1] ?? 'png'}`);
+    form.append(field, blob, image.filename ?? `wechat-article-${field}.${image.mime.split('/')[1] ?? 'png'}`);
     return form;
   }
 

@@ -7,9 +7,9 @@ import type { IconName } from './Icon';
 /**
  * 顶栏（TopBar，uiux-workbench-delta §1-1，由 v0.1 PanelTabBar 改造）：
  * 4 导航对象 = 3 Tab（写作/选题/定时）+ 设置齿轮；右端区 = 进度点(运行中) + 公众号连接状态。
- * 高 40px（--ww-toolrow-h）；Tab 激活 = 500 字重 + 下沿 2px accent 指示条；
+ * 高 40px（--wa-toolrow-h）；Tab 激活 = 500 字重 + 下沿 2px accent 指示条；
  * 页面导航用 nav + aria-current="page"（无 tabpanel 配对，不用 tablist）。
- * Bluewash（uiux-color-theme-design §4-1）：button.ww-tab 带 data-view 域属性，
+ * Bluewash（uiux-color-theme-design §4-1）：button.wa-tab 带 data-view 域属性，
  * 激活段按域分色（写作=accent 蓝 / 选题=橙 / 定时=青，topbar.css）。
  */
 
@@ -45,18 +45,18 @@ export function TopBar({
   const activeKind = route.kind === 'home' || route.kind === 'article' || route.kind === 'articles' ? 'home' : route.kind;
 
   return (
-    <header className="ww-topbar" data-testid="ww-topbar">
-      <nav className="ww-topbar__nav" aria-label="WeWrite 导航">
+    <header className="wa-topbar" data-testid="wa-topbar">
+      <nav className="wa-topbar__nav" aria-label="公众号导航">
         {TABS.map((tab) => {
           const isActive = tab.key === activeKind;
           return (
             <button
               key={tab.key}
               type="button"
-              className={isActive ? 'ww-tab ww-tab--active' : 'ww-tab'}
+              className={isActive ? 'wa-tab wa-tab--active' : 'wa-tab'}
               aria-current={isActive ? 'page' : undefined}
               data-view={tab.view}
-              data-testid={`ww-topbar-tab-${tab.key}`}
+              data-testid={`wa-topbar-tab-${tab.key}`}
               onClick={() => onNavigate({ kind: tab.key })}
             >
               <Icon name={tab.icon} size={16} />
@@ -65,25 +65,25 @@ export function TopBar({
           );
         })}
       </nav>
-      <div className="ww-topbar__spacer" />
+      <div className="wa-topbar__spacer" />
       {generating ? (
         <button
           type="button"
-          className="ww-topbar__progress"
-          data-testid="ww-progress-dot"
+          className="wa-topbar__progress"
+          data-testid="wa-progress-dot"
           aria-label="生成任务运行中，查看进度"
           aria-expanded={progressCardOpen}
-          aria-controls="ww-progress-card"
+          aria-controls="wa-progress-card"
           onClick={onToggleProgressCard}
         >
-          <Icon name="loader-circle" size={16} className="ww-topbar__progress-icon" />
+          <Icon name="loader-circle" size={16} className="wa-topbar__progress-icon" />
           <span>{t('topbar.generating')}</span>
         </button>
       ) : null}
       <button
         type="button"
-        className="ww-topbar__conn"
-        data-testid="ww-topbar-conn"
+        className="wa-topbar__conn"
+        data-testid="wa-topbar-conn"
         onClick={() => onNavigate({ kind: 'settings' })}
         aria-label={connection.configured ? '公众号已连接，打开设置' : '公众号未配置，打开设置'}
       >
@@ -93,8 +93,8 @@ export function TopBar({
       </button>
       <button
         type="button"
-        className="ww-topbar__settings"
-        data-testid="ww-topbar-settings"
+        className="wa-topbar__settings"
+        data-testid="wa-topbar-settings"
         aria-label="设置"
         aria-current={route.kind === 'settings' ? 'page' : undefined}
         onClick={() => onNavigate({ kind: 'settings' })}

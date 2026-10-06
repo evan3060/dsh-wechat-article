@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fetchArticleText } from '@/host/hotspot-digest';
-import { WeWriteService } from '@/host/service';
-import { WewriteServiceError } from '@/host/service-errors';
+import { WeChatArticleService } from '@/host/service';
+import { WeChatArticleServiceError } from '@/host/service-errors';
 import type { LlmService } from '@/host/platform';
 import { MemoryDomain, makeCredentials, silentLogger } from './service-harness';
 
@@ -50,7 +50,7 @@ async function makeService(
   llm: LlmService,
   options?: { fetchImpl?: typeof fetch; digestTimeoutMs?: number; skipLlmConfig?: boolean },
 ) {
-  const service = await WeWriteService.open({
+  const service = await WeChatArticleService.open({
     domain: new MemoryDomain(),
     credentials: makeCredentials().service,
     llm,
@@ -69,7 +69,7 @@ async function rejectInfo(promise: Promise<unknown>): Promise<{ code: string; me
   try {
     await promise;
   } catch (error) {
-    if (error instanceof WewriteServiceError) return { code: error.code, message: error.message };
+    if (error instanceof WeChatArticleServiceError) return { code: error.code, message: error.message };
     return { code: `non-coded:${error instanceof Error ? error.message : String(error)}`, message: '' };
   }
   return { code: 'no-error-thrown', message: '' };
@@ -209,7 +209,7 @@ describe('digestHotspotItem（uiux v0.3 §1 服务层）', () => {
 
     expect(llm.calls.length).toBe(1);
     const options = llm.calls[0];
-    expect(options.purpose).toBe('wewrite-hotspot-item-digest');
+    expect(options.purpose).toBe('wechat-article-hotspot-item-digest');
     expect(options.provider).toBe('zhipu');
     expect(options.model).toBe('glm-4.5-flash');
     // bigmodel 1214 规则：带 thinking 参数的请求 max_tokens 必须 >32000（宿主 reasoning 可被用户调高）

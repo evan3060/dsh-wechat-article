@@ -1,5 +1,5 @@
 /**
- * storage domain schema（Spec §6 / 架构 §5）：单一 domain `dsh-wewrite` v1。
+ * storage domain schema（Spec §6 / 架构 §5）：单一 domain `dsh-wechat-article` v1。
  * zod schema 即权威；全部记录带 v 字段做记录级演进（架构 §9.6）。
  * 介质版本不符时 storageDomain.open 拒绝——天然迁移闸门。
  */
@@ -26,7 +26,7 @@ export const SettingsRecordSchema = z.strictObject({
     .default('1024x1024'),
   llmDefault: LlmOverrideSchema.default({}),
   imageProviders: z.array(ImageProviderConfigSchema).default([
-    { providerId: 'openai', credentialRef: 'WEWRITE_IMG_OPENAI' },
+    { providerId: 'openai', credentialRef: 'WECHAT_ARTICLE_IMG_OPENAI' },
   ]),
   agentToolsEnabled: z.boolean().default(false),
   runHistoryLimit: z.number().int().min(1).max(1000).default(200),
@@ -146,8 +146,8 @@ export const INITIAL_GLOBAL: GlobalState = {
 
 export const domainSpec = {
   // 存储单元名受平台 UNIT_NAME_RE（/^[a-z][a-z0-9_]*$/）约束，连字符非法——
-  // 用下划线形态，与 cordis 插件名（dsh-wewrite）区分。
-  name: 'dsh_wewrite',
+  // 用下划线形态，与 cordis 插件名（dsh-wechat-article）区分。
+  name: 'dsh_wechat_article',
   version: 1,
   global: { schema: GlobalStateSchema, initial: INITIAL_GLOBAL },
   tables: {
@@ -158,4 +158,4 @@ export const domainSpec = {
   },
 } as const;
 
-export type WewriteDomainSpec = typeof domainSpec;
+export type WeChatArticleDomainSpec = typeof domainSpec;

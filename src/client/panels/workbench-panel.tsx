@@ -12,7 +12,7 @@ import { EditorPanel } from './editor-panel';
  * 左 ArticleRail（240px 可折叠）+ 右主区（EditorPanel 或零文章 StartupCard）。
  * home = 主区载入最近编辑一篇；article = 聚焦态载入指定文章（rail 高亮该行）。
  * 非路由态（不进 Route）：rail 折叠（持久化 ww.rail.collapsed）、门禁面板开合。
- * 窄态 <900px：rail 整体替换为文章下拉（ww-rail-select）——有文章挂编辑器页头最左，
+ * 窄态 <900px：rail 整体替换为文章下拉（wa-rail-select）——有文章挂编辑器页头最左，
  * 零文章挂主区顶部窄条（下拉内「新文章」引导聚焦 StartupCard 输入框，A04 修复）。
  */
 
@@ -73,10 +73,10 @@ export function WorkbenchPanel({ articleId }: { articleId?: string }) {
   ) : (
     <button
       type="button"
-      className="ww-rail__toggle"
-      data-testid="ww-rail-toggle"
+      className="wa-rail__toggle"
+      data-testid="wa-rail-toggle"
       aria-expanded={!railCollapsed}
-      aria-controls="ww-rail"
+      aria-controls="wa-rail"
       aria-label={railCollapsed ? '展开文章栏' : '折叠文章栏'}
       onClick={() => setRailCollapsed((collapsed) => !collapsed)}
     >
@@ -85,14 +85,14 @@ export function WorkbenchPanel({ articleId }: { articleId?: string }) {
   );
 
   return (
-    <section className="ww-workbench" data-testid="ww-workbench">
+    <section className="wa-workbench" data-testid="wa-workbench">
       {!narrow ? (
         <ArticleRail articles={articles} runs={runs} currentId={currentId} collapsed={railCollapsed} onOpenArticle={openArticle} />
       ) : null}
-      <div className="ww-workbench__main">
+      <div className="wa-workbench__main">
         {narrow && workbenchEmpty ? (
-          /* A04：窄态零文章无编辑器页头——下拉位挂主区顶部窄条，保证 ww-rail-select 常在 */
-          <div className="ww-workbench__narrow-bar">{railSelect}</div>
+          /* A04：窄态零文章无编辑器页头——下拉位挂主区顶部窄条，保证 wa-rail-select 常在 */
+          <div className="wa-workbench__narrow-bar">{railSelect}</div>
         ) : null}
         {workbenchEmpty ? (
           <StartupCard inputRef={startupInputRef} />
@@ -133,14 +133,14 @@ function RailSelect({
       anchor={
         <button
           type="button"
-          className="ww-rail-select"
-          data-testid="ww-rail-select"
+          className="wa-rail-select"
+          data-testid="wa-rail-select"
           aria-expanded={open}
           aria-haspopup="menu"
           aria-label="选择文章"
           onClick={() => setOpen((value) => !value)}
         >
-          <span className="ww-rail-select__title">{current?.title ?? '选择文章'}</span>
+          <span className="wa-rail-select__title">{current?.title ?? '选择文章'}</span>
           <Icon name="chevron-down" size={16} />
         </button>
       }

@@ -1,11 +1,11 @@
 /**
- * wewrite_run 工具（Spec §5 / architecture §4.2）：启动管线并等到终态才 settle。
+ * wechat_run 工具（Spec §5 / architecture §4.2）：启动管线并等到终态才 settle。
  * abort 转发：exec.signal → service.cancelRun（D11）；参数非法返回结构化错误不抛异常。
  */
 
 import type { RunRecord } from '../domain';
-import type { ToolRunContext, WewriteToolDefinition } from '../platform';
-import type { WeWriteService } from '../service';
+import type { ToolRunContext, WeChatArticleToolDefinition } from '../platform';
+import type { WeChatArticleService } from '../service';
 import { asArgsRecord, callView, coerceInteger, errorToCodeMessage, jsonSchema, optionalString, resultView, textBlocks, toolError } from './output-helpers';
 
 const TERMINAL_STATUSES = new Set(['succeeded', 'failed', 'cancelled', 'interrupted']);
@@ -106,7 +106,7 @@ function parseRunArgs(args: unknown): RunToolArgs | { error: ReturnType<typeof t
 }
 
 /** RunRecord → canonical value（gatePassed 从 gates 步状态推断；title/digest 内存查文章）。 */
-function recordToValue(service: WeWriteService, record: RunRecord | undefined, runId: string): Record<string, unknown> {
+function recordToValue(service: WeChatArticleService, record: RunRecord | undefined, runId: string): Record<string, unknown> {
   if (!record) return { ok: false, runId, status: 'failed', error: { code: 'run-completion-missing', message: '运行终态不可得（详情见写作台运行历史）' } };
   const ok = record.status === 'succeeded';
   const gatesStep = record.steps.find((step) => step.name === 'gates');
@@ -123,7 +123,7 @@ function recordToValue(service: WeWriteService, record: RunRecord | undefined, r
   };
 }
 
-function lookupArticle(service: WeWriteService, articleId: string): { title?: string; digest?: string } | undefined {
+function lookupArticle(service: WeChatArticleService, articleId: string): { title?: string; digest?: string } | undefined {
   try {
     const detail = service.getArticle(articleId);
     return detail ? { title: detail.title, digest: detail.digest } : undefined;
@@ -137,11 +137,11 @@ function topicFromArgs(args: unknown): string {
   return typeof topic === 'string' ? topic : '';
 }
 
-export function buildRunTool(service: WeWriteService): WewriteToolDefinition {
+export function buildRunTool(service: WeChatArticleService): WeChatArticleToolDefinition {
   return {
-    name: 'wewrite_run',
+    name: 'wechat_run',
     description:
-      '运行一次 WeWrite 公众号写作管线：选题→大纲→成稿→质量门禁→渲染→配图，全程数分钟，完成后返回文章标识与摘要。'
+      '运行一次 公众号写作管线：选题→大纲→成稿→质量门禁→渲染→配图，全程数分钟，完成后返回文章标识与摘要。'
       + '把用户在对话里给出的标题/总体思路/大纲/参考链接蒸馏进 title/approach/outline/sources 对应参数（分层硬约束：标题与思路照办、大纲节名原样保留、给定来源必须以可见 URL 引用且不得编造其他来源）。'
       + '用户只给一句话主题时不追问、直接运行。仅在用户明确表达写作意图时调用；返回值只进草稿相关流程，本插件不群发。',
     timeoutMs: 600000,
@@ -183,7 +183,7 @@ export function buildRunTool(service: WeWriteService): WewriteToolDefinition {
         if (record.ok === true) {
           if (record.title) lines.push(`标题：《${String(record.title)}》`);
           if (typeof record.digest === 'string' && record.digest) lines.push(`摘要：${record.digest}`);
-          lines.push('全文与门禁报告可在 WeWrite 写作台查看与精修。');
+          lines.push('全文与门禁报告可在 公众号写作台查看与精修。');
         } else {
           lines.push(describeFailure(record));
         }
@@ -200,7 +200,7 @@ export function buildRunTool(service: WeWriteService): WewriteToolDefinition {
           ...(typeof record.digest === 'string' && record.digest ? { digest: record.digest.slice(0, 200) } : {}),
           ...(typeof record.gatePassed === 'boolean' ? { gatePassed: record.gatePassed } : {}),
           ...(record.ok === false && record.error ? { error: record.error } : {}),
-          tool: 'wewrite_run',
+          tool: 'wechat_run',
           topic: topicFromArgs(args),
         };
       },
@@ -278,11 +278,11 @@ export function buildRunTool(service: WeWriteService): WewriteToolDefinition {
     presentResult: (_args, result) => {
       const meta = asArgsRecord(result.meta);
       if (result.isError || meta.ok === false) {
-        return resultView('写作管线失败', textBlocks(describeFailure(meta), '可到 WeWrite 写作台运行历史查看失败步骤与产物。'));
+        return resultView('写作管线失败', textBlocks(describeFailure(meta), '可到 公众号写作台运行历史查看失败步骤与产物。'));
       }
       const title = typeof meta.title === 'string' && meta.title ? meta.title : '未命名';
       const digest = typeof meta.digest === 'string' && meta.digest ? `摘要：${meta.digest}` : '已生成全文。';
-      return resultView(`《${title}》成稿`, textBlocks(digest, '可在 WeWrite 写作台打开精修（侧栏入口）。'));
+      return resultView(`《${title}》成稿`, textBlocks(digest, '可在 公众号写作台打开精修（侧栏入口）。'));
     },
   };
 }

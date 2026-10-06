@@ -7,7 +7,7 @@
  */
 
 export interface LlmStreamOptions {
-  /** 辅助调用标注（F22）：wewrite-pipeline。 */
+  /** 辅助调用标注（F22）：wechat-article-pipeline。 */
   readonly purpose: string;
   /** 宿主 GenerateOptions.system：系统提示独立字段，不进 messages。 */
   readonly system: string;
@@ -46,10 +46,10 @@ function toHostOptions(options: LlmStreamOptions): Record<string, unknown> {
     system: options.system,
     messages: [
       {
-        id: `wewrite-${Date.now().toString(36)}`,
+        id: `wechat-article-${Date.now().toString(36)}`,
         role: 'user',
         content: [{ type: 'text', text: options.user }],
-        source: { kind: 'plugin', plugin: 'dsh-wewrite', form: 'live' },
+        source: { kind: 'plugin', plugin: 'dsh-wechat-article', form: 'live' },
       },
     ],
     ...(options.maxTokens ? { maxTokens: options.maxTokens } : {}),

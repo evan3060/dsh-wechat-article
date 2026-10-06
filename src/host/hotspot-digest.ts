@@ -7,7 +7,7 @@
 import type { HotspotDigestItem, HotspotItemDigest } from '../shared/contract';
 import { streamLlmText, type PipelineLlm } from './pipeline/llm';
 import type { HostLogger } from './platform';
-import { WewriteServiceError } from './service-errors';
+import { WeChatArticleServiceError } from './service-errors';
 
 export interface HotspotDigestDeps {
   readonly llm: PipelineLlm;
@@ -191,7 +191,7 @@ export async function digestHotspotItem(deps: HotspotDigestDeps, item: HotspotDi
   const startedAt = Date.now();
   const { provider, model } = deps;
   if (!provider || !model) {
-    throw new WewriteServiceError('llm-not-configured', '尚未配置默认模型：请先到「设置」里选择 AI 供应商与模型，再生成速览');
+    throw new WeChatArticleServiceError('llm-not-configured', '尚未配置默认模型：请先到「设置」里选择 AI 供应商与模型，再生成速览');
   }
   const articleText = await fetchArticleText(item.url, deps.fetchImpl ?? fetch);
   const domain = hostOf(item.url);
@@ -201,7 +201,7 @@ export async function digestHotspotItem(deps: HotspotDigestDeps, item: HotspotDi
     const outcome = await streamLlmText(
       deps.llm,
       {
-        purpose: 'wewrite-hotspot-item-digest',
+        purpose: 'wechat-article-hotspot-item-digest',
         system: digestItemSystemPrompt(),
         user:
           articleText !== null
@@ -218,18 +218,18 @@ export async function digestHotspotItem(deps: HotspotDigestDeps, item: HotspotDi
       controller.signal,
     );
     if (outcome.status === 'aborted') {
-      throw new WewriteServiceError('digest-timeout', `AI 速览生成超时（${Math.round(deps.timeoutMs / 1000)} 秒），已取消，请重试`);
+      throw new WeChatArticleServiceError('digest-timeout', `AI 速览生成超时（${Math.round(deps.timeoutMs / 1000)} 秒），已取消，请重试`);
     }
     // digest-item-error 分流：LLM 供应商错误的 code/message 原样透传
-    if (outcome.status === 'error') throw new WewriteServiceError(outcome.code, outcome.message);
-    if (!outcome.text) throw new WewriteServiceError('digest-empty', '模型未返回任何内容，请重试');
+    if (outcome.status === 'error') throw new WeChatArticleServiceError(outcome.code, outcome.message);
+    if (!outcome.text) throw new WeChatArticleServiceError('digest-empty', '模型未返回任何内容，请重试');
     const source = articleText !== null ? 'article' : 'title';
     deps.logger.info(
       `hotspot item digest ok：rank=${item.rank} source=${source} model=${model} body=${articleText?.length ?? 0} ${Date.now() - startedAt}ms`,
     );
     return { digest: outcome.text, source, model, generatedAtIso: deps.nowIso() };
   } catch (error) {
-    const code = error instanceof WewriteServiceError ? error.code : 'unknown';
+    const code = error instanceof WeChatArticleServiceError ? error.code : 'unknown';
     deps.logger.warn(`hotspot item digest failed（rank=${item.rank} ${code}）：${error instanceof Error ? error.message : String(error)}`);
     throw error;
   } finally {

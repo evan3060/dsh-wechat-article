@@ -18,7 +18,7 @@ export { assert };
 
 export const E2E_DIR = dirname(fileURLToPath(import.meta.url));
 export const HOSTCTL = join(E2E_DIR, '../../scripts/hostctl.mjs');
-export const STORAGE_PATH = join(homedir(), '.dsh/storages/dsh_wewrite.json');
+export const STORAGE_PATH = join(homedir(), '.dsh/storages/dsh_wechat_article.json');
 
 // ---------- 断言封装（失败消息带定位说明，截图由 runner 统一落 artifacts） ----------
 
@@ -81,9 +81,9 @@ export async function pollUntil(fn, { timeout = 15000, interval = 500, msg } = {
 // ---------- 顶栏导航（DOM 契约 §1-1） ----------
 
 export const TAB = {
-  home: '[data-testid="ww-topbar-tab-home"]',
-  hotspots: '[data-testid="ww-topbar-tab-hotspots"]',
-  schedule: '[data-testid="ww-topbar-tab-schedule"]',
+  home: '[data-testid="wa-topbar-tab-home"]',
+  hotspots: '[data-testid="wa-topbar-tab-hotspots"]',
+  schedule: '[data-testid="wa-topbar-tab-schedule"]',
 };
 
 /** 点顶栏导航对象并断言 aria-current=page 跟随 */
@@ -110,7 +110,7 @@ export async function gotoWorkbench(page) {
  * 不依赖上一用例尾停在哪个视图；改完视图的用例应收尾复位 split（宽态默认）。
  */
 export async function setEditorView(page, view, { timeout = 6000 } = {}) {
-  const tab = page.locator(`[data-testid="ww-view-tab-${view}"]`).first();
+  const tab = page.locator(`[data-testid="wa-view-tab-${view}"]`).first();
   await tab.waitFor({ state: 'visible', timeout });
   await tab.click();
   await pollUntil(
@@ -140,24 +140,24 @@ export function readStorageRaw() {
 // ---------- 常用复合锚点 ----------
 
 export const LOC = {
-  panelRoot: '.dsh-wewrite-panel',
-  content: '#wewrite-panel-content',
-  topbar: '[data-testid="ww-topbar"]',
-  topbarNav: 'nav[aria-label="WeWrite 导航"]',
-  settingsGear: '[data-testid="ww-topbar-settings"]',
-  conn: '[data-testid="ww-topbar-conn"]',
-  progressDot: '[data-testid="ww-progress-dot"]',
-  progressCard: '[data-testid="ww-progress-card"]',
-  workbench: '[data-testid="ww-workbench"]',
-  rail: '[data-testid="ww-rail"]',
-  railList: '.ww-rail__list',
-  railNewForm: '[data-testid="ww-rail-new"]',
-  startup: '[data-testid="ww-startup"]',
-  startupInput: '[data-testid="ww-startup-input"]',
-  startupSubmit: '[data-testid="ww-startup-submit"]',
-  gateOverlay: '[data-testid="ww-gate-overlay"]',
-  gateChip: '[data-testid="ww-gate-chip"]',
+  panelRoot: '.dsh-wechat-article-panel',
+  content: '#wechat-article-panel-content',
+  topbar: '[data-testid="wa-topbar"]',
+  topbarNav: 'nav[aria-label="公众号导航"]',
+  settingsGear: '[data-testid="wa-topbar-settings"]',
+  conn: '[data-testid="wa-topbar-conn"]',
+  progressDot: '[data-testid="wa-progress-dot"]',
+  progressCard: '[data-testid="wa-progress-card"]',
+  workbench: '[data-testid="wa-workbench"]',
+  rail: '[data-testid="wa-rail"]',
+  railList: '.wa-rail__list',
+  railNewForm: '[data-testid="wa-rail-new"]',
+  startup: '[data-testid="wa-startup"]',
+  startupInput: '[data-testid="wa-startup-input"]',
+  startupSubmit: '[data-testid="wa-startup-submit"]',
+  gateOverlay: '[data-testid="wa-gate-overlay"]',
+  gateChip: '[data-testid="wa-gate-chip"]',
   settingsNav: 'nav[aria-label="设置分组"]',
-  viewTabs: '.ww-view-tabs[aria-label="编辑器视图"]',
-  toasts: '.ww-toasts',
+  viewTabs: '.wa-view-tabs[aria-label="编辑器视图"]',
+  toasts: '.wa-toasts',
 };

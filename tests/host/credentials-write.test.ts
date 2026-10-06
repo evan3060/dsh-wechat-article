@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { WeWriteService } from '@/host/service';
-import { WewriteServiceError } from '@/host/service-errors';
+import { WeChatArticleService } from '@/host/service';
+import { WeChatArticleServiceError } from '@/host/service-errors';
 import { CredentialsDescriptorSchema } from '@/shared/contract';
 import { makeCredentials, makeLlm, MemoryDomain, silentLogger } from './service-harness';
 
@@ -26,7 +26,7 @@ async function makeService() {
   const domain = new MemoryDomain();
   const credentials = makeCredentials();
   const llm = makeLlm();
-  const service = await WeWriteService.open({
+  const service = await WeChatArticleService.open({
     domain,
     credentials: credentials.service,
     llm: { stream: llm.stream },
@@ -40,15 +40,15 @@ describe('AC-5 凭据 write-only：service 层（qa-test-plan §10-1 补齐）',
   it('setCredential 恰好一次经 credentials.set 写入，参数精确，返回 {ok:true}', async () => {
     const { service, credentials } = await makeService();
 
-    const result = await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    const result = await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     expect(result).toEqual({ ok: true });
-    expect(credentials.calls.set).toEqual([['WEWRITE_WECHAT_SECRET', WECHAT_SECRET]]);
+    expect(credentials.calls.set).toEqual([['WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET]]);
   });
 
   it('凭据只落 credentials 服务：global 状态与 settings 无机密痕迹', async () => {
     const { service, domain } = await makeService();
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     const globalState = domain.global.get() as Record<string, unknown>;
     expect(JSON.stringify(globalState)).not.toContain(WECHAT_SECRET);
@@ -74,21 +74,21 @@ describe('AC-5 凭据 write-only：service 层（qa-test-plan §10-1 补齐）',
   it('config/set 不是凭据写面：注入机密字段被 strictObject 拒绝（config-invalid）', async () => {
     const { service } = await makeService();
 
-    const attempt = service.setConfig({ WEWRITE_WECHAT_SECRET: 'injected-secret' } as Record<string, unknown>);
+    const attempt = service.setConfig({ WECHAT_ARTICLE_WECHAT_SECRET: 'injected-secret' } as Record<string, unknown>);
 
-    await expect(attempt).rejects.toBeInstanceOf(WewriteServiceError);
-    const code = await attempt.catch((error: WewriteServiceError) => error.code);
+    await expect(attempt).rejects.toBeInstanceOf(WeChatArticleServiceError);
+    const code = await attempt.catch((error: WeChatArticleServiceError) => error.code);
     expect(code).toBe('config-invalid');
   });
 
   it('getConfig 回显面 write-only：描述符仅 configured/writable（source 由视图层剥离），不含原文', async () => {
     const { service, credentials } = await makeService();
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     const config = await service.getConfig();
 
-    expect(credentials.calls.describe).toContain('WEWRITE_WECHAT_SECRET');
-    const descriptor = config.credentials['WEWRITE_WECHAT_SECRET'];
+    expect(credentials.calls.describe).toContain('WECHAT_ARTICLE_WECHAT_SECRET');
+    const descriptor = config.credentials['WECHAT_ARTICLE_WECHAT_SECRET'];
     expect(Object.keys(descriptor ?? {}).sort()).toEqual(['configured', 'writable']);
     expect(descriptor).toEqual({ configured: true, writable: true });
     expect(JSON.stringify(config)).not.toContain(WECHAT_SECRET);
@@ -103,17 +103,17 @@ describe('AC-5 凭据 write-only：service 层（qa-test-plan §10-1 补齐）',
 
   it('snapshot 全响应不含凭据原文', async () => {
     const { service } = await makeService();
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     const snapshot = await service.snapshot();
 
     expect(JSON.stringify(snapshot)).not.toContain(WECHAT_SECRET);
-    expect(snapshot.config.credentials['WEWRITE_WECHAT_SECRET']).toEqual({ configured: true, writable: true });
+    expect(snapshot.config.credentials['WECHAT_ARTICLE_WECHAT_SECRET']).toEqual({ configured: true, writable: true });
   });
 
   it('读路径 describe-only：getConfig/snapshot 全程不触发 credentials.resolve（原文不出库）', async () => {
     const { service, credentials } = await makeService();
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
     credentials.calls.resolve.length = 0;
 
     await service.getConfig();
@@ -125,11 +125,11 @@ describe('AC-5 凭据 write-only：service 层（qa-test-plan §10-1 补齐）',
 
   it('unset 后描述符回落 configured=false（回显面与存储面一致）', async () => {
     const { service, credentials } = await makeService();
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
-    await credentials.service.unset('WEWRITE_WECHAT_SECRET');
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
+    await credentials.service.unset('WECHAT_ARTICLE_WECHAT_SECRET');
 
     const config = await service.getConfig();
 
-    expect(config.credentials['WEWRITE_WECHAT_SECRET']).toEqual({ configured: false, writable: true });
+    expect(config.credentials['WECHAT_ARTICLE_WECHAT_SECRET']).toEqual({ configured: false, writable: true });
   });
 });

@@ -1,4 +1,4 @@
-# dsh-wewrite QA 测试计划（Phase 2 先写测试轮产出）
+# dsh-wechat-article QA 测试计划（Phase 2 先写测试轮产出）
 
 > 作者：严过关（MVP 专家团 QA），2026-08-18
 > 依据：docs/spec.md v0.1.0（§2/§5/§6/§9/§11/§12）+ docs/tech-architecture.md v0.1（§5/§6/§7/§8）+ .agent/memory/pitfalls.jsonl
@@ -36,7 +36,7 @@
 | `npm run typecheck`（tsc --noEmit） | strict ESM | 26 个 TS2307（纯模块缺失，零连锁噪音） |
 | `npm run check:p0` | P0 视觉门禁扫描（scripts/checks/scan-p0.mjs） | PASS（0 违规） |
 
-- 脚手架：package.json（name=dsh-wewrite, type=module, engines `^22.19.0 \|\| >=24.0.0`）、tsconfig.json（ESM/bundler/strict）、vitest.config.ts（alias `@/` → `src/`）、eslint.config.js。
+- 脚手架：package.json（name=dsh-wechat-article, type=module, engines `^22.19.0 \|\| >=24.0.0`）、tsconfig.json（ESM/bundler/strict）、vitest.config.ts（alias `@/` → `src/`）、eslint.config.js。
 - 运行时依赖：zod ^4.4.3（Spec 锚 ^4.1.5，解析到最新 4.x）、rrule ^2.8.1（**事实修正**，见 §7.1）。
 - devDependencies：vitest ^4.1.10、typescript ^6.0.3、eslint ^10.8.1、typescript-eslint ^8.67.0、@types/node ^26.2.0。
 - scan-p0.mjs 检测能力已用已知违规样本验证（emoji/紫粉渐变/三类占位文案全命中，`preview-ugc` 与 `p0-allow:rule-quote` 豁免生效，合法蓝色渐变零误报），并对 tests/、脚本自身、src/、docs/DESIGN.md 实扫通过。
@@ -47,7 +47,7 @@
 
 | # | 测试文件（红） | 需实现模块 | 钉定的关键导出 |
 |---|---|---|---|
-| 1 | tests/shared/contract.test.ts | `src/shared/contract.ts` | `RPC_CHANNEL='dsh-wewrite'`、`RPC_AUTHORITY='loopback'`、`CONTRACT_VERSION=1`、`RPC_ENDPOINTS`（20 端点全集）、`rpcContract`（每端点 `{request,response}` zod schema，顶层 strict）、`RunParamsSchema`、`HotspotItemSchema`、`ArticleListItemSchema`、`ArticleDetailSchema`、`RunSummarySchema`、`ScheduleViewModelSchema`、`ConfigViewSchema`、`SnapshotResponseSchema` |
+| 1 | tests/shared/contract.test.ts | `src/shared/contract.ts` | `RPC_CHANNEL='dsh-wechat-article'`、`RPC_AUTHORITY='loopback'`、`CONTRACT_VERSION=1`、`RPC_ENDPOINTS`（20 端点全集）、`rpcContract`（每端点 `{request,response}` zod schema，顶层 strict）、`RunParamsSchema`、`HotspotItemSchema`、`ArticleListItemSchema`、`ArticleDetailSchema`、`RunSummarySchema`、`ScheduleViewModelSchema`、`ConfigViewSchema`、`SnapshotResponseSchema` |
 | 2 | tests/host/domain.test.ts | `src/host/domain.ts` | `domainSpec`（name/version/tables 四表）、`SettingsRecordSchema`（默认值见 §7.2）、`ArticleRecordSchema`、`RunRecordSchema`、`ScheduleRecordSchema`、`ImageRecordSchema` |
 | 3 | tests/host/pipeline-engine.test.ts | `src/host/pipeline/engine.ts` | `PIPELINE_STEP_NAMES=['topic','outline','draft','gates','render','images']`、`RunStore`（put/get/update/all）、`PipelineLlm`（stream 返回 text/finish chunk 流）、`createPipelineEngine(deps)`→`{start(opts),cancel(runId),resumeInterrupted()}`、`pruneTerminalRuns(runs,limit)` |
 | 4 | tests/host/hotspots.test.ts | `src/host/pipeline/steps/topic.ts` | `aggregateHotspots(sources,limit)`→`{items,failures}`（AC-3 隔离语义） |

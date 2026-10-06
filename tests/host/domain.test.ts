@@ -76,9 +76,9 @@ const imageRecord = () => ({
   createdAt: '2026-08-18T04:03:00.000Z',
 });
 
-describe('domainSpec（单一 domain dsh_wewrite v1，ADR-0005）', () => {
+describe('domainSpec（单一 domain dsh_wechat_article v1，ADR-0005）', () => {
   it('domain 名与版本锁定（平台 UNIT_NAME_RE 禁连字符，存储单元名用下划线形态）', () => {
-    expect(domainSpec.name).toBe('dsh_wewrite');
+    expect(domainSpec.name).toBe('dsh_wechat_article');
     expect(domainSpec.name).toMatch(/^[a-z][a-z0-9_]*$/);
     expect(domainSpec.version).toBe(1);
   });
@@ -130,7 +130,7 @@ describe('SettingsRecord（global，非机密项；AC-5/架构 §8）', () => {
 
   it('imageProviders 每项含 providerId 与 credentialRef；providerId 必须在 9 家集合内', () => {
     const valid = SettingsRecordSchema.safeParse({
-      imageProviders: [{ providerId: 'doubao', credentialRef: 'WEWRITE_IMG_DOUBAO' }],
+      imageProviders: [{ providerId: 'doubao', credentialRef: 'WECHAT_ARTICLE_IMG_DOUBAO' }],
     });
     expect(valid.success).toBe(true);
 

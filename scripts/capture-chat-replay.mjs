@@ -2,7 +2,7 @@
 /**
  * 演示采集 v3（2026-08-24）：f4ac run 六步全绿后，重开历史会话截图 settled 成稿卡
  * + turnTail 产物行（同时验证 S3 回放：settled 卡从持久化 meta 重建），
- * 再补 /wewrite 命令路径截图。宿主 3080。
+ * 再补 /wechat-article 命令路径截图。宿主 3080。
  */
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
@@ -29,14 +29,14 @@ for (const label of ['Continue', '继续', 'Configure later', '稍后配置', 'S
 const sess = page.getByText(/为什么程序员应该写技术博客/).first();
 if (await sess.count()) { await sess.click().catch(() => {}); await sleep(5000); }
 
-const runCard = page.locator('.ww-chatcard--run').first();
+const runCard = page.locator('.wa-chatcard--run').first();
 if (await runCard.count()) {
   const txt = (await runCard.innerText()).replace(/\n/g, ' | ');
   console.log('回放 settled 运行卡 ✅:', txt.slice(0, 220));
 } else {
   console.log('回放未见运行卡（选择器/会话没对上？）');
 }
-const tail = page.locator('.ww-chatcard--tail').first();
+const tail = page.locator('.wa-chatcard--tail').first();
 console.log('tail 产物行:', (await tail.count()) ? (await tail.innerText()).replace(/\n/g, ' | ').slice(0, 180) : '未出现');
 await sleep(2000);
 await shot(page, '10-chat-final');
@@ -46,10 +46,10 @@ const openBtn = page.getByRole('button', { name: /打开写作台|在写作台�
 if (await openBtn.count()) {
   await openBtn.click().catch(() => {});
   await sleep(3000);
-  if (await page.locator('[data-testid="ww-overlay"]').count()) {
+  if (await page.locator('[data-testid="wa-overlay"]').count()) {
     console.log('卡片→浮层联动 ✅');
     await shot(page, '13-chat-card-to-overlay');
-    const esc = page.locator('[data-testid="ww-overlay-close"]').first();
+    const esc = page.locator('[data-testid="wa-overlay-close"]').first();
     if (await esc.count()) await esc.click().catch(() => {});
     await sleep(1500);
   }
@@ -57,19 +57,19 @@ if (await openBtn.count()) {
   console.log('「打开写作台」按钮未找到');
 }
 
-// /wewrite 命令路径
+// /wechat-article 命令路径
 const composer = page.getByPlaceholder(/describe|描述/i).first();
 if (await composer.count()) {
   await composer.click();
-  await composer.fill('/wewrite 一句话起稿：AI 时代的公众号写作工作流');
+  await composer.fill('/wechat-article 一句话起稿：AI 时代的公众号写作工作流');
   await composer.press('Enter');
-  console.log('② /wewrite 已提交');
+  console.log('② /wechat-article 已提交');
   await sleep(6000);
   await shot(page, '11-chat-command');
   const t0 = Date.now();
   let tails = 0;
   while (Date.now() - t0 < 420000) {
-    tails = await page.locator('.ww-chatcard--tail').count();
+    tails = await page.locator('.wa-chatcard--tail').count();
     if (tails >= 2) break; // 新产物行出现（原会话 1 条 + 新 1 条）
     await sleep(5000);
   }

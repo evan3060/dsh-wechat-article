@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { WeWriteService } from '@/host/service';
-import { WewriteServiceError } from '@/host/service-errors';
+import { WeChatArticleService } from '@/host/service';
+import { WeChatArticleServiceError } from '@/host/service-errors';
 import { ArticleRecordSchema, ImageRecordSchema } from '@/host/domain';
 import type { ArticleRecord, ImageRecord } from '@/host/domain';
 import { MemoryDomain, json, makeCredentials, makeFetch, makeLlm, silentLogger, type Route } from './service-harness';
@@ -12,7 +12,7 @@ import { MemoryDomain, json, makeCredentials, makeFetch, makeLlm, silentLogger, 
  * 兼收 AC-1 service 层遗留：draft/add 失败时文章不误标 pushed（qa-test-plan §5 AC-1 行登记项）。
  *
  * 本文件钉定 src/host/service.ts + wechat-flow.ts 的消费面：
- * - WeWriteService.open({domain, credentials, llm, fetchImpl?, now?})
+ * - WeChatArticleService.open({domain, credentials, llm, fetchImpl?, now?})
  * - service.saveArticle / startRun / pushArticleDraft / getArticle / listRuns
  * - 拒绝错误码：'gates-not-passed'（闸门）与 'cover-missing'（封面缺失）
  *
@@ -52,10 +52,10 @@ const draftFailRoutes: Route[] = wechatOkRoutes.slice(0, 4).concat([
 ]);
 
 async function makeService(routes: Route[], domain = new MemoryDomain()) {
-  const credentials = makeCredentials({ WEWRITE_IMG_OPENAI: OPENAI_KEY });
+  const credentials = makeCredentials({ WECHAT_ARTICLE_IMG_OPENAI: OPENAI_KEY });
   const llm = makeLlm(PASSING_DRAFT);
   const fetch = makeFetch(routes);
-  const service = await WeWriteService.open({
+  const service = await WeChatArticleService.open({
     domain,
     credentials: credentials.service,
     llm: { stream: llm.stream },
@@ -100,7 +100,7 @@ function seedCover(domain: MemoryDomain, articleId: string, imageId = 'img_seed_
   return image;
 }
 
-async function waitForTerminal(service: WeWriteService, runId: string, deadlineMs = 5000): Promise<void> {
+async function waitForTerminal(service: WeChatArticleService, runId: string, deadlineMs = 5000): Promise<void> {
   const startedAt = Date.now();
   for (;;) {
     const run = service.listRuns().find((entry) => entry.id === runId);
@@ -114,7 +114,7 @@ async function rejectCode(promise: Promise<unknown>): Promise<string> {
   try {
     await promise;
   } catch (error) {
-    if (error instanceof WewriteServiceError) return error.code;
+    if (error instanceof WeChatArticleServiceError) return error.code;
     if (error instanceof Error && 'code' in error && typeof (error as { code?: unknown }).code === 'string') {
       return (error as { code: string }).code;
     }
@@ -169,7 +169,7 @@ describe('AC-7 推送闸门：service 层（qa-test-plan §10-2 补齐）', () =
   it('真实管线全绿（真门禁通过）→ rendered 文章可推送（门禁过后可推的端到端链路）', async () => {
     const { service, domain } = await makeService(wechatOkRoutes);
     await service.setConfig({ wechatAppId: 'wx_test_appid' });
-    await service.setCredential('WEWRITE_WECHAT_SECRET', WECHAT_SECRET);
+    await service.setCredential('WECHAT_ARTICLE_WECHAT_SECRET', WECHAT_SECRET);
 
     const { runId } = service.startRun({
       trigger: 'manual',

@@ -19,7 +19,7 @@ const OUT_DIR = join(E2E_DIR, 'artifacts/qa-digest');
 mkdirSync(OUT_DIR, { recursive: true });
 
 const N_ITEMS = Number.parseInt(process.argv[2] ?? '8', 10) || 8;
-const DIGEST_LS = 'dsh-wewrite.hotspot-item-digests';
+const DIGEST_LS = 'dsh-wechat-article.hotspot-item-digests';
 /** 单条终态预算：抓原文 8s + LLM 45s + 余量。 */
 const PER_ITEM_TIMEOUT_MS = 75_000;
 
@@ -100,8 +100,8 @@ await clickTab(page, 'hotspots', { timeout: 10000 });
 
 console.log('[2] 等热榜终态 ...');
 const settled = await pollUntil(async () => {
-  const rows = await page.locator('.ww-hotspot-list .ww-hotspot').count();
-  const error = await page.locator('.ww-hotspots .ww-error').count();
+  const rows = await page.locator('.wa-hotspot-list .wa-hotspot').count();
+  const error = await page.locator('.wa-hotspots .wa-error').count();
   return rows > 0 || error > 0 ? { rows, error } : null;
 }, { timeout: 20000, msg: '热榜 20s 未就绪' });
 if (!settled.rows) throw new Error('热榜拉取失败态，无法测速览');
@@ -110,32 +110,32 @@ console.log(`    热榜 ${settled.rows} 条`);
 // 清当日逐条缓存（保证每条走真 RPC）
 await page.evaluate((k) => window.localStorage.removeItem(k), DIGEST_LS);
 
-const rows = page.locator('.ww-hotspot-list .ww-hotspot');
+const rows = page.locator('.wa-hotspot-list .wa-hotspot');
 const total = Math.min(N_ITEMS, settled.rows);
 const seenDomains = new Set();
 
 for (let i = 0; i < total; i++) {
   const li = rows.nth(i);
-  const rank = (await li.locator('.ww-hotspot__rank').innerText()).trim();
-  const title = (await li.locator('.ww-hotspot__title').innerText()).trim();
-  const meta = (await li.locator('.ww-hotspot__meta').innerText().catch(() => '')).trim();
+  const rank = (await li.locator('.wa-hotspot__rank').innerText()).trim();
+  const title = (await li.locator('.wa-hotspot__title').innerText()).trim();
+  const meta = (await li.locator('.wa-hotspot__meta').innerText().catch(() => '')).trim();
   const entry = { idx: i, rank, title, meta };
 
   console.log(`[3.${i + 1}] 展开 ${rank}：${title.slice(0, 60)} ...`);
   const t0 = Date.now();
-  await li.locator('.ww-hotspot__row').click();
+  await li.locator('.wa-hotspot__row').click();
 
-  const link = li.locator('.ww-hotspot__expand a.ww-link');
+  const link = li.locator('.wa-hotspot__expand a.wa-link');
   entry.url = (await link.getAttribute('href').catch(() => null)) ?? '';
   const domain = new URL(entry.url).hostname;
   seenDomains.add(domain);
 
   // 终态：error 块出现，或骨架消失且正文非空
   const outcome = await pollUntil(async () => {
-    const errCount = await li.locator('[data-testid="ww-hotspot-digest"] .ww-error').count();
+    const errCount = await li.locator('[data-testid="wa-hotspot-digest"] .wa-error').count();
     if (errCount > 0) return { kind: 'error' };
-    const skeleton = await li.locator('[data-testid="ww-hotspot-digest-body"] .ww-skeleton-block').count();
-    const text = (await li.locator('[data-testid="ww-hotspot-digest-body"]').innerText().catch(() => '')).trim();
+    const skeleton = await li.locator('[data-testid="wa-hotspot-digest-body"] .wa-skeleton-block').count();
+    const text = (await li.locator('[data-testid="wa-hotspot-digest-body"]').innerText().catch(() => '')).trim();
     if (skeleton === 0 && text.length > 0) return { kind: 'ready', text };
     return null;
   }, { timeout: PER_ITEM_TIMEOUT_MS, interval: 500, msg: `第 ${i + 1} 条 ${PER_ITEM_TIMEOUT_MS}ms 未出终态` }).catch((err) => ({ kind: 'timeout', text: err.message.slice(0, 200) }));
@@ -144,11 +144,11 @@ for (let i = 0; i < total; i++) {
   entry.terminal = outcome.kind;
 
   if (outcome.kind === 'error') {
-    entry.errorText = (await li.locator('[data-testid="ww-hotspot-digest"]').innerText()).trim();
+    entry.errorText = (await li.locator('[data-testid="wa-hotspot-digest"]').innerText()).trim();
   } else if (outcome.kind === 'ready') {
     entry.digestText = outcome.text;
-    entry.badge = (await li.locator('[data-testid="ww-hotspot-digest-source"]').innerText().catch(() => '')).trim();
-    entry.timeLabel = (await li.locator('.ww-hotspot__digest-time').innerText().catch(() => '')).trim();
+    entry.badge = (await li.locator('[data-testid="wa-hotspot-digest-source"]').innerText().catch(() => '')).trim();
+    entry.timeLabel = (await li.locator('.wa-hotspot__digest-time').innerText().catch(() => '')).trim();
     entry.structure = {
       lead: /这条在讲什么：|标题解读：/.test(outcome.text),
       points: outcome.text.split('\n').filter((l) => l.trim().startsWith('·')).length,
@@ -173,7 +173,7 @@ for (let i = 0; i < total; i++) {
   entry.hostFetchProbe = await probeHostFetch(entry.url);
 
   // 收起（下一条）
-  await li.locator('.ww-hotspot__row').click().catch(() => {});
+  await li.locator('.wa-hotspot__row').click().catch(() => {});
   await sleep(200);
   report.items.push(entry);
   console.log(`    → ${outcome.kind} ${entry.elapsedMs}ms badge=${entry.badge ?? '-'} probe=${entry.hostFetchProbe.ok ? '可抽正文' : entry.hostFetchProbe.reason}`);
@@ -183,10 +183,10 @@ for (let i = 0; i < total; i++) {
 {
   const li = rows.nth(0);
   const t0 = Date.now();
-  await li.locator('.ww-hotspot__row').click();
+  await li.locator('.wa-hotspot__row').click();
   const hit = await pollUntil(async () => {
-    const skeleton = await li.locator('[data-testid="ww-hotspot-digest-body"] .ww-skeleton-block').count();
-    const text = (await li.locator('[data-testid="ww-hotspot-digest-body"]').innerText().catch(() => '')).trim();
+    const skeleton = await li.locator('[data-testid="wa-hotspot-digest-body"] .wa-skeleton-block').count();
+    const text = (await li.locator('[data-testid="wa-hotspot-digest-body"]').innerText().catch(() => '')).trim();
     return skeleton === 0 && text.length > 0;
   }, { timeout: 5000, interval: 60, msg: '缓存重展开 5s 未出内容' }).then(() => true).catch(() => false);
   report.interactions.cacheReexpand = { instantHit: hit, ms: Date.now() - t0 };
@@ -197,11 +197,11 @@ for (let i = 0; i < total; i++) {
 {
   const first = rows.nth(0);
   const second = rows.nth(1);
-  await second.locator('.ww-hotspot__row').click();
+  await second.locator('.wa-hotspot__row').click();
   await sleep(600);
-  const firstExpanded = await first.locator('.ww-hotspot__expand').count();
-  const secondExpanded = await second.locator('.ww-hotspot__expand').count();
-  const secondDigestVisible = await second.locator('[data-testid="ww-hotspot-digest"]').count();
+  const firstExpanded = await first.locator('.wa-hotspot__expand').count();
+  const secondExpanded = await second.locator('.wa-hotspot__expand').count();
+  const secondDigestVisible = await second.locator('[data-testid="wa-hotspot-digest"]').count();
   report.interactions.expandSecondWhileFirstOpen = {
     firstExpandStillInDom: firstExpanded > 0,
     secondExpandInDom: secondExpanded > 0,
@@ -209,13 +209,13 @@ for (let i = 0; i < total; i++) {
   };
   await page.screenshot({ path: join(OUT_DIR, 'second-expanded-fullpage.png'), fullPage: true }).catch(() => {});
   // 再回第一条（应仍瞬出缓存）
-  await first.locator('.ww-hotspot__row').click();
+  await first.locator('.wa-hotspot__row').click();
   const back = await pollUntil(async () => {
-    const text = (await first.locator('[data-testid="ww-hotspot-digest-body"]').innerText().catch(() => '')).trim();
+    const text = (await first.locator('[data-testid="wa-hotspot-digest-body"]').innerText().catch(() => '')).trim();
     return text.length > 0;
   }, { timeout: 5000, interval: 60, msg: '切回第一条 5s 未出内容' }).then(() => true).catch(() => false);
   report.interactions.backToFirstAfterCollapse = { contentVisible: back };
-  await first.locator('.ww-hotspot__row').click().catch(() => {});
+  await first.locator('.wa-hotspot__row').click().catch(() => {});
 }
 
 // ── 交互 C：错误态重试（只对自然出现错误的条目做；没有错误则记录 untested）────
@@ -223,21 +223,21 @@ for (let i = 0; i < total; i++) {
   const errIdx = report.items.findIndex((e) => e.terminal === 'error');
   if (errIdx >= 0) {
     const li = rows.nth(errIdx);
-    await li.locator('.ww-hotspot__row').click();
-    const retry = li.locator('[data-testid="ww-hotspot-digest-retry"]');
+    await li.locator('.wa-hotspot__row').click();
+    const retry = li.locator('[data-testid="wa-hotspot-digest-retry"]');
     if (await retry.count()) {
       await retry.click();
       const t0 = Date.now();
       const after = await pollUntil(async () => {
-        const errCount = await li.locator('[data-testid="ww-hotspot-digest"] .ww-error').count();
+        const errCount = await li.locator('[data-testid="wa-hotspot-digest"] .wa-error').count();
         if (errCount > 0) return 'error';
-        const skeleton = await li.locator('[data-testid="ww-hotspot-digest-body"] .ww-skeleton-block').count();
-        const text = (await li.locator('[data-testid="ww-hotspot-digest-body"]').innerText().catch(() => '')).trim();
+        const skeleton = await li.locator('[data-testid="wa-hotspot-digest-body"] .wa-skeleton-block').count();
+        const text = (await li.locator('[data-testid="wa-hotspot-digest-body"]').innerText().catch(() => '')).trim();
         return skeleton === 0 && text.length > 0 ? 'ready' : null;
       }, { timeout: PER_ITEM_TIMEOUT_MS, interval: 500, msg: '重试后未出终态' }).catch(() => 'timeout');
       report.interactions.errorRetry = { itemIdx: errIdx, result: after, ms: Date.now() - t0 };
       await li.screenshot({ path: join(OUT_DIR, `retry-item-${errIdx + 1}.png`) }).catch(() => {});
-      await li.locator('.ww-hotspot__row').click().catch(() => {});
+      await li.locator('.wa-hotspot__row').click().catch(() => {});
     } else {
       report.interactions.errorRetry = { itemIdx: errIdx, note: '重试按钮未找到' };
     }

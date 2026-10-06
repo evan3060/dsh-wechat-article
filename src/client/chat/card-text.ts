@@ -1,12 +1,12 @@
 import { zh } from '../lib/i18n';
-import type { WewriteLocaleKey } from '../lib/i18n';
+import type { WeChatArticleLocaleKey } from '../lib/i18n';
 import type { Translate } from '../lib/context';
 
 /**
  * 聊天卡文案出口（坑#dsh-slot-props-t）：
  * 宿主塞给 slot 组件的 props.t 绑定的是 common 命名空间（查不到我们的键会回显
  * 裸键），卡片一律走本插件 ns 的 bind 结果——registerChat 装配时
- * setCardTranslator(ctx.locale.bind('wewrite'))，组件渲染时读该绑定；
+ * setCardTranslator(ctx.locale.bind('wechat-article'))，组件渲染时读该绑定；
  * 未装配（单测/降级）时回退 zh 词典原文。
  */
 
@@ -16,7 +16,7 @@ export function setCardTranslator(t: Translate): void {
   bound = t;
 }
 
-export type CardT = (key: WewriteLocaleKey, params?: Record<string, unknown>) => string;
+export type CardT = (key: WeChatArticleLocaleKey, params?: Record<string, unknown>) => string;
 
 /** {name} 占位符替换（宿主 locale bind 已插值的串再过一遍是无害 no-op）。 */
 function interpolate(text: string, params?: Record<string, unknown>): string {

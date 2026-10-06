@@ -15,7 +15,7 @@ for (const label of ['Continue', '继续', 'Configure later', '稍后配置', 'S
   const btn = page.getByRole('button', { name: label, exact: false });
   if (await btn.count()) { await btn.first().click().catch(() => {}); await sleep(2000); }
 }
-console.log('STEP1 sidebar entry:', await page.locator('[data-testid="ww-sidebar-entry"]').count());
+console.log('STEP1 sidebar entry:', await page.locator('[data-testid="wa-sidebar-entry"]').count());
 
 const newBtn = page.getByRole('button', { name: /new session|新建会话|新会话/i }).first();
 console.log('STEP2 新会话按钮:', await newBtn.count());
@@ -29,7 +29,7 @@ if (!(await composer.count())) {
   await browser.close(); process.exit(0);
 }
 await composer.click();
-await composer.fill('用 wewrite 写一篇题为《程序员与写作》的短文');
+await composer.fill('用 wechat 写一篇题为《程序员与写作》的短文');
 await composer.press('Enter');
 console.log('STEP4 已发送', new Date().toISOString());
 
@@ -37,12 +37,12 @@ console.log('STEP4 已发送', new Date().toISOString());
 const t0 = Date.now();
 let card = 0;
 while (Date.now() - t0 < 300000) {
-  card = await page.locator('.ww-chatcard--run').count();
+  card = await page.locator('.wa-chatcard--run').count();
   if (card) break;
   await sleep(20000);
   const st = await page.evaluate(() => ({
-    anyChatcard: document.querySelectorAll('[class*="ww-chatcard"]').length,
-    wewriteText: [...document.querySelectorAll('main')].some((m) => /wewrite/i.test(m.textContent || '')),
+    anyChatcard: document.querySelectorAll('[class*="wa-chatcard"]').length,
+    wechatArticleText: [...document.querySelectorAll('main')].some((m) => /wechat-article/i.test(m.textContent || '')),
     msgs: document.querySelectorAll('[class*=message], [class*=turn]').length,
   }));
   console.log(`  +${Math.round((Date.now() - t0) / 1000)}s`, JSON.stringify(st));
@@ -53,14 +53,14 @@ if (card) {
   await page.screenshot({ path: '/tmp/v8-running.png' });
   const t1 = Date.now();
   while (Date.now() - t1 < 360000) {
-    if (await page.locator('.ww-chatcard--tail').count()) break;
+    if (await page.locator('.wa-chatcard--tail').count()) break;
     await sleep(10000);
   }
   await sleep(3000);
   await page.screenshot({ path: '/tmp/v8-final.png' });
-  console.log('STEP6 tail:', await page.locator('.ww-chatcard--tail').count());
+  console.log('STEP6 tail:', await page.locator('.wa-chatcard--tail').count());
 }
-console.log('全程 console（wewrite/注册/warn 相关）:');
-for (const l of logs) if (/wewrite|slot|regist|warn|chat|tool/i.test(l)) console.log(' ', l);
+console.log('全程 console（wechat-article/注册/warn 相关）:');
+for (const l of logs) if (/wechat-article|slot|regist|warn|chat|tool/i.test(l)) console.log(' ', l);
 console.log('console 总数:', logs.length);
 await browser.close();

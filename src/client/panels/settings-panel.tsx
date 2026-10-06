@@ -25,30 +25,30 @@ export function SettingsPanel() {
   const [group, setGroup] = useState<SettingsGroup>('wechat');
 
   return (
-    <div className={store.narrow ? 'ww-settings ww-settings--narrow' : 'ww-settings'}>
+    <div className={store.narrow ? 'wa-settings wa-settings--narrow' : 'wa-settings'}>
       {!store.narrow ? (
-        <nav className="ww-settings__nav" aria-label="设置分组">
+        <nav className="wa-settings__nav" aria-label="设置分组">
           {GROUPS.map((item) => (
             <button
               key={item.id}
               type="button"
-              className={group === item.id ? 'ww-settings__nav-item ww-settings__nav-item--active' : 'ww-settings__nav-item'}
+              className={group === item.id ? 'wa-settings__nav-item wa-settings__nav-item--active' : 'wa-settings__nav-item'}
               aria-current={group === item.id ? 'true' : undefined}
               onClick={() => setGroup(item.id)}
             >
               <Icon name={item.icon} size={16} />
-              <span className="ww-settings__nav-label">{item.label}</span>
-              <span className="ww-settings__nav-hint">{item.hint}</span>
+              <span className="wa-settings__nav-label">{item.label}</span>
+              <span className="wa-settings__nav-hint">{item.hint}</span>
             </button>
           ))}
         </nav>
       ) : (
-        <nav className="ww-settings__nav ww-settings__nav--row" aria-label="设置分组">
+        <nav className="wa-settings__nav wa-settings__nav--row" aria-label="设置分组">
           {GROUPS.map((item) => (
             <button
               key={item.id}
               type="button"
-              className={group === item.id ? 'ww-settings__chip ww-settings__chip--active' : 'ww-settings__chip'}
+              className={group === item.id ? 'wa-settings__chip wa-settings__chip--active' : 'wa-settings__chip'}
               aria-current={group === item.id ? 'true' : undefined}
               onClick={() => setGroup(item.id)}
             >
@@ -58,11 +58,11 @@ export function SettingsPanel() {
           ))}
         </nav>
       )}
-      <div className="ww-settings__content">
+      <div className="wa-settings__content">
         {snapshot.status === 'loading' ? (
           <SkeletonBlock lines={5} />
         ) : snapshot.status === 'error' ? (
-          <ErrorNote title="设置读取失败（存储不可用）。" action={<button type="button" className="ww-link" onClick={() => void refreshSnapshot()}>重试</button>} />
+          <ErrorNote title="设置读取失败（存储不可用）。" action={<button type="button" className="wa-link" onClick={() => void refreshSnapshot()}>重试</button>} />
         ) : group === 'wechat' ? (
           <WechatSection config={snapshot.data.config} rpc={rpc} onSaved={refreshSnapshot} />
         ) : group === 'llm' ? (

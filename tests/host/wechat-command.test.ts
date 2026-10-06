@@ -1,12 +1,12 @@
 /**
- * /wewrite 命令注册契约测试（QA 三轮 P1-B 闭环：commands 注册此前零单测，
+ * /wechat-article 命令注册契约测试（QA 三轮 P1-B 闭环：commands 注册此前零单测，
  * 形状漂移三次撞真宿主才暴露）。测试内嵌一个宿主 normalizeDefinition/
  * normalizeResult 的最小镜像校验器——我们的定义与 handler 返回必须原样通过，
  * 防 fake 与真宿主契约漂移再次漏网。
  */
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { registerWewriteCommand } from '../../src/host/agent-tools/commands';
-import type { WeWriteService } from '../../src/host/service';
+import { registerWeChatArticleCommand } from '../../src/host/agent-tools/commands';
+import type { WeChatArticleService } from '../../src/host/service';
 
 /** 宿主 dsh-commands/lib/index.js normalizeDefinition 的最小镜像（rc.7）。 */
 function mirrorNormalizeDefinition(definition: Record<string, unknown>): void {
@@ -58,19 +58,19 @@ function makeCtx(capture: { definition?: CapturedDefinition } = {}) {
         return () => undefined;
       },
     },
-  } as unknown as Parameters<typeof registerWewriteCommand>[0];
+  } as unknown as Parameters<typeof registerWeChatArticleCommand>[0];
 }
 
 function makeService(runId = 'run-123') {
-  return { startRun: vi.fn(() => ({ runId })) } as unknown as WeWriteService;
+  return { startRun: vi.fn(() => ({ runId })) } as unknown as WeChatArticleService;
 }
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('registerWewriteCommand：宿主契约镜像（AC-M3-01）', () => {
+describe('registerWeChatArticleCommand：宿主契约镜像（AC-M3-01）', () => {
   it('注册定义通过宿主 normalizeDefinition 镜像（input 只含非空 hint 字符串）', () => {
     const capture: { definition?: CapturedDefinition } = {};
-    registerWewriteCommand(makeCtx(capture), makeService());
+    registerWeChatArticleCommand(makeCtx(capture), makeService());
     expect(capture.definition).toBeDefined();
     expect(() => mirrorNormalizeDefinition(capture.definition!)).not.toThrow();
     const input = capture.definition!.input as Record<string, unknown>;
@@ -84,10 +84,10 @@ describe('registerWewriteCommand：宿主契约镜像（AC-M3-01）', () => {
   it('空主题 → kind:error 且过宿主 normalizeResult 镜像，不启动管线', async () => {
     const capture: { definition?: CapturedDefinition } = {};
     const service = makeService();
-    registerWewriteCommand(makeCtx(capture), service);
+    registerWeChatArticleCommand(makeCtx(capture), service);
     const result = (await capture.definition!.handler({ rawInput: '   ' })) as { kind: string; text: string };
     expect(result.kind).toBe('error');
-    expect(result.text).toContain('/wewrite');
+    expect(result.text).toContain('/wechat-article');
     await expect(mirrorNormalizeResult(capture.definition!.handler, { rawInput: '' })).resolves.toBeUndefined();
     expect(service.startRun).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe('registerWewriteCommand：宿主契约镜像（AC-M3-01）', () => {
   it('带主题 → kind:success（text 含 runId）、startRun 收 fixed topic，返回形状过镜像', async () => {
     const capture: { definition?: CapturedDefinition } = {};
     const service = makeService('run-abc-9');
-    registerWewriteCommand(makeCtx(capture), service);
+    registerWeChatArticleCommand(makeCtx(capture), service);
     const result = (await capture.definition!.handler({ rawInput: ' Cloudflare Workers 冷启动实测 ' })) as {
       kind: string;
       text: string;
@@ -117,8 +117,8 @@ describe('registerWewriteCommand：宿主契约镜像（AC-M3-01）', () => {
           throw new Error('commands service unavailable');
         },
       },
-    } as unknown as Parameters<typeof registerWewriteCommand>[0];
-    expect(registerWewriteCommand(ctx, makeService())).toBeUndefined();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/wewrite 命令注册降级'));
+    } as unknown as Parameters<typeof registerWeChatArticleCommand>[0];
+    expect(registerWeChatArticleCommand(ctx, makeService())).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/wechat-article 命令注册降级'));
   });
 });

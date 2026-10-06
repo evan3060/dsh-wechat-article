@@ -10,7 +10,7 @@ import { ArticleRecordSchema, type SettingsRecord } from './domain';
 import type { DomainTables } from './store';
 import type { RunStore } from './pipeline/engine';
 import { articleToDetail, articleToListItem } from './views';
-import { WewriteServiceError } from './service-errors';
+import { WeChatArticleServiceError } from './service-errors';
 
 export interface ArticleStoreDeps {
   readonly tables: DomainTables;
@@ -32,7 +32,7 @@ export class ArticleStore {
 
   get(id: string): ArticleDetail {
     const record = this.deps.tables.articles.get(id);
-    if (!record) throw new WewriteServiceError('article-not-found', `文章不存在：${id}`);
+    if (!record) throw new WeChatArticleServiceError('article-not-found', `文章不存在：${id}`);
     return articleToDetail(record);
   }
 

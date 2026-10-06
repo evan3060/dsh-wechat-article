@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { RunToolCard } from '@/client/chat/run-tool-card';
 import { consumeOverlayIntent } from '@/client/chat/overlay-bridge';
 import type { GenericResultViewLike } from '@/client/lib/context';
-import type { WewriteRpc } from '@/client/lib/rpc';
+import type { WeChatArticleRpc } from '@/client/lib/rpc';
 
 /**
  * 运行卡组件测试（chat-integration M2，测试先行——模块按 architecture §3 M2/§5.2 实现）。
@@ -23,9 +23,9 @@ import type { WewriteRpc } from '@/client/lib/rpc';
 
 const NOW = 1_755_648_000_000;
 
-function makeRpc(respond: (endpoint: string, payload: unknown) => unknown): { rpc: WewriteRpc; call: ReturnType<typeof vi.fn> } {
+function makeRpc(respond: (endpoint: string, payload: unknown) => unknown): { rpc: WeChatArticleRpc; call: ReturnType<typeof vi.fn> } {
   const call = vi.fn(async (endpoint: string, payload: unknown) => respond(endpoint, payload));
-  return { rpc: { call } as unknown as WewriteRpc, call };
+  return { rpc: { call } as unknown as WeChatArticleRpc, call };
 }
 
 const runDetailFixture = () => ({
@@ -47,7 +47,7 @@ const runDetailFixture = () => ({
 /** 运行态 block：RunningToolCall（S4 owner props 的 block 面）。 */
 const runningBlock = () => ({
   callId: 'call_1',
-  name: 'wewrite_run',
+  name: 'wechat_run',
   argsRaw: JSON.stringify({ topic: 'Cloudflare Workers 冷启动实测', image_count: 0 }),
   turn: 1,
   step: 1,
@@ -62,7 +62,7 @@ const settledBlock = (meta: unknown) => ({
   seq: 7,
   time: NOW + 60_000,
   callId: 'call_1',
-  call: { name: 'wewrite_run', argsRaw: JSON.stringify({ topic: 'Cloudflare Workers 冷启动实测', image_count: 0 }) },
+  call: { name: 'wechat_run', argsRaw: JSON.stringify({ topic: 'Cloudflare Workers 冷启动实测', image_count: 0 }) },
   callTime: NOW,
   content: [{ type: 'text' as const, text: '模型面结果文本' }],
   isError: false,
@@ -74,7 +74,7 @@ const settledBlock = (meta: unknown) => ({
 });
 
 const okMeta = () => ({
-  tool: 'wewrite_run',
+  tool: 'wechat_run',
   topic: 'Cloudflare Workers 冷启动实测',
   ok: true,
   runId: 'run_1',
@@ -133,7 +133,7 @@ describe('运行卡三态（architecture §5.2 / ADR-013）', () => {
 
   it('AC-M2-07 settled schema 不符：meta 不过 RunToolMetaSchema → 按 resultView 文本兜底，不出富卡动作', () => {
     const { rpc } = makeRpc(() => runDetailFixture());
-    const broken = settledBlock({ tool: 'wewrite_run', topic: 'x', ok: 'not-a-boolean', status: 42 });
+    const broken = settledBlock({ tool: 'wechat_run', topic: 'x', ok: 'not-a-boolean', status: 42 });
     broken.resultView = { card: 'generic', content: [{ type: 'text', text: 'resultView 兜底文本：run_1 succeeded' }] };
     const { container } = render(<RunToolCard block={broken as never} rpc={rpc} />);
 

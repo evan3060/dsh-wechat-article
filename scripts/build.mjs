@@ -35,7 +35,7 @@ await build({ ...common, entryPoints: [join(root, 'src/shared/index.ts')], outfi
 // CSS 运行时注入：DSH 插件 client 不带独立 css 文件加载通道（dsh-automation 实证为
 // createElement("style") 注入），.css import 编译成自注入模块。
 const cssInjectPlugin = {
-  name: 'dsh-wewrite-css-inject',
+  name: 'dsh-wechat-article-css-inject',
   setup(builder) {
     builder.onLoad({ filter: /\.css$/ }, async (args) => {
       const css = JSON.stringify(readFileSync(args.path, 'utf8'));
@@ -43,7 +43,7 @@ const cssInjectPlugin = {
         `const css = ${css};`,
         '(typeof document !== "undefined") && (() => {',
         '  const el = document.createElement("style");',
-        '  el.setAttribute("data-dsh-wewrite", "");',
+        '  el.setAttribute("data-dsh-wechat-article", "");',
         '  el.appendChild(document.createTextNode(css));',
         '  document.head.appendChild(el);',
         '})();',
@@ -86,7 +86,7 @@ for (const out of clientResult.outputFiles) {
     // module/exports 必须在 factory 内声明（dsh-automation 真身同款）——esbuild CJS 产物
     // 引用裸 module.exports，缺声明即浏览器端 "module is not defined"（2026-08-19 实拍踩中）。
     const body = out.text;
-    const wrapped = `window.__ModuleLoader__.load({ id: "dsh-wewrite", factory: (require) => {\nvar module = { exports: {} }; var exports = module.exports;\n${body}\nreturn module.exports; } });\n`;
+    const wrapped = `window.__ModuleLoader__.load({ id: "dsh-wechat-article", factory: (require) => {\nvar module = { exports: {} }; var exports = module.exports;\n${body}\nreturn module.exports; } });\n`;
     writeFileSync(join(lib, 'client.js'), wrapped, 'utf8');
   }
 }

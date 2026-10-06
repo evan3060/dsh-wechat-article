@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { registerWewriteRpc } from '@/host/rpc';
+import { registerWeChatArticleRpc } from '@/host/rpc';
 import type { ConnectionRpcService, RpcHandler } from '@/host/platform';
-import { WewriteServiceError } from '@/host/service-errors';
-import type { WeWriteService } from '@/host/service';
+import { WeChatArticleServiceError } from '@/host/service-errors';
+import type { WeChatArticleService } from '@/host/service';
 
 /**
  * RPC 错误信封映射测试（P0，2026-08-20 QA 确诊）。
@@ -39,7 +39,7 @@ async function captureHandler(digestHotspotItem: () => Promise<never>): Promise<
       return () => undefined;
     },
   };
-  await registerWewriteRpc(rpc, { digestHotspotItem } as unknown as WeWriteService);
+  await registerWeChatArticleRpc(rpc, { digestHotspotItem } as unknown as WeChatArticleService);
   if (!captured) throw new Error('rpc handler 未注册');
   return captured;
 }
@@ -54,7 +54,7 @@ describe('RPC 错误信封映射（宿主 code 白名单收敛）', () => {
     ['digest-timeout', 'AI 速览生成超时（45 秒），已取消，请重试'],
     ['llm-not-configured', '尚未配置默认模型'],
   ])('插件自有码 %s → 信封 internal + [code] 前缀进 message + details:{}', async (code, message) => {
-    const handler = await captureHandler(() => Promise.reject(new WewriteServiceError(code, message)));
+    const handler = await captureHandler(() => Promise.reject(new WeChatArticleServiceError(code, message)));
     const envelope = (await callWith(handler)) as { ok: boolean; error: { code: string; message: string; details: unknown } };
 
     expect(envelope.ok).toBe(false);
@@ -65,7 +65,7 @@ describe('RPC 错误信封映射（宿主 code 白名单收敛）', () => {
   });
 
   it('code 已是宿主枚举 internal：原样保留不加前缀', async () => {
-    const handler = await captureHandler(() => Promise.reject(new WewriteServiceError('internal', '内部错误')));
+    const handler = await captureHandler(() => Promise.reject(new WeChatArticleServiceError('internal', '内部错误')));
     const envelope = (await callWith(handler)) as { error: { code: string; message: string } };
 
     expect(envelope.error.code).toBe('internal');
@@ -84,7 +84,7 @@ describe('RPC 错误信封映射（宿主 code 白名单收敛）', () => {
 
   it('超长 message：截断到 500 字符（宿主既有截断逻辑保持）', async () => {
     const long = '错'.repeat(600);
-    const handler = await captureHandler(() => Promise.reject(new WewriteServiceError('PI_AI_ERROR', long)));
+    const handler = await captureHandler(() => Promise.reject(new WeChatArticleServiceError('PI_AI_ERROR', long)));
     const envelope = (await callWith(handler)) as { error: { message: string } };
 
     expect(envelope.error.message.endsWith('…')).toBe(true);

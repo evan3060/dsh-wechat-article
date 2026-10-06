@@ -2,293 +2,293 @@
  * 对话内聊天卡样式（chat-integration M2/M3，uiux §1/§3/§5）。
  *
  * 作用域与命名空间：
- *   - 全部类名挂 .ww-chatcard 前缀（本文件自有命名空间，与并行 UI 线物理隔离）。
- *   - 卡片「住」宿主的地面：--ww-* token 由 tokens.css 的作用域选择器组
- *     （.dsh-wewrite-panel/.ww-sidebar-entry/.ww-overlay/.ww-chatcard/.ww-composer-entry）
+ *   - 全部类名挂 .wa-chatcard 前缀（本文件自有命名空间，与并行 UI 线物理隔离）。
+ *   - 卡片「住」宿主的地面：--wa-* token 由 tokens.css 的作用域选择器组
+ *     （.dsh-wechat-article-panel/.wa-sidebar-entry/.wa-overlay/.wa-chatcard/.wa-composer-entry）
  *     单一定义多域生效（uiux §3.2：单一真源不分裂）。
  *   - 本文件只追加 4 个 layout token（spec §8，零新增颜色/阴影/渐变）：
- *     --ww-chat-head-h / --ww-stage-seg-w / --ww-stage-track-h / --ww-composer-entry-h。
+ *     --wa-chat-head-h / --wa-stage-seg-w / --wa-stage-track-h / --wa-composer-entry-h。
  *
  * 构造保证（P0 门禁）：无 linear-gradient、无紫粉四色、无阴影（chat 平面流，
  * 阴影只属于浮层）、无 >1px 彩色侧边条；状态不以颜色为唯一载体（文字标签并列）。
  */
 
-.ww-chatcard,
-.ww-composer-entry {
-  --ww-chat-head-h: 36px;
-  --ww-stage-seg-w: 20px;
-  --ww-stage-track-h: 4px;
-  --ww-composer-entry-h: 28px;
+.wa-chatcard,
+.wa-composer-entry {
+  --wa-chat-head-h: 36px;
+  --wa-stage-seg-w: 20px;
+  --wa-stage-track-h: 4px;
+  --wa-composer-entry-h: 28px;
 }
 
 /* ── 卡片容器：1px 边框平面卡（宿主 bg-base 台面上的访客） ──────────────────── */
 
-.ww-chatcard {
+.wa-chatcard {
   display: flex;
   flex-direction: column;
   max-width: 560px;
-  background: var(--ww-surface);
-  border: var(--ww-border-width) solid var(--ww-border);
-  border-radius: var(--ww-radius-lg);
-  font-family: var(--ww-font-ui);
-  color: var(--ww-fg);
-  transition: border-color var(--ww-motion-base) var(--ww-ease);
+  background: var(--wa-surface);
+  border: var(--wa-border-width) solid var(--wa-border);
+  border-radius: var(--wa-radius-lg);
+  font-family: var(--wa-font-ui);
+  color: var(--wa-fg);
+  transition: border-color var(--wa-motion-base) var(--wa-ease);
 }
-.ww-chatcard:hover { border-color: var(--ww-border-strong); }
+.wa-chatcard:hover { border-color: var(--wa-border-strong); }
 
-.ww-chatcard__head {
+.wa-chatcard__head {
   display: flex;
   align-items: center;
-  gap: var(--ww-space-2);
-  min-height: var(--ww-chat-head-h);
-  padding: 0 var(--ww-space-3);
+  gap: var(--wa-space-2);
+  min-height: var(--wa-chat-head-h);
+  padding: 0 var(--wa-space-3);
 }
 
-.ww-chatcard__kind {
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-tertiary);
+.wa-chatcard__kind {
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-tertiary);
   white-space: nowrap;
 }
 
-.ww-chatcard__title {
-  font-size: var(--ww-text-base);
-  font-weight: var(--ww-weight-medium);
+.wa-chatcard__title {
+  font-size: var(--wa-text-base);
+  font-weight: var(--wa-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.ww-chatcard__meta {
+.wa-chatcard__meta {
   margin-left: auto;
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-tertiary);
-  font-family: var(--ww-font-code);
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-tertiary);
+  font-family: var(--wa-font-code);
   white-space: nowrap;
 }
-.ww-chatcard__meta--danger { color: var(--ww-danger); }
+.wa-chatcard__meta--danger { color: var(--wa-danger); }
 
-.ww-chatcard__body {
+.wa-chatcard__body {
   display: flex;
   flex-direction: column;
-  gap: var(--ww-space-2);
-  padding: var(--ww-space-2) var(--ww-space-3) var(--ww-space-3);
+  gap: var(--wa-space-2);
+  padding: var(--wa-space-2) var(--wa-space-3) var(--wa-space-3);
 }
 
-.ww-chatcard__digest {
+.wa-chatcard__digest {
   margin: 0;
-  font-size: var(--ww-text-sm);
-  line-height: var(--ww-leading-body);
-  color: var(--ww-fg-secondary);
+  font-size: var(--wa-text-sm);
+  line-height: var(--wa-leading-body);
+  color: var(--wa-fg-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.ww-chatcard__note {
+.wa-chatcard__note {
   margin: 0;
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-tertiary);
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-tertiary);
 }
 
-.ww-chatcard__code {
+.wa-chatcard__code {
   align-self: flex-start;
-  font-family: var(--ww-font-code);
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-caption);
-  background: var(--ww-code-bg);
-  border-radius: var(--ww-radius-sm);
-  padding: 1px var(--ww-space-2);
+  font-family: var(--wa-font-code);
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-caption);
+  background: var(--wa-code-bg);
+  border-radius: var(--wa-radius-sm);
+  padding: 1px var(--wa-space-2);
 }
 
-/* ── 六段分轨（--ww-stage-seg-w × --ww-stage-track-h；文字并列，不以颜色单独达意） ── */
+/* ── 六段分轨（--wa-stage-seg-w × --wa-stage-track-h；文字并列，不以颜色单独达意） ── */
 
-.ww-chatcard__stages {
+.wa-chatcard__stages {
   display: flex;
   flex-direction: column;
-  gap: var(--ww-space-1);
+  gap: var(--wa-space-1);
 }
 
-.ww-chatcard__track {
+.wa-chatcard__track {
   display: flex;
-  gap: var(--ww-space-1);
+  gap: var(--wa-space-1);
 }
 
-.ww-chatcard__seg {
-  width: var(--ww-stage-seg-w);
-  height: var(--ww-stage-track-h);
-  border-radius: var(--ww-radius-full);
-  background: var(--ww-border); /* pending：空心感弱底 */
+.wa-chatcard__seg {
+  width: var(--wa-stage-seg-w);
+  height: var(--wa-stage-track-h);
+  border-radius: var(--wa-radius-full);
+  background: var(--wa-border); /* pending：空心感弱底 */
 }
-.ww-chatcard__seg--done { background: var(--ww-fg-secondary); }
-.ww-chatcard__seg--failed { background: var(--ww-danger); }
-.ww-chatcard__seg--current {
-  background: var(--ww-accent); /* 全卡唯一 accent 位：注意力只给正在发生的事 */
-  animation: ww-chatcard-breathe 2s var(--ww-ease) infinite; /* reduced-motion 由 tokens.css 关停 */
+.wa-chatcard__seg--done { background: var(--wa-fg-secondary); }
+.wa-chatcard__seg--failed { background: var(--wa-danger); }
+.wa-chatcard__seg--current {
+  background: var(--wa-accent); /* 全卡唯一 accent 位：注意力只给正在发生的事 */
+  animation: wa-chatcard-breathe 2s var(--wa-ease) infinite; /* reduced-motion 由 tokens.css 关停 */
 }
 
-@keyframes ww-chatcard-breathe {
+@keyframes wa-chatcard-breathe {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
 }
 
-.ww-chatcard__stagecount {
-  font-family: var(--ww-font-code);
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-tertiary);
+.wa-chatcard__stagecount {
+  font-family: var(--wa-font-code);
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-tertiary);
 }
 
-.ww-chatcard__stagelist {
+.wa-chatcard__stagelist {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ww-space-1) var(--ww-space-3);
+  gap: var(--wa-space-1) var(--wa-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.ww-chatcard__stagename {
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-tertiary);
+.wa-chatcard__stagename {
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-tertiary);
 }
-.ww-chatcard__stagename--done { color: var(--ww-fg-secondary); }
-.ww-chatcard__stagename--failed { color: var(--ww-danger); }
-.ww-chatcard__stagename--current {
-  color: var(--ww-fg);
-  font-weight: var(--ww-weight-medium);
+.wa-chatcard__stagename--done { color: var(--wa-fg-secondary); }
+.wa-chatcard__stagename--failed { color: var(--wa-danger); }
+.wa-chatcard__stagename--current {
+  color: var(--wa-fg);
+  font-weight: var(--wa-weight-medium);
 }
 
 /* ── 状态 chip 与动作行 ─────────────────────────────────────────────────────── */
 
-.ww-chatcard__chip {
-  font-size: var(--ww-text-xs);
-  color: var(--ww-fg-secondary);
-  background: var(--ww-code-bg);
-  border-radius: var(--ww-radius-full);
-  padding: 1px var(--ww-space-2);
+.wa-chatcard__chip {
+  font-size: var(--wa-text-xs);
+  color: var(--wa-fg-secondary);
+  background: var(--wa-code-bg);
+  border-radius: var(--wa-radius-full);
+  padding: 1px var(--wa-space-2);
   white-space: nowrap;
 }
-.ww-chatcard__chip--ok {
-  color: var(--ww-success);
-  background: var(--ww-success-subtle);
+.wa-chatcard__chip--ok {
+  color: var(--wa-success);
+  background: var(--wa-success-subtle);
 }
 
-.ww-chatcard__actions {
+.wa-chatcard__actions {
   display: flex;
   justify-content: flex-end;
-  padding: 0 var(--ww-space-3) var(--ww-space-2);
+  padding: 0 var(--wa-space-3) var(--wa-space-2);
 }
 
-.ww-chatcard__action {
+.wa-chatcard__action {
   display: inline-flex;
   align-items: center;
-  gap: var(--ww-space-1);
+  gap: var(--wa-space-1);
   height: 28px;
-  padding: 0 var(--ww-space-3);
-  font-size: var(--ww-text-sm);
+  padding: 0 var(--wa-space-3);
+  font-size: var(--wa-text-sm);
   font-family: inherit;
-  color: var(--ww-fg-secondary);
+  color: var(--wa-fg-secondary);
   background: transparent;
-  border: var(--ww-border-width) solid var(--ww-border);
-  border-radius: var(--ww-radius-md);
+  border: var(--wa-border-width) solid var(--wa-border);
+  border-radius: var(--wa-radius-md);
   cursor: pointer;
   transition:
-    color var(--ww-motion-fast) var(--ww-ease),
-    border-color var(--ww-motion-fast) var(--ww-ease),
-    background-color var(--ww-motion-fast) var(--ww-ease);
+    color var(--wa-motion-fast) var(--wa-ease),
+    border-color var(--wa-motion-fast) var(--wa-ease),
+    background-color var(--wa-motion-fast) var(--wa-ease);
 }
-.ww-chatcard__action:hover {
-  color: var(--ww-fg);
-  border-color: var(--ww-border-strong);
-  background: var(--ww-interactive-hover);
+.wa-chatcard__action:hover {
+  color: var(--wa-fg);
+  border-color: var(--wa-border-strong);
+  background: var(--wa-interactive-hover);
 }
-.ww-chatcard__action:focus-visible {
+.wa-chatcard__action:focus-visible {
   outline: none;
-  box-shadow: var(--ww-focus-ring);
+  box-shadow: var(--wa-focus-ring);
 }
-.ww-chatcard__action:active { background: var(--ww-interactive-active); }
+.wa-chatcard__action:active { background: var(--wa-interactive-active); }
 
 /* ── turnTail 产物行（嵌在 turn 收尾，弱化为分隔线行容器，非独立卡） ─────────── */
 
-.ww-chatcard--tail {
+.wa-chatcard--tail {
   max-width: 560px;
   background: transparent;
   border: none;
-  border-top: var(--ww-border-width) solid var(--ww-divider);
+  border-top: var(--wa-border-width) solid var(--wa-divider);
   border-radius: 0;
 }
-.ww-chatcard--tail:hover { border-color: var(--ww-divider); }
+.wa-chatcard--tail:hover { border-color: var(--wa-divider); }
 
-.ww-chatcard__tailhead {
+.wa-chatcard__tailhead {
   display: flex;
   align-items: center;
-  gap: var(--ww-space-1);
-  padding: var(--ww-space-2) 0 var(--ww-space-1);
-  color: var(--ww-fg-tertiary);
-  font-size: var(--ww-text-xs);
+  gap: var(--wa-space-1);
+  padding: var(--wa-space-2) 0 var(--wa-space-1);
+  color: var(--wa-fg-tertiary);
+  font-size: var(--wa-text-xs);
 }
 
-.ww-chatcard__taillist {
+.wa-chatcard__taillist {
   display: flex;
   flex-direction: column;
-  gap: var(--ww-space-1);
+  gap: var(--wa-space-1);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.ww-chatcard__tailitem { display: flex; }
+.wa-chatcard__tailitem { display: flex; }
 
-.ww-chatcard__tailbtn {
+.wa-chatcard__tailbtn {
   display: inline-flex;
   align-items: center;
-  gap: var(--ww-space-2);
+  gap: var(--wa-space-2);
   max-width: 100%;
-  padding: var(--ww-space-1) var(--ww-space-2);
-  margin-left: calc(-1 * var(--ww-space-2));
+  padding: var(--wa-space-1) var(--wa-space-2);
+  margin-left: calc(-1 * var(--wa-space-2));
   font-family: inherit;
-  color: var(--ww-fg);
+  color: var(--wa-fg);
   background: transparent;
   border: none;
-  border-radius: var(--ww-radius-sm);
+  border-radius: var(--wa-radius-sm);
   cursor: pointer;
   text-align: left;
-  transition: background-color var(--ww-motion-fast) var(--ww-ease);
+  transition: background-color var(--wa-motion-fast) var(--wa-ease);
 }
-.ww-chatcard__tailbtn:hover { background: var(--ww-interactive-hover); }
-.ww-chatcard__tailbtn:focus-visible {
+.wa-chatcard__tailbtn:hover { background: var(--wa-interactive-hover); }
+.wa-chatcard__tailbtn:focus-visible {
   outline: none;
-  box-shadow: var(--ww-focus-ring);
+  box-shadow: var(--wa-focus-ring);
 }
 
 /* ── composer 入口钮（conversation.input.right，uiux §5.1） ────────────────── */
 
-.ww-composer-entry {
+.wa-composer-entry {
   display: inline-flex;
   align-items: center;
 }
 
-.ww-composer-entry__btn {
+.wa-composer-entry__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: var(--ww-composer-entry-h);
-  width: var(--ww-composer-entry-h);
-  color: var(--ww-fg-secondary);
+  height: var(--wa-composer-entry-h);
+  width: var(--wa-composer-entry-h);
+  color: var(--wa-fg-secondary);
   background: transparent;
   border: none;
-  border-radius: var(--ww-radius-md);
+  border-radius: var(--wa-radius-md);
   cursor: pointer;
   transition:
-    color var(--ww-motion-fast) var(--ww-ease),
-    background-color var(--ww-motion-fast) var(--ww-ease);
+    color var(--wa-motion-fast) var(--wa-ease),
+    background-color var(--wa-motion-fast) var(--wa-ease);
 }
-.ww-composer-entry__btn:hover {
-  color: var(--ww-fg);
-  background: var(--ww-interactive-hover);
+.wa-composer-entry__btn:hover {
+  color: var(--wa-fg);
+  background: var(--wa-interactive-hover);
 }
-.ww-composer-entry__btn:focus-visible {
+.wa-composer-entry__btn:focus-visible {
   outline: none;
-  box-shadow: var(--ww-focus-ring);
+  box-shadow: var(--wa-focus-ring);
 }
-.ww-composer-entry__btn:active { background: var(--ww-interactive-active); }
+.wa-composer-entry__btn:active { background: var(--wa-interactive-active); }

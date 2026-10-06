@@ -1,5 +1,5 @@
 {
-  "name": "dsh-wewrite",
+  "name": "dsh-wechat-article",
   "version": "0.5.3",
   "description": "WeChat official account AI writing pipeline as a DeepSeek Harness (DSH) plugin",
   "repository": {

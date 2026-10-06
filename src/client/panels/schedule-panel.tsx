@@ -102,23 +102,23 @@ export function SchedulePanel() {
   }
 
   return (
-    <div className="ww-schedule">
-      <div className="ww-pagebar">
+    <div className="wa-schedule">
+      <div className="wa-pagebar">
         {/* Bluewash §4-2：定时域页头识别点（青） */}
-        <span className="ww-pagebar__dot" data-view="schedule" />
-        <h2 className="ww-pagebar__title">定时任务</h2>
-        {schedules ? <span className="ww-pagebar__count">· {queue.length}</span> : null}
-        <div className="ww-pagebar__spacer" />
-        <div className="ww-pagebar__aside">
-          <div className="ww-view-tabs" role="tablist" aria-label="定时任务视图">
-            <button type="button" role="tab" aria-selected={tab === 'queue'} className={tab === 'queue' ? 'ww-view-tab ww-view-tab--active' : 'ww-view-tab'} onClick={() => setTab('queue')}>
+        <span className="wa-pagebar__dot" data-view="schedule" />
+        <h2 className="wa-pagebar__title">定时任务</h2>
+        {schedules ? <span className="wa-pagebar__count">· {queue.length}</span> : null}
+        <div className="wa-pagebar__spacer" />
+        <div className="wa-pagebar__aside">
+          <div className="wa-view-tabs" role="tablist" aria-label="定时任务视图">
+            <button type="button" role="tab" aria-selected={tab === 'queue'} className={tab === 'queue' ? 'wa-view-tab wa-view-tab--active' : 'wa-view-tab'} onClick={() => setTab('queue')}>
               排队中（{queue.length}）
             </button>
-            <button type="button" role="tab" aria-selected={tab === 'history'} className={tab === 'history' ? 'ww-view-tab ww-view-tab--active' : 'ww-view-tab'} onClick={() => setTab('history')}>
+            <button type="button" role="tab" aria-selected={tab === 'history'} className={tab === 'history' ? 'wa-view-tab wa-view-tab--active' : 'wa-view-tab'} onClick={() => setTab('history')}>
               全部历史（{history.length}）
             </button>
           </div>
-          <Button variant="primary" size="sm" className="ww-btn-accent" icon={<Icon name="plus" size={16} />} onClick={() => setFormOpen(true)}>
+          <Button variant="primary" size="sm" className="wa-btn-accent" icon={<Icon name="plus" size={16} />} onClick={() => setFormOpen(true)}>
             新建定时
           </Button>
         </div>
@@ -144,24 +144,24 @@ export function SchedulePanel() {
             }
           />
         ) : (
-          <ul className="ww-schedule-list">
+          <ul className="wa-schedule-list">
             {queue.map((schedule) => {
               const paused = !schedule.enabled;
               return (
-                <li key={schedule.id} className={paused ? 'ww-schedule-card ww-schedule-card--paused' : 'ww-schedule-card'}>
-                  <div className="ww-schedule-card__head">
+                <li key={schedule.id} className={paused ? 'wa-schedule-card wa-schedule-card--paused' : 'wa-schedule-card'}>
+                  <div className="wa-schedule-card__head">
                     <Icon name="calendar-clock" size={16} />
-                    <span className="ww-schedule-card__name">《{schedule.name}》</span>
+                    <span className="wa-schedule-card__name">《{schedule.name}》</span>
                     {paused ? <StatusBadge tone="warning" label="已暂停" /> : <StatusBadge tone="ongoing" label="已排期" />}
                   </div>
-                  <div className="ww-schedule-card__body">
+                  <div className="wa-schedule-card__body">
                     {/* P4：RRULE 代码不再当正文展示；原文移入人话行 title 供悬停查看 */}
-                    <p className="ww-schedule-card__human" title={schedule.rrule}>
+                    <p className="wa-schedule-card__human" title={schedule.rrule}>
                       {describeRrule(schedule.rrule)} · 下次 {formatDateTime(schedule.nextRunAt)}
                     </p>
-                    <p className="ww-schedule-card__target">发布目标：草稿箱（锁定）</p>
+                    <p className="wa-schedule-card__target">发布目标：草稿箱（锁定）</p>
                   </div>
-                  <div className="ww-schedule-card__actions">
+                  <div className="wa-schedule-card__actions">
                     <Button variant="ghost" size="sm" icon={<Icon name={schedule.enabled ? 'pause' : 'play'} size={16} />} onClick={() => void toggle(schedule)} disabled={busyId === schedule.id}>
                       {schedule.enabled ? '暂停' : '恢复'}
                     </Button>
@@ -170,7 +170,7 @@ export function SchedulePanel() {
                       anchor={
                         <button
                           type="button"
-                          className="ww-schedule-card__more"
+                          className="wa-schedule-card__more"
                           aria-label={`更多操作：${schedule.name}`}
                           aria-expanded={menuOpenId === schedule.id}
                           aria-haspopup="menu"
@@ -220,16 +220,16 @@ export function SchedulePanel() {
       ) : history.length === 0 ? (
         <EmptyState icon={<Icon name="history" size={20} />} subIcon="clock" title="还没有定时执行记录。创建排期后，每次触发都会在这里留痕。" />
       ) : (
-        <ul className="ww-history">
+        <ul className="wa-history">
           {history.map((run) => {
             const badge = runStatusBadge(run.status);
             return (
-              <li key={run.id} className="ww-history__item">
-                <span className="ww-history__time">{formatShortDateTime(run.startedAt)}</span>
+              <li key={run.id} className="wa-history__item">
+                <span className="wa-history__time">{formatShortDateTime(run.startedAt)}</span>
                 <StatusBadge tone={badge.tone} label={badge.label} />
-                <span className="ww-history__topic">《{topicOf(run)}》</span>
-                <span className="ww-history__duration">{formatDuration(run.startedAt, run.finishedAt)}</span>
-                {run.error ? <span className="ww-history__error">{run.error.message}</span> : null}
+                <span className="wa-history__topic">《{topicOf(run)}》</span>
+                <span className="wa-history__duration">{formatDuration(run.startedAt, run.finishedAt)}</span>
+                {run.error ? <span className="wa-history__error">{run.error.message}</span> : null}
               </li>
             );
           })}

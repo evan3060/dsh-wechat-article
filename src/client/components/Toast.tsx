@@ -4,9 +4,9 @@ import { Icon } from './Icon';
 /**
  * 面板内 Toast（官方 primitives 0.0.1-rc.1 无 Toast 导出——按 DESIGN.md §4.2 自建）。
  *
- * - 位置：面板右下角固定栈，z-index 走 --ww-z-toast。
+ * - 位置：面板右下角固定栈，z-index 走 --wa-z-toast。
  * - 可访问性：容器 aria-live="polite"（生成完成/推送结果屏幕阅读器播报，DESIGN §8）。
- * - 语义色走 --ww-success / --ww-danger / --ww-info；动作链接（如「去设置代理」）可选。
+ * - 语义色走 --wa-success / --wa-danger / --wa-info；动作链接（如「去设置代理」）可选。
  */
 
 export interface ToastMessage {
@@ -39,23 +39,23 @@ export function ToastHost({ messages, onDismiss }: { messages: readonly ToastMes
 
   if (messages.length === 0) return null;
   return (
-    <div className="ww-toasts" role="status" aria-live="polite">
+    <div className="wa-toasts" role="status" aria-live="polite">
       {messages.map((message) => (
-        <div key={message.id} className={`ww-toast ww-toast--${message.kind}`}>
+        <div key={message.id} className={`wa-toast wa-toast--${message.kind}`}>
           <Icon
             name={message.kind === 'success' ? 'circle-check' : message.kind === 'error' ? 'circle-alert' : 'sparkles'}
             size={16}
           />
-          <div className="ww-toast__body">
-            <p className="ww-toast__title">{message.title}</p>
-            {message.detail ? <p className="ww-toast__detail">{message.detail}</p> : null}
+          <div className="wa-toast__body">
+            <p className="wa-toast__title">{message.title}</p>
+            {message.detail ? <p className="wa-toast__detail">{message.detail}</p> : null}
           </div>
           {message.actionLabel && message.onAction ? (
-            <button type="button" className="ww-toast__action" onClick={message.onAction}>
+            <button type="button" className="wa-toast__action" onClick={message.onAction}>
               {message.actionLabel}
             </button>
           ) : null}
-          <button type="button" className="ww-toast__close" aria-label="关闭提示" onClick={() => onDismiss(message.id)}>
+          <button type="button" className="wa-toast__close" aria-label="关闭提示" onClick={() => onDismiss(message.id)}>
             <Icon name="x" size={16} />
           </button>
         </div>

@@ -94,14 +94,14 @@ export function ArticleRail({
   const empty = articles.length === 0;
 
   return (
-    <nav className={collapsed ? 'ww-rail ww-rail--collapsed' : 'ww-rail'} aria-label="我的文章" data-testid="ww-rail" id="ww-rail">
-      <div className="ww-rail__head">
-        <div className="ww-rail__search-wrap">
-          <Icon name="search" size={16} className="ww-rail__search-icon" />
+    <nav className={collapsed ? 'wa-rail wa-rail--collapsed' : 'wa-rail'} aria-label="我的文章" data-testid="wa-rail" id="wa-rail">
+      <div className="wa-rail__head">
+        <div className="wa-rail__search-wrap">
+          <Icon name="search" size={16} className="wa-rail__search-icon" />
           <input
             type="text"
-            className="ww-rail__search"
-            data-testid="ww-rail-search"
+            className="wa-rail__search"
+            data-testid="wa-rail-search"
             placeholder="搜索标题 / slug"
             value={query}
             disabled={empty}
@@ -109,14 +109,14 @@ export function ArticleRail({
             aria-label="搜索文章"
           />
         </div>
-        <div className="ww-rail__filter" role="group" aria-label="状态筛选" data-testid="ww-rail-filter">
+        <div className="wa-rail__filter" role="group" aria-label="状态筛选" data-testid="wa-rail-filter">
           {FILTERS.map((item) => (
             <button
               key={item.id}
               type="button"
-              className={filter === item.id ? 'ww-rail__filter-chip ww-rail__filter-chip--on' : 'ww-rail__filter-chip'}
+              className={filter === item.id ? 'wa-rail__filter-chip wa-rail__filter-chip--on' : 'wa-rail__filter-chip'}
               aria-pressed={filter === item.id}
-              data-testid={`ww-rail-filter-${item.id}`}
+              data-testid={`wa-rail-filter-${item.id}`}
               disabled={empty}
               onClick={() => setFilter(item.id)}
             >
@@ -125,32 +125,32 @@ export function ArticleRail({
           ))}
         </div>
       </div>
-      <ul className="ww-rail__list" role="list">
+      <ul className="wa-rail__list" role="list">
         {empty ? (
-          <li className="ww-rail__empty">
+          <li className="wa-rail__empty">
             <RailEmptyGlyph />
-            <p className="ww-rail__empty-text">还没有文章</p>
-            <p className="ww-rail__empty-hint">用底部的「新文章」开始第一篇 ↓</p>
+            <p className="wa-rail__empty-text">还没有文章</p>
+            <p className="wa-rail__empty-hint">用底部的「新文章」开始第一篇 ↓</p>
           </li>
         ) : (
           rows.slice(0, MAX_VISIBLE).map((article) => {
             const gate = gateStatusForArticle(runs, article);
             const gateMarked = gate.blocking;
             return (
-              <li className="ww-rail__row" role="listitem" key={article.id}>
+              <li className="wa-rail__row" role="listitem" key={article.id}>
                 <button
                   type="button"
-                  className={article.id === currentId ? 'ww-rail-btn ww-rail-btn--active' : 'ww-rail-btn'}
+                  className={article.id === currentId ? 'wa-rail-btn wa-rail-btn--active' : 'wa-rail-btn'}
                   aria-current={article.id === currentId ? 'page' : undefined}
-                  data-testid={`ww-rail-row-${article.id}`}
+                  data-testid={`wa-rail-row-${article.id}`}
                   title={article.title}
                   onClick={() => onOpenArticle(article.id)}
                 >
                   <StateDot state={statusDotState(article.status)} />
-                  <span className="ww-rail-btn__title">{article.title}</span>
+                  <span className="wa-rail-btn__title">{article.title}</span>
                   {gateMarked ? (
                     <span
-                      className="ww-rail-btn__gate"
+                      className="wa-rail-btn__gate"
                       role="button"
                       tabIndex={0}
                       aria-label={`门禁未过：${article.title}，查看门禁报告`}
@@ -176,14 +176,14 @@ export function ArticleRail({
           })
         )}
       </ul>
-      <div className="ww-rail__foot">
+      <div className="wa-rail__foot">
         {newOpen ? (
-          <div className="ww-rail-new" id="ww-rail-new">
+          <div className="wa-rail-new" id="wa-rail-new">
             <input
               ref={newInputRef}
               type="text"
-              className="ww-rail-new__input"
-              data-testid="ww-rail-new-input"
+              className="wa-rail-new__input"
+              data-testid="wa-rail-new-input"
               placeholder="输入主题"
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
@@ -195,8 +195,8 @@ export function ArticleRail({
             <Button
               variant="primary"
               size="sm"
-              className="ww-btn-accent"
-              data-testid="ww-rail-new-submit"
+              className="wa-btn-accent"
+              data-testid="wa-rail-new-submit"
               icon={<Icon name="arrow-right" size={16} />}
               onClick={() => void handleStart()}
               disabled={starting}
@@ -205,8 +205,8 @@ export function ArticleRail({
             </Button>
             <button
               type="button"
-              className="ww-rail-new__hotspots"
-              data-testid="ww-rail-new-hotspots"
+              className="wa-rail-new__hotspots"
+              data-testid="wa-rail-new-hotspots"
               onClick={() => store.navigate({ kind: 'hotspots' })}
             >
               <Icon name="flame" size={16} /> 从热榜挑
@@ -216,10 +216,10 @@ export function ArticleRail({
         <Button
           variant="ghost"
           size="sm"
-          className="ww-rail__new"
-          data-testid="ww-rail-new"
+          className="wa-rail__new"
+          data-testid="wa-rail-new"
           aria-expanded={newOpen}
-          aria-controls="ww-rail-new"
+          aria-controls="wa-rail-new"
           icon={<Icon name="plus" size={16} />}
           onClick={() => setNewOpen((open) => !open)}
         >
@@ -232,7 +232,7 @@ export function ArticleRail({
 
 function RailEmptyGlyph() {
   return (
-    <span className="ww-rail__empty-glyph">
+    <span className="wa-rail__empty-glyph">
       <Icon name="file-text" size={16} />
     </span>
   );

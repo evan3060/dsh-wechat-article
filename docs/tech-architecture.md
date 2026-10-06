@@ -1,8 +1,8 @@
-# dsh-wewrite 技术架构文档
+# dsh-wechat-article 技术架构文档
 
 | 项 | 内容 |
 |---|---|
-| 产品 | dsh-wewrite — DeepSeek Harness（DSH）微信公众号 AI 写作插件 |
+| 产品 | dsh-wechat-article — DeepSeek Harness（DSH）微信公众号 AI 写作插件 |
 | 版本 | v0.1 架构（对应产品 v0.1.0） |
 | 作者 | 高见远（MVP 专家团架构师），2026-08-18 |
 | 上游 | `docs/FACTS.md`（Phase 0 事实包）、`docs/prd.md`（PM PRD）、DSH 官方仓库与本机实测（见 §2 事实清单） |
@@ -93,7 +93,7 @@ workspace ADR 锁定的默认技术栈为 Astro + Cloudflare Workers/Hono/D1/R2�
 
 | # | 事实 | 来源 |
 |---|---|---|
-| F30 | 草稿箱 API 族端点：`/cgi-bin/token`（client_credential 换 access_token）、`/cgi-bin/media/uploadimg`（正文图，返回微信 CDN URL）、`/cgi-bin/material/add_material`（封面，得 thumb_media_id）、`/cgi-bin/draft/add`、`/cgi-bin/draft/get`、`/cgi-bin/draft/update` | source: `workspace-writer/wewrite/scripts/publish_article.mjs`（已在真实生产使用验证） |
+| F30 | 草稿箱 API 族端点：`/cgi-bin/token`（client_credential 换 access_token）、`/cgi-bin/media/uploadimg`（正文图，返回微信 CDN URL）、`/cgi-bin/material/add_material`（封面，得 thumb_media_id）、`/cgi-bin/draft/add`、`/cgi-bin/draft/get`、`/cgi-bin/draft/update` | source: `workspace-writer/wechat-article/scripts/publish_article.mjs`（已在真实生产使用验证） |
 | F31 | **IP 白名单**：官方文档明言「仅白名单中的 IP 才可调用公众号/服务号的服务端接口，即通过 AppSecret 或者 access_token 调用服务端接口时，需将访问来源 IP 设置为 IP 白名单」，违规返回 errcode 40164 | source: developers.weixin.qq.com《API IP 白名单》操作指南 |
 | F32 | 源管线已把 API base URL 参数化（`DEFAULT_WECHAT_API_BASE_URL = "https://api.weixin.qq.com"` + `--api-base-url`），代理缝天然存在；现行代理形态为固定 IP 云主机 SSH 中转（push_to_draft.mjs scp+ssh 编排，凭据用完即删） | source: `push_to_draft.mjs` + `publish_article.mjs:11` |
 
@@ -132,19 +132,19 @@ workspace ADR 锁定的默认技术栈为 Astro + Cloudflare Workers/Hono/D1/R2�
 ```
 ┌─────────────────────────── DSH Web (React 18, 127.0.0.1:3080) ───────────────────────────┐
 │  conversation.view 视图环                                                                  │
-│  ┌─────────────────────────── wewrite 工作台 tab（本插件 client）─────────────────────┐    │
+│  ┌─────────────────────────── wechat-article 工作台 tab（本插件 client）─────────────────────┐    │
 │  │  选题面板 │ 编辑器(MD) │ 微信预览 │ 运行历史 │ 调度管理 │ 设置(微信/图片/模型)      │    │
-│  └───────────────│ connection.rpc.call('dsh-wewrite', endpoint, payload) ─────────────┘    │
+│  └───────────────│ connection.rpc.call('dsh-wechat-article', endpoint, payload) ─────────────┘    │
 └──────────────────│ loopback only ─────────────────────────────────────────────────────────┘
                    │
 ┌──────────────────▼──────── DSH Host（Cordis，Node）────────────────────────────────────────┐
-│  dsh-wewrite host plugin                                                                   │
-│  ┌─────────┐  ┌────────────────────────── WeWriteService（唯一 authority）──────────────┐  │
+│  dsh-wechat-article host plugin                                                                   │
+│  ┌─────────┐  ┌────────────────────────── WeChatArticleService（唯一 authority）──────────────┐  │
 │  │ rpc.ts  │→ │  pipeline/  引擎：选题→大纲→成稿→门禁→渲染→配图→(草稿箱)                │  │
 │  │ tools.ts│→ │    │ ctx.llm.stream()（文本步）     │ ImageProvider fallback（图片步）   │  │
 │  └─────────┘  │  scheduler/  RRULE clock→occurrence claim→派发 run                      │  │
 │               │  wechat/    token/uploadimg/material/draft（apiBaseUrl 可配=代理缝）     │  │
-│               └──────│ storageDomain.open(dsh-wewrite domain)  │ ctx.credentials ──────┘  │
+│               └──────│ storageDomain.open(dsh-wechat-article domain)  │ ctx.credentials ──────┘  │
 └──────────────────────▼──────────────────────────────▼─────────────────────────────────────┘
                   ~/.dsh（storages 介质 + .credentials.yaml）
 ```
@@ -154,14 +154,14 @@ workspace ADR 锁定的默认技术栈为 Astro + Cloudflare Workers/Hono/D1/R2�
 | 模块 | 职责 | 依赖 |
 |---|---|---|
 | `host/index.ts` | 入口装配：inject 声明、Config schema、apply 组装各模块（<100 行，无业务） | — |
-| `host/service.ts` | WeWriteService：host 级唯一服务（对外 `ctx.wewrite`）；串行化写操作；聚合下述子模块 | domain, pipeline, scheduler, wechat, providers |
+| `host/service.ts` | WeChatArticleService：host 级唯一服务（对外 `ctx.wechat-article`）；串行化写操作；聚合下述子模块 | domain, pipeline, scheduler, wechat, providers |
 | `host/domain.ts` | storage domain spec（zod）+ 句柄生命周期（ctx.effect close） | shared |
 | `host/pipeline/` | 步骤编排引擎：run 生命周期（queued→running→succeeded/failed/cancelled）、每步事件记录、AbortSignal 贯穿 | domain, providers, wechat, ctx.llm |
 | `host/providers/` | ImageProvider 抽象 + 9 家实现 + fallback 编排（重试一次→降级下一家） | ctx.credentials, shared |
 | `host/wechat/` | 微信 API 客户端（F30 端点族）+ 出口模式（直连/代理 base URL）+ 40164 诊断 | ctx.credentials, shared |
 | `host/scheduler/` | RRULE 归一化、下次触发计算、misfire 宽限、durable occurrence claim、run 派发（dsh-automation §3.1 模式） | service, domain |
-| `host/rpc.ts` | `connection.rpc.handle('dsh-wewrite', ..., {authority:'loopback'})` 适配层（薄，只做 payload 校验+转发 service） | service, shared |
-| `host/tools.ts` | Agent 交互工具注册（`wewrite_run` / `wewrite_push_draft` / `wewrite_list_schedules`，可选启用） | service |
+| `host/rpc.ts` | `connection.rpc.handle('dsh-wechat-article', ..., {authority:'loopback'})` 适配层（薄，只做 payload 校验+转发 service） | service, shared |
+| `host/tools.ts` | Agent 交互工具注册（`wechat_run` / `wechat_push_draft` / `wechat_list_schedules`，可选启用） | service |
 | `client/` | 工作台 tab（React）：视图环注册 + 面板组件 + RPC 封装 + zh/en 词典 | shared |
 | `shared/` | 双端契约：zod schema（RPC payload/view model）、provider id 联合类型、能力协商常量 | — |
 | `render/` | vendored md→微信 HTML（convertArticle + inline styles + themes），host 侧渲染，预览 HTML 经 RPC 返回（保证预览=产物） | — |
@@ -173,9 +173,9 @@ workspace ADR 锁定的默认技术栈为 Astro + Cloudflare Workers/Hono/D1/R2�
 ## 4. 插件包结构（目录树）
 
 ```
-dsh-wewrite/
+dsh-wechat-article/
 ├── package.json               # 见 §4.1 manifest 示例
-├── cordis.patch.yml           # - insert: [{ id: wewrite, name: dsh-wewrite, config: {...} }]
+├── cordis.patch.yml           # - insert: [{ id: wechat-article, name: dsh-wechat-article, config: {...} }]
 ├── tsconfig.json
 ├── README.md / README.zh-CN.md
 ├── src/
@@ -234,7 +234,7 @@ dsh-wewrite/
 
 ```json
 {
-  "name": "dsh-wewrite",
+  "name": "dsh-wechat-article",
   "type": "module",
   "engines": { "node": "^22.19.0 || >=24.0.0" },
   "exports": {
@@ -266,7 +266,7 @@ dsh-wewrite/
 
 ## 5. 数据模型（storage domain schema）
 
-单一 domain `dsh-wewrite`，version 1（介质版本不符时 open 拒绝，天然迁移闸门）。全部记录带 `v` 字段做记录级演进。zod schema 即权威，下为字段说明。
+单一 domain `dsh-wechat-article`，version 1（介质版本不符时 open 拒绝，天然迁移闸门）。全部记录带 `v` 字段做记录级演进。zod schema 即权威，下为字段说明。
 
 ```
 DomainSpec
@@ -348,7 +348,7 @@ DomainSpec
 
 ## 6. UI ↔ Host RPC 接口契约（端点级）
 
-**通道**：`dsh-wewrite`，authority `loopback`（F13——控制无人值守写面的通道按平台先例只开本机回环）。
+**通道**：`dsh-wechat-article`，authority `loopback`（F13——控制无人值守写面的通道按平台先例只开本机回环）。
 **契约载体说明**：本产品无独立 HTTP 服务，DSH client↔host 走平台 RPC 通道，故以本表 + `src/shared/contract.ts` 的 zod schema 作为前后端唯一契约（OpenAPI 不适用；契约变更流程：改 shared schema → 双端同步重生成，走 Team Lead 通报）。payload/response 全部过 zod 双端校验。
 
 | endpoint | request | response | 说明 |
@@ -414,7 +414,7 @@ export interface ImageProvider {
 ```ts
 const stream = ctx.llm.stream({
   provider, model,                    // 来自 config.llmDefault 或 run 参数覆盖；F23 用户原生配置
-  purpose: 'wewrite-pipeline',        // 辅助调用标注（F22）
+  purpose: 'wechat-article-pipeline',        // 辅助调用标注（F22）
   messages: toMessages(promptStep),
   temperature, maxTokens,
 });
@@ -429,7 +429,7 @@ for await (const chunk of stream) { /* BlockAssembler 组装 */ }
 
 | 面 | 方案 |
 |---|---|
-| 凭据存储 | 微信 secret、9 家图片 key 全走 `ctx.credentials`（CredentialRef：`WEWRITE_WECHAT_SECRET`、`WEWRITE_IMG_OPENAI`…POSIX 命名）；**值永不入 storage domain、永不进 settings 记录、永不出 host**（F19/F20 平台机制）。appid/baseUrl/署名等非机密项才入 SettingsRecord |
+| 凭据存储 | 微信 secret、9 家图片 key 全走 `ctx.credentials`（CredentialRef：`WECHAT_ARTICLE_WECHAT_SECRET`、`WECHAT_ARTICLE_IMG_OPENAI`…POSIX 命名）；**值永不入 storage domain、永不进 settings 记录、永不出 host**（F19/F20 平台机制）。appid/baseUrl/署名等非机密项才入 SettingsRecord |
 | UI 凭据面 | 设置页只显 `credentials/describe` 描述符（已配置/可写徽标）；录入框只写（set 后清空），无「查看密码」 |
 | RPC 边界 | 通道 authority `loopback`（F13 先例）：本机 Web 专属，控制面不暴露给 trusted-host 级调用 |
 | 日志脱敏 | 三条硬规则：① Authorization/api_key/secret 值不进日志（logger 统一 redact 过滤器，键名匹配即替换 `[redacted]`）；② 微信 token 响应只记 errcode 不记 access_token；③ provider 错误消息截断 500 字符并剥离 header 回显 |

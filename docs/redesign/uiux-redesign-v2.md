@@ -1,4 +1,4 @@
-# dsh-wewrite UI/UX 重设计方案 v2（Jerry 判决驱动的全面返工）
+# dsh-wechat-article UI/UX 重设计方案 v2（Jerry 判决驱动的全面返工）
 
 > 作者：颜好看（MVP 开发专家团设计师） | 日期：2026-08-19
 > 输入：Jerry 判决（2026-08-19「写作台难看 / 面板排列不好 / 空间感小 / 功能分类不清」）+ glm-5v-turbo 六张真机截图诊断（已核实）+ 全量代码审读（styles 6 文件 / panels 8 文件 / components 9 文件）
@@ -13,7 +13,7 @@ Phase 1 的方向（宿主同源 / 工程编辑风 / 线框分层）是对的，
 
 | Jerry 痛点 | 代码级根因（逐条核实） |
 |---|---|
-| 「页面空间感觉很小」 | ① light 下 `--ww-bg`（页面）与 `--ww-surface`（卡片）同为 `#FFFFFF`——白底摆白卡，只靠 1px `rgba(0,0,0,.10)` 边框区分，边界感趋近于零，全页糊成一片（tokens.css:45-47）；② 区块间距单一节奏（`.ww-topic` 统一 gap 32px），无密度对比；③ `.ww-content` 无底部兜底 padding，宿主 composer 遮 60-80px |
+| 「页面空间感觉很小」 | ① light 下 `--wa-bg`（页面）与 `--wa-surface`（卡片）同为 `#FFFFFF`——白底摆白卡，只靠 1px `rgba(0,0,0,.10)` 边框区分，边界感趋近于零，全页糊成一片（tokens.css:45-47）；② 区块间距单一节奏（`.wa-topic` 统一 gap 32px），无密度对比；③ `.wa-content` 无底部兜底 padding，宿主 composer 遮 60-80px |
 | 「面板排列不太好 / 功能分类不清楚」 | ① 写作台「今日待办」与「最近文章」两个 section 同构同权（都是 16px/500 标题），无主次宣言；② 待办是裸列表、文章是有边框卡、输入条是 sticky 条——三种容器形态混排但无语义分工；③ 编辑器顶部三行 chrome（head 48 + 可能折行 + toolbar 40 + preview bar）吃掉 ~130px 纵向；④ 状态信息散落三处（标题旁「自动保存于」/ 右上推送按钮态 / 底部 statusstrip） |
 | 「写作台难看」（视觉模型诊断对应） | ① 「开始写作」CTA 在空输入时 `disabled`（topic-panel.tsx:154）——首屏主按钮永远灰的，像坏了；② 空状态 = 单个 20px 裸图标 + 左对齐一行字（states.css:36-55），像半成品占位符；③ 空态内容全堆在上半屏，下半屏大片空白，视觉重心失衡；④ 卡片 hover 只把边框从 `rgba(0,0,0,.10)` 变 `rgba(0,0,0,.12)`（panels.css:49）——肉眼不可见，等于没有 hover；⑤ 预览画布外围 `#F9FAFB` 与页面白仅一档灰阶差，「画布容器感」缺失 |
 
@@ -47,15 +47,15 @@ Phase 1 的方向（宿主同源 / 工程编辑风 / 线框分层）是对的，
 
 ```css
 /* base.css 增量 */
-.ww-tab {
-  gap: var(--ww-space-1);               /* 4px，icon 与文字 */
+.wa-tab {
+  gap: var(--wa-space-1);               /* 4px，icon 与文字 */
 }
-.ww-tab svg { color: var(--ww-fg-tertiary); transition: color var(--ww-motion-base) var(--ww-ease); }
-.ww-tab:hover { color: var(--ww-fg); background: var(--ww-interactive-hover); }  /* 原 hover 只变色，加底 */
-.ww-tab--active svg { color: var(--ww-accent); }
+.wa-tab svg { color: var(--wa-fg-tertiary); transition: color var(--wa-motion-base) var(--wa-ease); }
+.wa-tab:hover { color: var(--wa-fg); background: var(--wa-interactive-hover); }  /* 原 hover 只变色，加底 */
+.wa-tab--active svg { color: var(--wa-accent); }
 ```
 
-hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--ww-radius-sm) var(--ww-radius-sm) 0 0; }`（底线指示条仍在底边，不冲突）。
+hover 底请加内缩圆角避免方块出血：`.wa-tab { border-radius: var(--wa-radius-sm) var(--wa-radius-sm) 0 0; }`（底线指示条仍在底边，不冲突）。
 
 **不改**：48px 高、2px accent 底线激活语言、右侧连接状态按钮。
 
@@ -63,45 +63,45 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 ```css
 /* base.css 修改 —— 内容区底色分区（本方案最大单点改动） */
-.ww-content {
+.wa-content {
   flex: 1; min-height: 0; overflow-y: auto;
-  background: var(--ww-bg-page);                    /* 新 token，light #F9FAFB / dark #1B1B1C */
-  padding: var(--ww-space-5) var(--ww-space-6) var(--ww-content-pad-bottom);  /* 20 24 96 */
-  scroll-padding-bottom: var(--ww-content-pad-bottom);
+  background: var(--wa-bg-page);                    /* 新 token，light #F9FAFB / dark #1B1B1C */
+  padding: var(--wa-space-5) var(--wa-space-6) var(--wa-content-pad-bottom);  /* 20 24 96 */
+  scroll-padding-bottom: var(--wa-content-pad-bottom);
 }
 ```
 
-- `.ww-tabbar` 保持 `--ww-bg`（白）+ 底部 `--ww-border-strong`——白条浮在灰工作台上，层级即分。
-- 编辑器页例外：`.ww-editor-page` 自带负 margin 满铺 + `background: var(--ww-bg)`（白），它本身就是一个整页工作台，不需要灰底。
+- `.wa-tabbar` 保持 `--wa-bg`（白）+ 底部 `--wa-border-strong`——白条浮在灰工作台上，层级即分。
+- 编辑器页例外：`.wa-editor-page` 自带负 margin 满铺 + `background: var(--wa-bg)`（白），它本身就是一个整页工作台，不需要灰底。
 
-**页头工具行**（替代现 `.ww-page-head`，全部页面统一）：
+**页头工具行**（替代现 `.wa-page-head`，全部页面统一）：
 
 ```css
-.ww-pagebar {
-  display: flex; align-items: center; gap: var(--ww-space-3);
-  min-height: var(--ww-toolrow-h);        /* 新 token 40px */
-  margin-bottom: var(--ww-space-4);       /* 16px —— 页头与内容紧凑，不搞大留白 */
+.wa-pagebar {
+  display: flex; align-items: center; gap: var(--wa-space-3);
+  min-height: var(--wa-toolrow-h);        /* 新 token 40px */
+  margin-bottom: var(--wa-space-4);       /* 16px —— 页头与内容紧凑，不搞大留白 */
 }
-.ww-pagebar__title { margin: 0; font-size: var(--ww-text-md); font-weight: var(--ww-weight-medium); }  /* 16/500 */
-.ww-pagebar__count  { font-family: var(--ww-font-code); font-size: var(--ww-text-sm); color: var(--ww-fg-tertiary); font-variant-numeric: tabular-nums; }
-.ww-pagebar__spacer { flex: 1; }
-.ww-pagebar__aside  { display: flex; align-items: center; gap: var(--ww-space-2); }
+.wa-pagebar__title { margin: 0; font-size: var(--wa-text-md); font-weight: var(--wa-weight-medium); }  /* 16/500 */
+.wa-pagebar__count  { font-family: var(--wa-font-code); font-size: var(--wa-text-sm); color: var(--wa-fg-tertiary); font-variant-numeric: tabular-nums; }
+.wa-pagebar__spacer { flex: 1; }
+.wa-pagebar__aside  { display: flex; align-items: center; gap: var(--wa-space-2); }
 ```
 
-**区块头**（替代 `.ww-section-head`，降级为小标签——「小标题 + 大内容」反差是 Linear 式层级手法）：
+**区块头**（替代 `.wa-section-head`，降级为小标签——「小标题 + 大内容」反差是 Linear 式层级手法）：
 
 ```css
-.ww-blockhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--ww-space-2); }
-.ww-blockhead__title { margin: 0; font-size: var(--ww-text-sm); font-weight: var(--ww-weight-medium); color: var(--ww-fg-secondary); }  /* 13/500/次级色 */
+.wa-blockhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--wa-space-2); }
+.wa-blockhead__title { margin: 0; font-size: var(--wa-text-sm); font-weight: var(--wa-weight-medium); color: var(--wa-fg-secondary); }  /* 13/500/次级色 */
 ```
 
 #### 1a-3. 间距节奏（4px 网格三档）
 
 | 档位 | 值 | 用途 |
 |---|---|---|
-| 区块间 | 24px（`--ww-space-6`） | 页头之后，各 section 之间 |
+| 区块间 | 24px（`--wa-space-6`） | 页头之后，各 section 之间 |
 | 区块内 | 8px / 12px | blockhead 与内容、卡片内部元素 |
-| 容器内 | 16px（`--ww-space-4`） | 卡片 padding |
+| 容器内 | 16px（`--wa-space-4`） | 卡片 padding |
 | 紧凑行 | 40px / 44px | 裸列表行高（紧凑）与表格/可点行（触摸底线） |
 
 **密度对比原则**：同一页面必须同时存在「紧凑裸列表（40px 行 + divider）」和「舒适卡片（16px padding）」两种密度，全页等密度 = 平 = 小气。禁第三种密度混入。
@@ -118,7 +118,7 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 - 待办列表：裸列表（无容器卡，divide 线分隔，行 40px）——它是「提示流」不是「对象」。
 - 最近文章：白卡网格 `repeat(auto-fill, minmax(240px, 1fr))`，卡内标题 14/500。生成中行（◐ 正在生成）保持待办首行。
-- 删除 `.ww-topic__composer` 的 sticky 定位与 `.ww-topic` 的 `padding-bottom: 48px`（兜底统一由 `.ww-content` 承担）。
+- 删除 `.wa-topic__composer` 的 sticky 定位与 `.wa-topic` 的 `padding-bottom: 48px`（兜底统一由 `.wa-content` 承担）。
 
 #### 1b-2. 选题中心：1fr + 280px，窄态右栏折叠为顶部横条
 
@@ -126,15 +126,15 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 - **窄态（<900）重排**：关键词栏从「堆到列表下方」改为**列表上方的单行横条**（chips 横向滚动 + 添加 + 命中筛选），不再占用下方黄金位：
 
 ```css
-.ww-hotspots { grid-template-columns: minmax(0, 1fr) 280px; }
-.ww-hotspots--narrow { grid-template-columns: minmax(0, 1fr); }
-.ww-hotspots--narrow .ww-hotspots__keywords {
+.wa-hotspots { grid-template-columns: minmax(0, 1fr) 280px; }
+.wa-hotspots--narrow { grid-template-columns: minmax(0, 1fr); }
+.wa-hotspots--narrow .wa-hotspots__keywords {
   flex-direction: row; align-items: center; flex-wrap: nowrap;
-  overflow-x: auto; padding: var(--ww-space-2) var(--ww-space-3);
+  overflow-x: auto; padding: var(--wa-space-2) var(--wa-space-3);
 }
-.ww-hotspots--narrow .ww-keywords { flex-wrap: nowrap; }
-.ww-hotspots--narrow .ww-aside-title,
-.ww-hotspots--narrow .ww-aside-empty { display: none; }
+.wa-hotspots--narrow .wa-keywords { flex-wrap: nowrap; }
+.wa-hotspots--narrow .wa-aside-title,
+.wa-hotspots--narrow .wa-aside-empty { display: none; }
 ```
 
 #### 1b-3. 文章库：表格密度修正 + 操作列收纳
@@ -152,16 +152,16 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 ```
 
 ```css
-.ww-editor-head { flex-wrap: nowrap; }                          /* 原 wrap 是折行根因 */
-.ww-editor-head__main { flex: 1 1 auto; min-width: 0; }
-.ww-editor-head__saved { display: none; }                       /* 状态归一：saved 移底部 */
+.wa-editor-head { flex-wrap: nowrap; }                          /* 原 wrap 是折行根因 */
+.wa-editor-head__main { flex: 1 1 auto; min-width: 0; }
+.wa-editor-head__saved { display: none; }                       /* 状态归一：saved 移底部 */
 ```
 
-- 视图分段控件加图标（`file-pen` 编辑 / `eye` 微信预览 / `shield-check` 门禁报告），label 包 `<span className="ww-view-tab__label">`；面板 900-1100px 时用容器查询收成 icon-only：
+- 视图分段控件加图标（`file-pen` 编辑 / `eye` 微信预览 / `shield-check` 门禁报告），label 包 `<span className="wa-view-tab__label">`；面板 900-1100px 时用容器查询收成 icon-only：
 
 ```css
-.ww-editor-head { container-type: inline-size; }
-@container (max-width: 1100px) { .ww-editor-head .ww-view-tab__label { display: none; } }
+.wa-editor-head { container-type: inline-size; }
+@container (max-width: 1100px) { .wa-editor-head .wa-view-tab__label { display: none; } }
 /* 回退：若容器查询不可用，用 store.narrow(<900) 隐藏 label，效果等价 */
 ```
 
@@ -169,26 +169,26 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 **行 2（toolbar）**：格式工具栏保持随编辑器（sunken 底 + 32px 热区），见 §3-05 对比度修正。
 
-**主区**：`grid-template-columns: minmax(0, 1fr) minmax(420px, 45vw)` 不变；预览栏压缩：`.ww-preview__bar` 高收到 28px，标题降 12px mono tertiary。
+**主区**：`grid-template-columns: minmax(0, 1fr) minmax(420px, 45vw)` 不变；预览栏压缩：`.wa-preview__bar` 高收到 28px，标题降 12px mono tertiary。
 
 **画布容器化**（对应「像漂浮碎片」诊断）：
 
 ```css
-.ww-preview__frame {
-  background: var(--ww-canvas-well);      /* 新 token：light #EBEEF2 / dark #2C2C2E，比 sunken 深一档 */
-  padding: var(--ww-space-4);
+.wa-preview__frame {
+  background: var(--wa-canvas-well);      /* 新 token：light #EBEEF2 / dark #2C2C2E，比 sunken 深一档 */
+  padding: var(--wa-space-4);
 }
-.ww-preview__canvas {
-  border: var(--ww-border-width) solid var(--ww-border-strong);
-  border-radius: var(--ww-radius-md);     /* 6px，手机感 */
-  box-shadow: var(--ww-shadow-card);      /* 新 token：0 1px 2px 微投影，画布立在井上 */
+.wa-preview__canvas {
+  border: var(--wa-border-width) solid var(--wa-border-strong);
+  border-radius: var(--wa-radius-md);     /* 6px，手机感 */
+  box-shadow: var(--wa-shadow-card);      /* 新 token：0 1px 2px 微投影，画布立在井上 */
 }
 /* 手机 notch 装饰（纯 CSS，零图片零渐变） */
-.ww-preview__canvas::before {
+.wa-preview__canvas::before {
   content: ""; display: block; width: 96px; height: 4px;
-  border-radius: var(--ww-radius-full);
-  background: var(--ww-surface-sunken);
-  margin: 0 auto var(--ww-space-4);
+  border-radius: var(--wa-radius-full);
+  background: var(--wa-surface-sunken);
+  margin: 0 auto var(--wa-space-4);
 }
 ```
 
@@ -201,7 +201,7 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 #### 1b-6. 设置：保持左导航 + 右表单（否掉锚点分段方案）
 
-240px 左导航 + 右表单是对的（5 组每组一屏，避免长滚动迷失），锚点分段在窄面板反而不堪用。增量：激活项 icon 色提为 `--ww-fg`（现 secondary），右区加组级标题 16/500 + 下方 `--ww-divider`（现在右区直接铺字段，缺组头）。
+240px 左导航 + 右表单是对的（5 组每组一屏，避免长滚动迷失），锚点分段在窄面板反而不堪用。增量：激活项 icon 色提为 `--wa-fg`（现 secondary），右区加组级标题 16/500 + 下方 `--wa-divider`（现在右区直接铺字段，缺组头）。
 
 ### 1c. 空间感放大策略（900-1400px 窄面板）
 
@@ -209,7 +209,7 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 2. **密度对比**：紧凑裸列表（40px 行）与舒适白卡（16px padding）同页共存，视线有呼吸节奏；全页等密度会让 1300px 面板看起来像 900px。
 3. **chrome 瘦身**：编辑器 -48px（三行并两行）、预览 bar -12px、页头工具行 40px 紧凑——纵向寸土寸金，省下的全部还给写作视窗。
 4. **次要功能折叠**：表格行操作收 ellipsis、定时卡操作收 ellipsis、窄态关键词栏折叠横条、设置 hint 仅窄态显示——可见选项 ≤4（认知负荷规则）。
-5. **底部兜底**：`.ww-content` padding-bottom 96px 吸收宿主 composer 的 60-80px 遮挡，任何页面的末行操作不被切半；Toast 同步抬高（§3-09）。
+5. **底部兜底**：`.wa-content` padding-bottom 96px 吸收宿主 composer 的 60-80px 遮挡，任何页面的末行操作不被切半；Toast 同步抬高（§3-09）。
 6. **narrow（<900）优化**：编辑器单栏 + icon-only 视图分段；选题关键词折叠横条；设置 chip 行（已有）；表格隐藏「定时」列保 slug 等宽列（DESIGN §8 既定）。
 
 ---
@@ -220,14 +220,14 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 | # | 不足 | 证据 | 修法 |
 |---|---|---|---|
-| 1 | 页面底与卡面同色，无「底 vs 卡」对比 | tokens.css:45-47 `--ww-bg` 与 `--ww-surface` light 下同为 `#FFFFFF` | 新增 `--ww-bg-page`（见 2-2） |
-| 2 | 预览画布外围与页面背景仅一档灰阶差 | editor.css:121 `--ww-surface-sunken`(#F9FAFB) vs 页面白 | 新增 `--ww-canvas-well` 深一档 |
-| 3 | 无卡片级微投影 token，白卡在灰底上立不起来 | tokens.css §10 只有 overlay/modal 两级 | 新增 `--ww-shadow-card` |
+| 1 | 页面底与卡面同色，无「底 vs 卡」对比 | tokens.css:45-47 `--wa-bg` 与 `--wa-surface` light 下同为 `#FFFFFF` | 新增 `--wa-bg-page`（见 2-2） |
+| 2 | 预览画布外围与页面背景仅一档灰阶差 | editor.css:121 `--wa-surface-sunken`(#F9FAFB) vs 页面白 | 新增 `--wa-canvas-well` 深一档 |
+| 3 | 无卡片级微投影 token，白卡在灰底上立不起来 | tokens.css §10 只有 overlay/modal 两级 | 新增 `--wa-shadow-card` |
 | 4 | 字号层级扁平：页面标题 18 与区块标题 16 与正文 14 差距均匀无重点 | base.css:109-138 | 页头降 16/500 + 区块头降 13/500/secondary（§1a-2），靠「色阶 + 反差」分层而非均匀放大 |
 | 5 | hover 态大面积不可见：卡片只换 border 强度 .10→.12 | panels.css:49,229 | 统一 hover 复合反馈（§2-3） |
 | 6 | focus ring 强制 `border-radius: 4px` 覆写按钮原有 6px 圆角，聚焦瞬间圆角跳变 | base.css:198 | 改 `border-radius: inherit`（§3-10） |
 | 7 | 表格行高不足触摸底线：td 上下 padding 8px，行高 ~36px < 44px | panels.css:174-178 | padding 12px（§3-08） |
-| 8 | 无「页头工具行」与「底部兜底」布局 token，各页手搓 | 分散 | 新增 `--ww-toolrow-h` / `--ww-content-pad-bottom` |
+| 8 | 无「页头工具行」与「底部兜底」布局 token，各页手搓 | 分散 | 新增 `--wa-toolrow-h` / `--wa-content-pad-bottom` |
 | 9 | CTA 无按下位移与足够尺寸语言，空输入时 disabled 显坏 | topic-panel.tsx:154 + states.css:74-80 | 交互策略修正（§3-01） |
 | 10 | 空状态图标无容器承载，单薄 | states.css:36-55 | glyph 容器化（§3-03） |
 
@@ -235,24 +235,24 @@ hover 底请加内缩圆角避免方块出血：`.ww-tab { border-radius: var(--
 
 ```css
 /* tokens.css —— 在 §12 布局常量区块追加 */
-.dsh-wewrite-panel {
+.dsh-wechat-article-panel {
   /* 工作台底：非编辑器页面的内容区底色（白卡浮其上）。
      宿主引用：specific-sidebar-fill。light #F9FAFB / dark #1B1B1C */
-  --ww-bg-page: var(--dsw-specific-sidebar-fill);
+  --wa-bg-page: var(--dsw-specific-sidebar-fill);
   /* 预览画布井：比 sunken 深一档，制造「画布立在井上」。
      借宿主 alias-markdown-inline-code（唯一近似档）。light #EBEEF2 / dark #2C2C2E */
-  --ww-canvas-well: var(--dsw-alias-markdown-inline-code);
+  --wa-canvas-well: var(--dsw-alias-markdown-inline-code);
   /* 卡片级微投影：白卡在灰底上的物理暗示；blur 2px 远低于 16px 幽灵卡红线 */
-  --ww-shadow-card: 0 1px 2px rgba(15, 17, 21, 0.05);
+  --wa-shadow-card: 0 1px 2px rgba(15, 17, 21, 0.05);
   /* 页头工具行高 */
-  --ww-toolrow-h: 40px;
+  --wa-toolrow-h: 40px;
   /* 内容区底部兜底：吸收宿主 composer 遮挡（60-80px）+ 呼吸位 */
-  --ww-content-pad-bottom: 96px;
+  --wa-content-pad-bottom: 96px;
 }
 
 /* 深色覆写块追加（自有值且随主题变） */
-body[data-ds-dark-theme] .dsh-wewrite-panel {
-  --ww-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.40);
+body[data-ds-dark-theme] .dsh-wechat-article-panel {
+  --wa-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.40);
 }
 ```
 
@@ -264,9 +264,9 @@ body[data-ds-dark-theme] .dsh-wewrite-panel {
 
 | 组件 | Default | Hover | Active | Focus | Disabled | Empty |
 |---|---|---|---|---|---|---|
-| 主 CTA（ww-btn-accent） | accent 平涂 | accent-hover + `translateY(-1px)` 100ms | accent-active + `translateY(0)` | inherit 官方 ring | 仅 `starting` busy 时；**空输入不禁用**（点击聚焦输入框） | — |
+| 主 CTA（wa-btn-accent） | accent 平涂 | accent-hover + `translateY(-1px)` 100ms | accent-active + `translateY(0)` | inherit 官方 ring | 仅 `starting` busy 时；**空输入不禁用**（点击聚焦输入框） | — |
 | 白卡（文章卡/输入卡/定时卡/表单卡） | surface + 1px border + shadow-card | border-strong + shadow 加深为 `0 2px 6px rgba(15,17,21,0.08)` 200ms | 不适用（卡片是容器） | 内部可点元素各自 focus | — | 各页 EmptyState |
-| 裸列表行（待办/历史） | 无底 + divider | `--ww-interactive-hover` 100ms | `--ww-interactive-active` | 行内动作 focus ring | — | 见各页 |
+| 裸列表行（待办/历史） | 无底 + divider | `--wa-interactive-hover` 100ms | `--wa-interactive-active` | 行内动作 focus ring | — | 见各页 |
 | 表格行 | surface | interactive-hover 100ms | interactive-active | 标题按钮 focus | — | 空表 EmptyState |
 | Tab | fg-secondary 文字 + tertiary icon | fg + interactive-hover 底（内缩圆角） | accent 底线 + icon accent | focus ring | — | — |
 | 视图分段（view-tab） | sunken 容器内透明 | fg 文字 | surface 白底 + 1px border ring | focus ring | — | — |
@@ -282,22 +282,22 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 
 | # | 诊断 | 修法（照做即可） |
 |---|---|---|
-| 01 | CTA 饱和度不足像禁用态 | topic-panel.tsx：`disabled` 条件去掉 `topic.trim().length === 0`，只留 `starting`；`handleStart` 空值时 `inputRef.current?.focus()`。按钮用官方 `size="md"`(36px)。CSS：`.ww-btn-accent:hover:not(:disabled) { transform: translateY(-1px); } .ww-btn-accent:active:not(:disabled) { transform: translateY(0); }`（transition `transform var(--ww-motion-fast) var(--ww-ease)`） |
-| 02 | 空状态内容过高堆上半屏、下半空白 | 输入卡置顶（§1b-1）本身就是空态 hero；另 EmptyState 大居中版 `.ww-empty--hero { min-height: 240px; justify-content: center; align-items: center; text-align: center; }` 用于写作台/文章库全新用户态 |
-| 03 | 空状态图标单薄像占位符 | EmptyState 改组合 glyph：40px 圆形容器（`--ww-surface-sunken` 底 + radius-full）内主 icon 20px `--ww-fg-secondary`，右下角叠次 icon 12px（`--ww-fg-caption`，外套 2px `--ww-bg-page` 描边圆），如 inbox+sparkles / file-text+pen-line 组合。结构：`.ww-empty__glyph { position: relative; width: 40px; height: 40px; border-radius: var(--ww-radius-full); background: var(--ww-surface-sunken); display: grid; place-items: center; } .ww-empty__glyph-sub { position: absolute; right: -4px; bottom: -4px; background: var(--ww-bg-page); border-radius: var(--ww-radius-full); padding: 2px; }` |
+| 01 | CTA 饱和度不足像禁用态 | topic-panel.tsx：`disabled` 条件去掉 `topic.trim().length === 0`，只留 `starting`；`handleStart` 空值时 `inputRef.current?.focus()`。按钮用官方 `size="md"`(36px)。CSS：`.wa-btn-accent:hover:not(:disabled) { transform: translateY(-1px); } .wa-btn-accent:active:not(:disabled) { transform: translateY(0); }`（transition `transform var(--wa-motion-fast) var(--wa-ease)`） |
+| 02 | 空状态内容过高堆上半屏、下半空白 | 输入卡置顶（§1b-1）本身就是空态 hero；另 EmptyState 大居中版 `.wa-empty--hero { min-height: 240px; justify-content: center; align-items: center; text-align: center; }` 用于写作台/文章库全新用户态 |
+| 03 | 空状态图标单薄像占位符 | EmptyState 改组合 glyph：40px 圆形容器（`--wa-surface-sunken` 底 + radius-full）内主 icon 20px `--wa-fg-secondary`，右下角叠次 icon 12px（`--wa-fg-caption`，外套 2px `--wa-bg-page` 描边圆），如 inbox+sparkles / file-text+pen-line 组合。结构：`.wa-empty__glyph { position: relative; width: 40px; height: 40px; border-radius: var(--wa-radius-full); background: var(--wa-surface-sunken); display: grid; place-items: center; } .wa-empty__glyph-sub { position: absolute; right: -4px; bottom: -4px; background: var(--wa-bg-page); border-radius: var(--wa-radius-full); padding: 2px; }` |
 | 04 | 编辑器顶部三行吃纵向 | §1b-4：head 去 flex-wrap 单行化（-48px 或更多）；saved 状态移除；预览 bar 压缩到 28px |
-| 05 | 格式工具栏图标对比度低 | editor.css：`.ww-editor__tool { color: var(--ww-fg-secondary); }`（现已是）+ `.ww-editor__toolbar { background: var(--ww-surface); border-bottom: var(--ww-border-width) solid var(--ww-border); }`——从 sunken 改白底 + 实线分隔，图标对比度从 4.5 提到 5.9；hover 保持 interactive-hover + fg |
-| 06 | 预览区无边界差、像漂浮碎片 | §1b-4 画布井化：`--ww-canvas-well` + canvas 1px border-strong + 6px 圆角 + shadow-card + notch 装饰 |
+| 05 | 格式工具栏图标对比度低 | editor.css：`.wa-editor__tool { color: var(--wa-fg-secondary); }`（现已是）+ `.wa-editor__toolbar { background: var(--wa-surface); border-bottom: var(--wa-border-width) solid var(--wa-border); }`——从 sunken 改白底 + 实线分隔，图标对比度从 4.5 提到 5.9；hover 保持 interactive-hover + fg |
+| 06 | 预览区无边界差、像漂浮碎片 | §1b-4 画布井化：`--wa-canvas-well` + canvas 1px border-strong + 6px 圆角 + shadow-card + notch 装饰 |
 | 07 | 状态信息散落三处 | 标题旁 saved 删除（唯一保存态出口 = StatusStrip 右侧）；推送中态仍在按钮文字（操作反馈不算散状态）；「1 轮 1 步」类管线信息归 StatusStrip items |
-| 08 | 表格行矮于触摸底线 | panels.css：`.ww-table td { padding: var(--ww-space-3) var(--ww-space-3); }`（原 8px 12px）→ 行高 ≈44px |
-| 09 | Toast 被宿主 composer 遮挡 | states.css：`.ww-toasts { bottom: var(--ww-content-pad-bottom); }`（原 24px） |
-| 10 | focus ring 圆角跳变 | base.css：`.dsh-wewrite-panel button:focus-visible, … { border-radius: inherit; box-shadow: var(--ww-focus-ring); }`——`inherit` 跟随元素自身圆角，删掉硬编码 4px |
+| 08 | 表格行矮于触摸底线 | panels.css：`.wa-table td { padding: var(--wa-space-3) var(--wa-space-3); }`（原 8px 12px）→ 行高 ≈44px |
+| 09 | Toast 被宿主 composer 遮挡 | states.css：`.wa-toasts { bottom: var(--wa-content-pad-bottom); }`（原 24px） |
+| 10 | focus ring 圆角跳变 | base.css：`.dsh-wechat-article-panel button:focus-visible, … { border-radius: inherit; box-shadow: var(--wa-focus-ring); }`——`inherit` 跟随元素自身圆角，删掉硬编码 4px |
 | 11 | Tab 无 hover 底、扫视弱 | §1a-1 图标 + hover 底 + active icon accent |
 | 12 | 选题中心窄态关键词栏占列表下方黄金位 | §1b-2 窄态折叠为顶部横条 |
 | 13 | 定时卡 4 按钮一行拥挤 | §1b-5 收纳为 2 + ellipsis |
-| 14 | 设置 nav 激活态弱 | settings.css：`.ww-settings__nav-item--active svg { color: var(--ww-fg); }`；右区加组头（§1b-6） |
+| 14 | 设置 nav 激活态弱 | settings.css：`.wa-settings__nav-item--active svg { color: var(--wa-fg); }`；右区加组头（§1b-6） |
 | 15 | 白卡 hover 不可见 | §2-3 卡片 hover 复合反馈（border-strong + 阴影加深 200ms） |
-| 16 | 页面滚动到末行被宿主 composer 切半 | §1a-2 `.ww-content` padding-bottom 96px + scroll-padding-bottom |
+| 16 | 页面滚动到末行被宿主 composer 切半 | §1a-2 `.wa-content` padding-bottom 96px + scroll-padding-bottom |
 
 ---
 
@@ -312,12 +312,12 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 │ [▪pen-line 写作台][▪flame 选题中心][▪file-text 文章库]         │ tabbar 48px
 │ [▪calendar-clock 定时任务][▪settings 设置]   ●已连接 ▪wechat   │ bg 白 + border-strong
 ├──────────────────────────────────────────────────────────────┤
-│░░░░░░░░░░░░░░░░ --ww-bg-page #F9FAFB 工作台底 ░░░░░░░░░░░░░░░│
+│░░░░░░░░░░░░░░░░ --wa-bg-page #F9FAFB 工作台底 ░░░░░░░░░░░░░░░│
 │ ┌──────────────────────────────────────────────────────────┐ │
 │ │ [▪sparkles 输入主题，直接开写…]        [开始写作 ▪→]      │ │ 输入卡（唯一大卡）
 │ └──────────────────────────────────────────────────────────┘ │ 白卡+shadow-card
 │                                                              │   + 8px 圆角
-│ 今日待办（2）· 08:14                            --ww-blockhead│ 13/500/secondary
+│ 今日待办（2）· 08:14                            --wa-blockhead│ 13/500/secondary
 │ ────────────────────────────────────────────────────────────│ divider 起
 │ ▪clock   09:30 排队发布《DSH 插件开发指南（三）》     [查看]  │ 裸列表行 40px
 │ ▪shield-alert 门禁未过 1 篇 ·《V4 Pro 实测补记》    [去修复]  │ hover=interactive
@@ -349,7 +349,7 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 │ │ ──────────────────────────────────────│ │ [DSH 插件 ×]   │ │ 白卡
 │ │ #2  为什么开发者都在本地跑 Agent  微博  │ │ [微信生态 ×]   │ │
 │ │ ──────────────────────────────────────│ │ [+ 添加关键词] │ │
-│ │ #3  …（命中行底 --ww-accent-subtle）   │ │                │ │
+│ │ #3  …（命中行底 --wa-accent-subtle）   │ │                │ │
 │ │ 行 44px · hover interactive-hover      │ │ [▪filter 命中  │ │
 │ │ 展开区：原文链接 / 写这个 / 收藏        │ │  筛选：看全部] │ │
 │ └───────────────────────────────────────┘ └────────────────┘ │
@@ -389,11 +389,11 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 ├──────────────────────────────────────────────────────────────┤│ 900-1100px 视图
 │ ┌────────────────────────────┐ │ ▪手机图标 微信预览  [主题 ▾] ││ 分段收 icon-only
 │ │ [▪B][▪I][▪H2][▪列表][▪引用] │ │────────────────────────────│
-│ │ ──────────────────────────│ │ ░ 井底 --ww-canvas-well ░░░ ││ bar 28px
+│ │ ──────────────────────────│ │ ░ 井底 --wa-canvas-well ░░░ ││ bar 28px
 │ │                            │ │ ░ ┌──────────────────────┐ ░││
 │ │  Markdown 源码             │ │ ░ │  ▬▬▬ (notch 装饰)     │ ░││ canvas 375px
 │ │  CodeMirror 6              │ │ ░ │  杰瑞的折腾手记        │ ░││ 白+1px边+6px圆角
-│ │  白底 --ww-surface         │ │ ░ │  今天 08:14           │ ░││ +shadow-card
+│ │  白底 --wa-surface         │ │ ░ │  今天 08:14           │ ░││ +shadow-card
 │ │                            │ │ ░ │  （真实排版产物）      │ ░││
 │ │  toolbar 44px 白底+实线     │ │ ░ │                       │ ░││
 │ │  (原 sunken 改白提对比)     │ │ ░ └──────────────────────┘ ░││
@@ -439,7 +439,7 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 │ │ ▪cpu 模型服务 │ │ AppID     [wx1a2b3c…]  (mono)         │ │
 │ │ ▪image 图片   │ │ AppSecret [••••••••] [▪eye] 仅存本机   │ │ 右表单 max-640
 │ │ ▪globe 代理   │ │ 作者名    [杰瑞的折腾手记]              │ │ 白卡容器
-│ │ ▪shield 纪律  │ │         （激活项 icon 提为 --ww-fg）   │ │
+│ │ ▪shield 纪律  │ │         （激活项 icon 提为 --wa-fg）   │ │
 │ │ 激活=accent-  │ │                                        │ │
 │ │ subtle 底     │ │                                        │ │
 │ └──────────────┘ └────────────────────────────────────────┘ │
@@ -452,7 +452,7 @@ Loading（骨架）/ Error（ErrorNote）/ Success（Toast）三态已达标（s
 
 ## 5. 明确「不改什么」（继承清单）
 
-1. **宿主 token 挂载方式**：`--ww-*` 全部挂 `.dsh-wewrite-panel`、经 `var(--dsw-*)` 引用、深色自动跟随——零新增主题开关、零裸 hex（新增 5 token 同样只指向宿主或自有 primitive）。
+1. **宿主 token 挂载方式**：`--wa-*` 全部挂 `.dsh-wechat-article-panel`、经 `var(--dsw-*)` 引用、深色自动跟随——零新增主题开关、零裸 hex（新增 5 token 同样只指向宿主或自有 primitive）。
 2. **lucide-react 唯一图标库** + `<Icon name>` 封装（16/20 两档、currentColor、1.75 描边）。本方案新增的 tab 图标全部在既有映射表内核验过。
 3. **P0 三条构造保证**：零 linear-gradient（新增 token 无一渐变）、紫粉四色不出现、emoji 不作图标（本文档亦通过正则自检）。
 4. **Jerry 审美基线**：浅底深内容（bg-page #F9FAFB 仍是极浅冷灰）、蓝色纯色平涂（accent 仍宿主 deepseek-500）、工程编辑风（等宽信息带、1px 线框、8px 圆角上限、44px 行、状态点语言）。

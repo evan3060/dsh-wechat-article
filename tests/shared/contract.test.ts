@@ -17,8 +17,8 @@ import {
   SnapshotResponseSchema,
 } from '@/shared/contract';
 import type { ConnectionRpcService } from '@/host/platform';
-import type { WeWriteService } from '@/host/service';
-import { registerWewriteRpc } from '@/host/rpc';
+import type { WeChatArticleService } from '@/host/service';
+import { registerWeChatArticleRpc } from '@/host/rpc';
 
 /**
  * 契约测试：Spec §5 端点清单的可执行形态（20 个基础
@@ -88,11 +88,11 @@ const configView = () => ({
     runHistoryLimit: 200,
   },
   credentials: {
-    WEWRITE_WECHAT_SECRET: { configured: false, writable: true },
-    WEWRITE_IMG_OPENAI: { configured: true, writable: true },
+    WECHAT_ARTICLE_WECHAT_SECRET: { configured: false, writable: true },
+    WECHAT_ARTICLE_IMG_OPENAI: { configured: true, writable: true },
   },
   imageProviders: [
-    { providerId: 'openai', model: 'gpt-image-2', credentialRef: 'WEWRITE_IMG_OPENAI' },
+    { providerId: 'openai', model: 'gpt-image-2', credentialRef: 'WECHAT_ARTICLE_IMG_OPENAI' },
   ],
 });
 
@@ -132,10 +132,10 @@ const EXPECTED_ENDPOINTS = [
 ] as const;
 
 describe('RPC 通道常量（Spec §5 头部 + 架构 F13）', () => {
-  it('通道名锁定为 dsh-wewrite', () => {
+  it('通道名锁定为 dsh-wechat-article', () => {
     // 平台 RPC 目标串契约：前导斜杠形态（dsh-automation 真身 "/dsh-automation" 同款；
     // 无斜杠 → invalid RPC target，2026-08-19 实测）
-    expect(RPC_CHANNEL).toBe('/dsh-wewrite');
+    expect(RPC_CHANNEL).toBe('/dsh-wechat-article');
   });
 
   it('authority 锁定为 loopback（控制无人值守写面仅本机回环）', () => {
@@ -414,7 +414,7 @@ const CASES: EndpointCase[] = [
       { wechatAuthor: 'Jerry' },
       { runHistoryLimit: 500 },
       { llmDefault: { provider: 'openai', model: 'deepseek-v4' } },
-      { imageProviders: [{ providerId: 'doubao', credentialRef: 'WEWRITE_IMG_DOUBAO' }] },
+      { imageProviders: [{ providerId: 'doubao', credentialRef: 'WECHAT_ARTICLE_IMG_DOUBAO' }] },
       {},
     ],
     invalidRequests: [
@@ -430,14 +430,14 @@ const CASES: EndpointCase[] = [
     endpoint: 'credentials/set',
     name: 'credentials/set：POSIX ref + 非空 value，只写直通',
     validRequests: [
-      { ref: 'WEWRITE_WECHAT_SECRET', value: 'abc123' },
-      { ref: 'WEWRITE_IMG_OPENAI', value: 'sk-x' },
+      { ref: 'WECHAT_ARTICLE_WECHAT_SECRET', value: 'abc123' },
+      { ref: 'WECHAT_ARTICLE_IMG_OPENAI', value: 'sk-x' },
     ],
     invalidRequests: [
       { ref: 'wechat-secret', value: 'x' },
       { ref: 'lowercase_ref', value: 'x' },
-      { ref: 'WEWRITE_SECRET', value: '' },
-      { ref: 'WEWRITE_SECRET' },
+      { ref: 'WECHAT_ARTICLE_SECRET', value: '' },
+      { ref: 'WECHAT_ARTICLE_SECRET' },
       { value: 'x' },
     ],
     validResponse: { ok: true },
@@ -449,11 +449,11 @@ const CASES: EndpointCase[] = [
     validRequests: [{}],
     invalidRequests: [{ ref: 'X' }],
     validResponse: {
-      WEWRITE_WECHAT_SECRET: { configured: false, writable: true },
-      WEWRITE_IMG_OPENAI: { configured: true, writable: true },
+      WECHAT_ARTICLE_WECHAT_SECRET: { configured: false, writable: true },
+      WECHAT_ARTICLE_IMG_OPENAI: { configured: true, writable: true },
     },
     invalidResponse: {
-      WEWRITE_WECHAT_SECRET: { configured: 'no', writable: true },
+      WECHAT_ARTICLE_WECHAT_SECRET: { configured: 'no', writable: true },
     },
   },
   {
@@ -673,7 +673,7 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
     };
     const service = {
       runDetail: vi.fn(async () => runDetailResponse()),
-    } as unknown as WeWriteService;
+    } as unknown as WeChatArticleService;
     return {
       rpc,
       service,
@@ -687,14 +687,14 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
 
   it('通道前导斜杠 + authority=loopback：run/detail 与既有 22 端点共用同一通道注册', async () => {
     const cap = captureHandler();
-    await registerWewriteRpc(cap.rpc, cap.service);
-    expect(cap.registered().channel).toBe('/dsh-wewrite');
+    await registerWeChatArticleRpc(cap.rpc, cap.service);
+    expect(cap.registered().channel).toBe('/dsh-wechat-article');
     expect(cap.registered().authority).toBe('loopback');
   });
 
   it('AC-M2-01: run/detail 合法请求 → 信封 {ok:true,value}，value 过响应 schema，service.runDetail 透传选择器', async () => {
     const cap = captureHandler();
-    await registerWewriteRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.rpc, cap.service);
     const envelope = (await cap.call('run/detail', { runId: 'run_42' })) as { ok: boolean; value?: unknown };
     expect(cap.service.runDetail).toHaveBeenCalledWith({ runId: 'run_42' });
     expect(envelope.ok).toBe(true);
@@ -703,7 +703,7 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
 
   it('M2 callId 兜底链: run/detail 按 callId 查询 → 透传 {callId} 选择器（runId 直查路径不受影响）', async () => {
     const cap = captureHandler();
-    await registerWewriteRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.rpc, cap.service);
     const envelope = (await cap.call('run/detail', { callId: 'call_9' })) as { ok: boolean; value?: unknown };
     expect(cap.service.runDetail).toHaveBeenCalledWith({ callId: 'call_9' });
     expect(envelope.ok).toBe(true);
@@ -712,19 +712,19 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
 
   it('既有失败面回归：未知端点按现状契约抛错（不返回裸值——裸值会在客户端 result 联合校验处炸）', async () => {
     const cap = captureHandler();
-    await registerWewriteRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.rpc, cap.service);
     await expect(cap.call('endpoint/does-not-exist', {})).rejects.toThrow(/未知端点/);
   });
 
   it('既有失败面回归：请求 schema 不符按现状契约抛错（错误信息含端点名）', async () => {
     const cap = captureHandler();
-    await registerWewriteRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.rpc, cap.service);
     await expect(cap.call('run/start', {})).rejects.toThrow(/run\/start/);
   });
 
   it('rpc 服务缺失 → 降级 no-op 不抛错（D 系降级骨架回归，warn 而非炸）', async () => {
-    const service = { runDetail: vi.fn() } as unknown as WeWriteService;
-    await expect(registerWewriteRpc(undefined, service)).resolves.toBeTypeOf('function');
+    const service = { runDetail: vi.fn() } as unknown as WeChatArticleService;
+    await expect(registerWeChatArticleRpc(undefined, service)).resolves.toBeTypeOf('function');
   });
 });
 

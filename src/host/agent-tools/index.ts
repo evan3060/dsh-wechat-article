@@ -6,8 +6,8 @@
  * 翻 true 对 roots 重挂载。全程 try/catch 降级 warn（D1）。返回 disposer 列表（入口统一回收）。
  */
 
-import type { AgentScope, HostContext, WewriteToolDefinition } from '../platform';
-import type { WeWriteService } from '../service';
+import type { AgentScope, HostContext, WeChatArticleToolDefinition } from '../platform';
+import type { WeChatArticleService } from '../service';
 import { createPushApproval } from './push-approval';
 import { buildPushTool, buildRewriteTool } from './edit-tools';
 import { buildListTool } from './list-tool';
@@ -19,17 +19,17 @@ export interface ToolRegistrationOptions {
 }
 
 function warn(message: string): void {
-  console.warn(`dsh-wewrite: ${message}`);
+  console.warn(`dsh-wechat-article: ${message}`);
 }
 
 /** 闸门读取：service.agentToolsEnabled()（单一真源）优先；无该面的 service（fake/旧宿主）回落 options.enabled。 */
-function readGate(service: WeWriteService, options: ToolRegistrationOptions): boolean {
+function readGate(service: WeChatArticleService, options: ToolRegistrationOptions): boolean {
   const dynamic = (service as { agentToolsEnabled?: () => boolean }).agentToolsEnabled?.();
   return typeof dynamic === 'boolean' ? dynamic : options.enabled;
 }
 
 /** 向根 Agent 作用域安装工具；返回 disposer 列表（入口 apply 统一回收）。 */
-export function registerAgentTools(ctx: HostContext, service: WeWriteService, options: ToolRegistrationOptions): Array<() => void> {
+export function registerAgentTools(ctx: HostContext, service: WeChatArticleService, options: ToolRegistrationOptions): Array<() => void> {
   // P0-A（QA 二轮）：onAgentToolsChanged 是真 service 的原型方法——摘取成裸函数会丢 this
   // （this=undefined → 读 this.agentToolsGate 即炸）。探测只 typeof 不摘取调用；订阅必须
   // .call(service, ...)（或方法调用形式）保 this 绑定。fake 的实例属性闭包两态皆兼容。
@@ -44,13 +44,13 @@ export function registerAgentTools(ctx: HostContext, service: WeWriteService, op
   try {
     pushApproval = createPushApproval(ctx, service);
     if (pushApproval) disposers.push(pushApproval.stop);
-    else warn('推送审批未武装：wewrite_push_draft 不注册（fail-closed，推送走写作台手动按钮）');
+    else warn('推送审批未武装：wechat_push_draft 不注册（fail-closed，推送走写作台手动按钮）');
   } catch (error) {
     pushApproval = undefined;
     warn(`推送审批装配降级：${error instanceof Error ? error.message : String(error)}`);
   }
 
-  const definitions: WewriteToolDefinition[] = [
+  const definitions: WeChatArticleToolDefinition[] = [
     buildRunTool(service),
     buildRewriteTool(service),
     buildListTool(service),

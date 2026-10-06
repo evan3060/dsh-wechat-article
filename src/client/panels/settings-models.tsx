@@ -44,11 +44,11 @@ export function LlmSection({ config, rpc, onSaved }: SectionProps) {
   }
 
   return (
-    <div className="ww-settings__section">
-      <h3 className="ww-settings__h">模型服务（复用 DSH 宿主已配供应商）</h3>
-      <div className="ww-field-row">
-        <div className="ww-field">
-          <span className="ww-field__label">供应商</span>
+    <div className="wa-settings__section">
+      <h3 className="wa-settings__h">模型服务（复用 DSH 宿主已配供应商）</h3>
+      <div className="wa-field-row">
+        <div className="wa-field">
+          <span className="wa-field__label">供应商</span>
           <Menu
             open={providerOpen}
             anchor={<MenuTrigger label={provider || '选择供应商'} open={providerOpen} onToggle={() => setProviderOpen((v) => !v)} />}
@@ -63,8 +63,8 @@ export function LlmSection({ config, rpc, onSaved }: SectionProps) {
             onClose={() => setProviderOpen(false)}
           />
         </div>
-        <div className="ww-field">
-          <span className="ww-field__label">模型</span>
+        <div className="wa-field">
+          <span className="wa-field__label">模型</span>
           <Menu
             open={modelOpen}
             anchor={<MenuTrigger label={model || '选择模型'} open={modelOpen} onToggle={() => setModelOpen((v) => !v)} mono />}
@@ -78,8 +78,8 @@ export function LlmSection({ config, rpc, onSaved }: SectionProps) {
           />
         </div>
       </div>
-      <div className="ww-settings__row">
-        <Button variant="primary" size="sm" className="ww-btn-accent" onClick={() => void save()} disabled={saveState === 'saving'}>
+      <div className="wa-settings__row">
+        <Button variant="primary" size="sm" className="wa-btn-accent" onClick={() => void save()} disabled={saveState === 'saving'}>
           保存
         </Button>
         <SaveState state={saveState} />
@@ -120,23 +120,23 @@ export function ImagesSection({ config, rpc, onSaved }: SectionProps) {
   }
 
   return (
-    <div className="ww-settings__section">
-      <h3 className="ww-settings__h">图片供应商 fallback 链（gpt-image-2 第一优先）</h3>
-      <ol className="ww-provider-chain">
+    <div className="wa-settings__section">
+      <h3 className="wa-settings__h">图片供应商 fallback 链（gpt-image-2 第一优先）</h3>
+      <ol className="wa-provider-chain">
         {chain.map((item, index) => (
-          <li key={item.providerId} className="ww-provider">
-            <span className="ww-provider__order">{index + 1}</span>
+          <li key={item.providerId} className="wa-provider">
+            <span className="wa-provider__order">{index + 1}</span>
             <CodeChip>{item.providerId}</CodeChip>
-            <span className="ww-provider__model">{item.model ?? DEFAULT_PROVIDER_MODELS[item.providerId as ImageProviderId] ?? '默认模型'}</span>
+            <span className="wa-provider__model">{item.model ?? DEFAULT_PROVIDER_MODELS[item.providerId as ImageProviderId] ?? '默认模型'}</span>
             <ConfiguredBadge descriptor={config.credentials[item.credentialRef]} />
-            <span className="ww-provider__ops">
-              <button type="button" className="ww-icon-btn" aria-label={`上移 ${item.providerId}`} onClick={() => move(index, -1)} disabled={index === 0}>
-                <Icon name="chevron-down" size={16} className="ww-rotate-180" />
+            <span className="wa-provider__ops">
+              <button type="button" className="wa-icon-btn" aria-label={`上移 ${item.providerId}`} onClick={() => move(index, -1)} disabled={index === 0}>
+                <Icon name="chevron-down" size={16} className="wa-rotate-180" />
               </button>
-              <button type="button" className="ww-icon-btn" aria-label={`下移 ${item.providerId}`} onClick={() => move(index, 1)} disabled={index === chain.length - 1}>
+              <button type="button" className="wa-icon-btn" aria-label={`下移 ${item.providerId}`} onClick={() => move(index, 1)} disabled={index === chain.length - 1}>
                 <Icon name="chevron-down" size={16} />
               </button>
-              <button type="button" className="ww-icon-btn" aria-label={`移除 ${item.providerId}`} onClick={() => void save(chain.filter((entry) => entry.providerId !== item.providerId))}>
+              <button type="button" className="wa-icon-btn" aria-label={`移除 ${item.providerId}`} onClick={() => void save(chain.filter((entry) => entry.providerId !== item.providerId))}>
                 <Icon name="x" size={16} />
               </button>
             </span>
@@ -158,9 +158,9 @@ export function ImagesSection({ config, rpc, onSaved }: SectionProps) {
         }}
         onClose={() => setAddOpen(false)}
       />
-      <div className="ww-settings__row">
+      <div className="wa-settings__row">
         <SaveState state={saveState} />
-        <span className="ww-field__hint">生成失败按链降级，全失败可无图推进（AC-9）。</span>
+        <span className="wa-field__hint">生成失败按链降级，全失败可无图推进（AC-9）。</span>
       </div>
     </div>
   );

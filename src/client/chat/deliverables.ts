@@ -7,18 +7,18 @@ import {
 } from './meta';
 
 /**
- * wewrite-deliverables ConversationNodeDefinition（architecture §5.1，M2；
+ * wechat-article-deliverables ConversationNodeDefinition（architecture §5.1，M2；
  * 官方 ui-deliverables 同款模式：client-only、零自定义 session 事件、target 省略
  * ——只发布 TurnData，不发布 view node）。
  *
  * 事件→状态机：
- * - match：只认自家 tool/result（message.name ∈ {wewrite_run, wewrite_push_draft}）
+ * - match：只认自家 tool/result（message.name ∈ {wechat_run, wechat_push_draft}）
  *   且 meta（JSON 字符串容错解析）含 tool 标记；run ok 且有 articleId → start，
  *   id=articleId；push → update（同 articleId 归并）。
  * - start：articles=[{articleId,title,digest,runId,state:'drafted'}]
  * - update：drafted→pushed（push ok）；push 失败保留 drafted（draft-failed 不入列表）；
  *   published 单向（重跑同 articleId 不回退 pushed）。
- * - buildLocationData：ConversationTurnDataMap 键 'wewrite' → {articles}（turnTail 消费）。
+ * - buildLocationData：ConversationTurnDataMap 键 'wechat-article' → {articles}（turnTail 消费）。
  *
  * 本文件自带 host 结构最小类型（ConversationNodeDefinitionLike 等，窄面纪律：
  * 字段比宿主真实面窄是刻意的，宿主参照包已 pin devDeps，需要扩面时在此追加）。
@@ -90,7 +90,7 @@ export interface ConversationNodeDefinitionLike<State> {
 // ── Turn 数据与状态 ────────────────────────────────────────────────────────────
 
 // type alias（非 interface）：便于宿主/测试侧 Record<string, unknown> 结构化收窄。
-export type WewriteDeliverableArticle = {
+export type WeChatArticleDeliverableArticle = {
   readonly articleId: string;
   readonly title: string;
   readonly digest: string;
@@ -98,9 +98,9 @@ export type WewriteDeliverableArticle = {
   readonly state: 'drafted' | 'pushed';
 };
 
-export interface WewriteDeliverablesState {
+export interface WeChatArticleDeliverablesState {
   /** 可变数组（QA 契约 reduceFrom 对 state 的结构化收窄）。 */
-  articles: WewriteDeliverableArticle[];
+  articles: WeChatArticleDeliverableArticle[];
 }
 
 /** turnTail owner 面的最小读取（ConversationLocationDataStore.get）。 */
@@ -114,28 +114,28 @@ export interface TurnTailOwnerPropsLike {
   readonly openFile?: (path: string) => void;
 }
 
-export const WEWRITE_TURN_DATA_KEY = 'wewrite';
+export const WECHAT_ARTICLE_TURN_DATA_KEY = 'wechat-article';
 
 // ── Definition 本体 ───────────────────────────────────────────────────────────
 
-function runStart(meta: RunToolMeta): WewriteDeliverableArticle {
+function runStart(meta: RunToolMeta): WeChatArticleDeliverableArticle {
   return { articleId: meta.articleId as string, title: meta.title ?? meta.topic, digest: meta.digest ?? '', runId: meta.runId, state: 'drafted' };
 }
 
 function upsertArticle(
-  articles: readonly WewriteDeliverableArticle[],
-  next: WewriteDeliverableArticle,
-): WewriteDeliverableArticle[] {
+  articles: readonly WeChatArticleDeliverableArticle[],
+  next: WeChatArticleDeliverableArticle,
+): WeChatArticleDeliverableArticle[] {
   const index = articles.findIndex((article) => article.articleId === next.articleId);
   if (index === -1) return [...articles, next];
-  const existing = articles[index] as WewriteDeliverableArticle;
+  const existing = articles[index] as WeChatArticleDeliverableArticle;
   // published 单向终态（uiux §4.2）：已 pushed 的文章重跑成稿不回退。
-  const merged: WewriteDeliverableArticle = existing.state === 'pushed' ? { ...next, state: 'pushed' } : next;
+  const merged: WeChatArticleDeliverableArticle = existing.state === 'pushed' ? { ...next, state: 'pushed' } : next;
   return [...articles.slice(0, index), merged, ...articles.slice(index + 1)];
 }
 
-export const wewriteDeliverablesDefinition: ConversationNodeDefinitionLike<WewriteDeliverablesState> = {
-  kind: 'wewrite-deliverables',
+export const wechatArticleDeliverablesDefinition: ConversationNodeDefinitionLike<WeChatArticleDeliverablesState> = {
+  kind: 'wechat-article-deliverables',
   // target 省略：只发布 TurnData（S6 官方 deliverables 同款），不发布 view node。
 
   match(event: ToolResultSessionEventLike): ConversationMatchResultLike | null {
@@ -143,10 +143,10 @@ export const wewriteDeliverablesDefinition: ConversationNodeDefinitionLike<Wewri
     const data = event.data;
     if (!data?.message || typeof data.message.name !== 'string') return null;
     const name = data.message.name;
-    if (name !== 'wewrite_run' && name !== 'wewrite_push_draft') return null;
+    if (name !== 'wechat_run' && name !== 'wechat_push_draft') return null;
     const meta = parseMeta(data.meta);
     if (!meta || typeof meta !== 'object' || (meta as { tool?: unknown }).tool === undefined) return null;
-    if (name === 'wewrite_run') {
+    if (name === 'wechat_run') {
       const runMeta = safeParseRunMeta(meta);
       // run 失败（无 articleId）不 match——产物行只列产出（§5.1）。
       if (!runMeta || !runMeta.ok || !runMeta.articleId) return null;
@@ -157,16 +157,16 @@ export const wewriteDeliverablesDefinition: ConversationNodeDefinitionLike<Wewri
     return { id: pushMeta.articleId, role: 'update' };
   },
 
-  start(_context, match): WewriteDeliverablesState {
+  start(_context, match): WeChatArticleDeliverablesState {
     const meta = safeParseRunMeta(parseMeta(match.event.event.data.meta));
     if (!meta || !meta.articleId) return { articles: [] };
     return { articles: [runStart(meta)] };
   },
 
-  update(context, match): WewriteDeliverablesState {
+  update(context, match): WeChatArticleDeliverablesState {
     const articles = context.state?.articles ?? [];
     const data = match.event.event.data;
-    if (data.message.name === 'wewrite_push_draft') {
+    if (data.message.name === 'wechat_push_draft') {
       const meta: PushToolMeta | undefined = safeParsePushMeta(parseMeta(data.meta));
       if (!meta) return { articles };
       const index = articles.findIndex((article) => article.articleId === meta.articleId);
@@ -176,7 +176,7 @@ export const wewriteDeliverablesDefinition: ConversationNodeDefinitionLike<Wewri
       }
       if (!meta.ok) return { articles }; // push 失败保留 drafted（§5.1 转移矩阵）
       return {
-        articles: [...articles.slice(0, index), { ...(articles[index] as WewriteDeliverableArticle), state: 'pushed' }, ...articles.slice(index + 1)],
+        articles: [...articles.slice(0, index), { ...(articles[index] as WeChatArticleDeliverableArticle), state: 'pushed' }, ...articles.slice(index + 1)],
       };
     }
     const runMeta = safeParseRunMeta(parseMeta(data.meta));
@@ -190,20 +190,20 @@ export const wewriteDeliverablesDefinition: ConversationNodeDefinitionLike<Wewri
     if (!state || state.articles.length === 0) return null;
     const turn = context.matches.length > 0 ? context.matches[context.matches.length - 1]?.event.event.data.turn : undefined;
     if (typeof turn !== 'number') return null;
-    return { kind: 'turn', turn, key: WEWRITE_TURN_DATA_KEY, value: { articles: state.articles } };
+    return { kind: 'turn', turn, key: WECHAT_ARTICLE_TURN_DATA_KEY, value: { articles: state.articles } };
   },
 };
 
 // ── turnTail 选择器（decline-before-mount，S6） ────────────────────────────────
 
 /**
- * 读 owner.turn.data.get('wewrite')：空 → null（挂载前拒绝，turnTail 渲染零成本）；
+ * 读 owner.turn.data.get('wechat-article')：空 → null（挂载前拒绝，turnTail 渲染零成本）；
  * 非空 articles → 原样透传给产物行组件（chain matched prop）。
  */
-export function selectWewriteArticles(owner: TurnTailOwnerPropsLike): WewriteDeliverableArticle[] | null {
-  const data = owner.turn.data.get(WEWRITE_TURN_DATA_KEY) as { articles?: unknown } | undefined;
+export function selectWeChatArticles(owner: TurnTailOwnerPropsLike): WeChatArticleDeliverableArticle[] | null {
+  const data = owner.turn.data.get(WECHAT_ARTICLE_TURN_DATA_KEY) as { articles?: unknown } | undefined;
   if (!data || typeof data !== 'object') return null;
   const articles = data.articles;
   if (!Array.isArray(articles) || articles.length === 0) return null;
-  return articles as WewriteDeliverableArticle[];
+  return articles as WeChatArticleDeliverableArticle[];
 }

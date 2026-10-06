@@ -2,7 +2,7 @@ import type { RunDetailStep } from './meta';
 import { cardT, type CardT } from './card-text';
 
 /**
- * 六段分轨（uiux §1.1）：6 段 × 20px × 4px（--ww-stage-seg-w/--ww-stage-track-h）。
+ * 六段分轨（uiux §1.1）：6 段 × 20px × 4px（--wa-stage-seg-w/--wa-stage-track-h）。
  * 段色：done=fg-secondary / current=accent（全卡唯一 accent 位）/ pending=border /
  * failed=danger。分轨永不单独达意——右侧/下方必有「n/6 · 阶段名」文字 +
  * 全阶段标签（状态不以颜色为唯一载体）。run-tool-card 与 commandview 共用。
@@ -40,27 +40,27 @@ export function StageTrack({ progress, t }: { progress: StageProgress; t?: CardT
   const tt = t ?? cardT();
   const currentLabel = progress.current ? stageLabel(tt, progress.current) : undefined;
   return (
-    <div className="ww-chatcard__stages">
-      <div className="ww-chatcard__track" aria-hidden="true">
+    <div className="wa-chatcard__stages">
+      <div className="wa-chatcard__track" aria-hidden="true">
         {progress.states.map((state, index) => (
           <span
             key={index}
             className={
               state === 'succeeded'
-                ? 'ww-chatcard__seg ww-chatcard__seg--done'
+                ? 'wa-chatcard__seg wa-chatcard__seg--done'
                 : state === 'running'
-                  ? 'ww-chatcard__seg ww-chatcard__seg--current'
+                  ? 'wa-chatcard__seg wa-chatcard__seg--current'
                   : state === 'failed'
-                    ? 'ww-chatcard__seg ww-chatcard__seg--failed'
-                    : 'ww-chatcard__seg'
+                    ? 'wa-chatcard__seg wa-chatcard__seg--failed'
+                    : 'wa-chatcard__seg'
             }
           />
         ))}
       </div>
-      <span className="ww-chatcard__stagecount">
+      <span className="wa-chatcard__stagecount">
         {tt('chat.stageCount', { done: String(progress.done), total: String(STAGE_KEYS.length), stage: currentLabel ?? tt('chat.running') })}
       </span>
-      <ol className="ww-chatcard__stagelist">
+      <ol className="wa-chatcard__stagelist">
         {STAGE_KEYS.map((name, index) => {
           const state = progress.states[index];
           return (
@@ -68,12 +68,12 @@ export function StageTrack({ progress, t }: { progress: StageProgress; t?: CardT
               key={name}
               className={
                 state === 'succeeded'
-                  ? 'ww-chatcard__stagename ww-chatcard__stagename--done'
+                  ? 'wa-chatcard__stagename wa-chatcard__stagename--done'
                   : state === 'running'
-                    ? 'ww-chatcard__stagename ww-chatcard__stagename--current'
+                    ? 'wa-chatcard__stagename wa-chatcard__stagename--current'
                     : state === 'failed'
-                      ? 'ww-chatcard__stagename ww-chatcard__stagename--failed'
-                      : 'ww-chatcard__stagename'
+                      ? 'wa-chatcard__stagename wa-chatcard__stagename--failed'
+                      : 'wa-chatcard__stagename'
               }
             >
               {stageLabel(tt, name)}

@@ -1,5 +1,5 @@
 /*
- * dsh-wewrite 官网全局样式
+ * dsh-wechat-article 官网全局样式
  * Token 真源：docs/website-direction.md §4（--site-* 与插件 light 值同源，见 docs/DESIGN.md §2.2）
  * 纪律：:root 之外零裸 hex / 零 rgb 字面量，组件一律 var(--site-*)；零 gradient、零阴影、零 backdrop-filter。
  */

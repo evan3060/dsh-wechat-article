@@ -4,46 +4,46 @@
 
 /* ---------- 四态：骨架 / 空态 / 错误 ---------- */
 
-@keyframes ww-pulse { 0% { opacity: 0.45; } 50% { opacity: 1; } 100% { opacity: 0.45; } }
+@keyframes wa-pulse { 0% { opacity: 0.45; } 50% { opacity: 1; } 100% { opacity: 0.45; } }
 
-.ww-skeleton-row {
+.wa-skeleton-row {
   display: flex;
-  gap: var(--ww-space-3);
+  gap: var(--wa-space-3);
   align-items: center;
-  padding: var(--ww-space-2) 0;
+  padding: var(--wa-space-2) 0;
 }
 
-.ww-skeleton-row__cell {
+.wa-skeleton-row__cell {
   flex: 1;
   height: 14px;
-  border-radius: var(--ww-radius-sm);
-  background: var(--ww-skeleton);
-  animation: ww-pulse 1.6s var(--ww-ease) infinite;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-skeleton);
+  animation: wa-pulse 1.6s var(--wa-ease) infinite;
 }
 
-.ww-skeleton-block { display: flex; flex-direction: column; gap: var(--ww-space-3); }
+.wa-skeleton-block { display: flex; flex-direction: column; gap: var(--wa-space-3); }
 
-.ww-skeleton-block__line {
+.wa-skeleton-block__line {
   height: 14px;
-  border-radius: var(--ww-radius-sm);
-  background: var(--ww-skeleton);
-  animation: ww-pulse 1.6s var(--ww-ease) infinite;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-skeleton);
+  animation: wa-pulse 1.6s var(--wa-ease) infinite;
 }
 
-.ww-skeleton-block__line:nth-child(2n) { width: 78%; }
-.ww-skeleton-block__line:nth-child(3n) { width: 56%; }
+.wa-skeleton-block__line:nth-child(2n) { width: 78%; }
+.wa-skeleton-block__line:nth-child(3n) { width: 56%; }
 
-.ww-empty {
+.wa-empty {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--ww-space-3);
-  padding: var(--ww-space-8) var(--ww-space-4);
-  color: var(--ww-fg-secondary);
+  gap: var(--wa-space-3);
+  padding: var(--wa-space-8) var(--wa-space-4);
+  color: var(--wa-fg-secondary);
 }
 
 /* hero 居中版（v2 §3-02）：空页面主舞台 */
-.ww-empty--hero {
+.wa-empty--hero {
   min-height: 240px;
   justify-content: center;
   align-items: center;
@@ -51,216 +51,216 @@
 }
 
 /* 组合 glyph 容器（v2 §3-03）：40px 圆 + 右下角次 icon 叠加 */
-.ww-empty__glyph {
+.wa-empty__glyph {
   position: relative;
   width: 40px;
   height: 40px;
-  border-radius: var(--ww-radius-full);
-  background: var(--ww-surface-sunken);
+  border-radius: var(--wa-radius-full);
+  background: var(--wa-surface-sunken);
   display: grid;
   place-items: center;
-  color: var(--ww-fg-secondary);
+  color: var(--wa-fg-secondary);
 }
 
 /* Bluewash §4-4（uiux-color-theme-design）：hero 空态 glyph 同语言（启动卡品牌浸染时刻）；
  * 次级空态 glyph 保持 sunken（安静）。修饰类由 EmptyState hero 态附加。 */
-.ww-empty__glyph--brand {
-  background: var(--ww-accent-subtle);
-  color: var(--ww-accent);
+.wa-empty__glyph--brand {
+  background: var(--wa-accent-subtle);
+  color: var(--wa-accent);
 }
 
-.ww-empty__glyph-sub {
+.wa-empty__glyph-sub {
   position: absolute;
   right: -4px;
   bottom: -4px;
-  background: var(--ww-bg-page);
-  border-radius: var(--ww-radius-full);
+  background: var(--wa-bg-page);
+  border-radius: var(--wa-radius-full);
   padding: 2px;
-  color: var(--ww-fg-caption);
+  color: var(--wa-fg-caption);
   display: inline-flex;
 }
 
-.ww-empty__title {
+.wa-empty__title {
   margin: 0;
-  font-size: var(--ww-text-md);
-  color: var(--ww-fg);
+  font-size: var(--wa-text-md);
+  color: var(--wa-fg);
   max-width: 44em;
-  line-height: var(--ww-leading-body);
+  line-height: var(--wa-leading-body);
 }
 
-.ww-empty__actions { display: flex; gap: var(--ww-space-2); }
+.wa-empty__actions { display: flex; gap: var(--wa-space-2); }
 
-.ww-error {
+.wa-error {
   display: flex;
-  gap: var(--ww-space-3);
-  padding: var(--ww-space-4);
-  border: var(--ww-border-width) solid var(--ww-danger);
-  border-radius: var(--ww-radius-lg);
-  background: var(--ww-danger-subtle);
-  color: var(--ww-fg);
+  gap: var(--wa-space-3);
+  padding: var(--wa-space-4);
+  border: var(--wa-border-width) solid var(--wa-danger);
+  border-radius: var(--wa-radius-lg);
+  background: var(--wa-danger-subtle);
+  color: var(--wa-fg);
 }
 
-.ww-error__body { min-width: 0; }
-.ww-error__title { margin: 0 0 var(--ww-space-1); font-weight: var(--ww-weight-medium); }
-.ww-error__hint { margin: 0 0 var(--ww-space-2); font-size: var(--ww-text-sm); color: var(--ww-fg-secondary); }
-.ww-error__actions { display: flex; gap: var(--ww-space-2); }
+.wa-error__body { min-width: 0; }
+.wa-error__title { margin: 0 0 var(--wa-space-1); font-weight: var(--wa-weight-medium); }
+.wa-error__hint { margin: 0 0 var(--wa-space-2); font-size: var(--wa-text-sm); color: var(--wa-fg-secondary); }
+.wa-error__actions { display: flex; gap: var(--wa-space-2); }
 
 /* ---------- 按钮 / 菜单触发器 / 视图 Tab ---------- */
 
-.dsh-wewrite-panel .ww-btn-accent {
-  background: var(--ww-accent);
-  color: var(--ww-accent-on);
+.dsh-wechat-article-panel .wa-btn-accent {
+  background: var(--wa-accent);
+  color: var(--wa-accent-on);
 }
 
 /* §D4 ST1：hover 位移是过度 hover 反馈——hover/active 只换底色（态稳定优先） */
-.dsh-wewrite-panel .ww-btn-accent:hover:not(:disabled) {
-  background: var(--ww-accent-hover);
+.dsh-wechat-article-panel .wa-btn-accent:hover:not(:disabled) {
+  background: var(--wa-accent-hover);
 }
 
-.dsh-wewrite-panel .ww-btn-accent:active:not(:disabled) {
-  background: var(--ww-accent-active);
+.dsh-wechat-article-panel .wa-btn-accent:active:not(:disabled) {
+  background: var(--wa-accent-active);
 }
 
-.dsh-wewrite-panel .ww-btn-accent:not(:disabled) {
-  transition: background var(--ww-motion-fast) var(--ww-ease);
+.dsh-wechat-article-panel .wa-btn-accent:not(:disabled) {
+  transition: background var(--wa-motion-fast) var(--wa-ease);
 }
 
-.dsh-wewrite-panel .ww-danger-ghost { color: var(--ww-danger); }
-.dsh-wewrite-panel .ww-danger-ghost:hover:not(:disabled) { background: var(--ww-danger-subtle); }
+.dsh-wechat-article-panel .wa-danger-ghost { color: var(--wa-danger); }
+.dsh-wechat-article-panel .wa-danger-ghost:hover:not(:disabled) { background: var(--wa-danger-subtle); }
 
-.ww-menu-trigger {
+.wa-menu-trigger {
   appearance: none;
   font: inherit;
-  font-size: var(--ww-text-sm);
-  color: var(--ww-fg);
-  background: var(--ww-surface);
-  border: var(--ww-border-width) solid var(--ww-border);
-  border-radius: var(--ww-radius-md);
-  padding: var(--ww-space-2) var(--ww-space-3);
+  font-size: var(--wa-text-sm);
+  color: var(--wa-fg);
+  background: var(--wa-surface);
+  border: var(--wa-border-width) solid var(--wa-border);
+  border-radius: var(--wa-radius-md);
+  padding: var(--wa-space-2) var(--wa-space-3);
   display: inline-flex;
   align-items: center;
-  gap: var(--ww-space-2);
+  gap: var(--wa-space-2);
   min-height: 28px;
   cursor: pointer;
-  transition: border-color var(--ww-motion-fast) var(--ww-ease), background var(--ww-motion-fast) var(--ww-ease);
+  transition: border-color var(--wa-motion-fast) var(--wa-ease), background var(--wa-motion-fast) var(--wa-ease);
 }
 
-.ww-menu-trigger:hover { border-color: var(--ww-border-strong); background: var(--ww-interactive-hover); }
+.wa-menu-trigger:hover { border-color: var(--wa-border-strong); background: var(--wa-interactive-hover); }
 
 /* 主 CTA 形态的菜单触发器（推草稿箱 ▾，v0.2 编辑器页头唯一 accent CTA） */
-.ww-menu-trigger--accent {
-  background: var(--ww-accent);
-  border-color: var(--ww-accent);
-  color: var(--ww-accent-on);
+.wa-menu-trigger--accent {
+  background: var(--wa-accent);
+  border-color: var(--wa-accent);
+  color: var(--wa-accent-on);
 }
 
-.ww-menu-trigger--accent:hover:not(:disabled) {
-  background: var(--ww-accent-hover);
-  border-color: var(--ww-accent-hover);
+.wa-menu-trigger--accent:hover:not(:disabled) {
+  background: var(--wa-accent-hover);
+  border-color: var(--wa-accent-hover);
 }
 
-.ww-menu-trigger--accent:active:not(:disabled) { background: var(--ww-accent-active); border-color: var(--ww-accent-active); }
-.ww-menu-trigger--accent:disabled { opacity: 0.6; cursor: default; }
+.wa-menu-trigger--accent:active:not(:disabled) { background: var(--wa-accent-active); border-color: var(--wa-accent-active); }
+.wa-menu-trigger--accent:disabled { opacity: 0.6; cursor: default; }
 
-.ww-menu-trigger__mono { font-family: var(--ww-font-code); font-size: var(--ww-text-xs); }
+.wa-menu-trigger__mono { font-family: var(--wa-font-code); font-size: var(--wa-text-xs); }
 
-.ww-view-tabs {
+.wa-view-tabs {
   display: inline-flex;
-  border: var(--ww-border-width) solid var(--ww-border);
-  border-radius: var(--ww-radius-md);
+  border: var(--wa-border-width) solid var(--wa-border);
+  border-radius: var(--wa-radius-md);
   padding: 2px;
   gap: 2px;
-  background: var(--ww-surface-sunken);
+  background: var(--wa-surface-sunken);
 }
 
-.ww-view-tab {
+.wa-view-tab {
   appearance: none;
   border: none;
   background: none;
   font: inherit;
-  font-size: var(--ww-text-sm);
-  color: var(--ww-fg-secondary);
-  padding: var(--ww-space-1) var(--ww-space-2);
+  font-size: var(--wa-text-sm);
+  color: var(--wa-fg-secondary);
+  padding: var(--wa-space-1) var(--wa-space-2);
   display: inline-flex;
   align-items: center;
-  gap: var(--ww-space-1);
-  border-radius: var(--ww-radius-sm);
+  gap: var(--wa-space-1);
+  border-radius: var(--wa-radius-sm);
   cursor: pointer;
   white-space: nowrap;
-  transition: background var(--ww-motion-fast) var(--ww-ease), color var(--ww-motion-fast) var(--ww-ease);
+  transition: background var(--wa-motion-fast) var(--wa-ease), color var(--wa-motion-fast) var(--wa-ease);
 }
 
-.ww-view-tab:hover { color: var(--ww-fg); }
+.wa-view-tab:hover { color: var(--wa-fg); }
 
-.ww-view-tab--active {
-  background: var(--ww-surface);
-  color: var(--ww-fg);
-  font-weight: var(--ww-weight-medium);
-  box-shadow: 0 0 0 var(--ww-border-width) var(--ww-border);
+.wa-view-tab--active {
+  background: var(--wa-surface);
+  color: var(--wa-fg);
+  font-weight: var(--wa-weight-medium);
+  box-shadow: 0 0 0 var(--wa-border-width) var(--wa-border);
 }
 
 
 /* ---------- Toast（自建；官方 primitives 0.0.1-rc.1 无 Toast） ---------- */
 
-.ww-toasts {
+.wa-toasts {
   position: absolute;
-  right: var(--ww-space-6);
+  right: var(--wa-space-6);
   /* v0.2（§3-09）：抬高到宿主 composer 遮挡带之上；与右下进度卡（bottom 144px）垂直错开 */
-  bottom: var(--ww-content-pad-bottom);
-  z-index: var(--ww-z-toast);
+  bottom: var(--wa-content-pad-bottom);
+  z-index: var(--wa-z-toast);
   display: flex;
   flex-direction: column;
-  gap: var(--ww-space-2);
+  gap: var(--wa-space-2);
   max-width: 380px;
 }
 
-.ww-toast {
+.wa-toast {
   display: flex;
   align-items: flex-start;
-  gap: var(--ww-space-2);
-  padding: var(--ww-space-3) var(--ww-space-4);
-  background: var(--ww-surface-raised);
-  border: var(--ww-border-width) solid var(--ww-border);
-  border-radius: var(--ww-radius-lg);
-  box-shadow: var(--ww-shadow-overlay);
-  color: var(--ww-fg);
+  gap: var(--wa-space-2);
+  padding: var(--wa-space-3) var(--wa-space-4);
+  background: var(--wa-surface-raised);
+  border: var(--wa-border-width) solid var(--wa-border);
+  border-radius: var(--wa-radius-lg);
+  box-shadow: var(--wa-shadow-overlay);
+  color: var(--wa-fg);
 }
 
-.ww-toast--success > svg { color: var(--ww-success); }
-.ww-toast--error > svg { color: var(--ww-danger); }
-.ww-toast--info > svg { color: var(--ww-info); }
+.wa-toast--success > svg { color: var(--wa-success); }
+.wa-toast--error > svg { color: var(--wa-danger); }
+.wa-toast--info > svg { color: var(--wa-info); }
 
-.ww-toast__body { flex: 1; min-width: 0; }
-.ww-toast__title { margin: 0; font-size: var(--ww-text-sm); font-weight: var(--ww-weight-medium); }
-.ww-toast__detail { margin: 2px 0 0; font-size: var(--ww-text-sm); color: var(--ww-fg-secondary); line-height: var(--ww-leading-ui); }
+.wa-toast__body { flex: 1; min-width: 0; }
+.wa-toast__title { margin: 0; font-size: var(--wa-text-sm); font-weight: var(--wa-weight-medium); }
+.wa-toast__detail { margin: 2px 0 0; font-size: var(--wa-text-sm); color: var(--wa-fg-secondary); line-height: var(--wa-leading-ui); }
 
-.ww-toast__action {
+.wa-toast__action {
   appearance: none;
   font: inherit;
-  font-size: var(--ww-text-sm);
+  font-size: var(--wa-text-sm);
   border: none;
   background: none;
-  color: var(--ww-accent);
+  color: var(--wa-accent);
   cursor: pointer;
   padding: 0;
   white-space: nowrap;
 }
 
-.ww-toast__action:hover { color: var(--ww-accent-hover); text-decoration: underline; }
+.wa-toast__action:hover { color: var(--wa-accent-hover); text-decoration: underline; }
 
-.ww-toast__close {
+.wa-toast__close {
   appearance: none;
   border: none;
   background: none;
-  color: var(--ww-fg-tertiary);
+  color: var(--wa-fg-tertiary);
   /* §D4 ST2：icon 钮热区归一 ghost 工具档 28 */
   width: 28px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--ww-radius-sm);
+  border-radius: var(--wa-radius-sm);
   cursor: pointer;
 }
 
-.ww-toast__close:hover { color: var(--ww-fg); background: var(--ww-interactive-hover); }
+.wa-toast__close:hover { color: var(--wa-fg); background: var(--wa-interactive-hover); }

@@ -1,6 +1,6 @@
-<p align="center"><img src="assets/logo/mark-1024.png" width="120" alt="dsh-wewrite logo"></p>
+<p align="center"><img src="assets/logo/mark-1024.png" width="120" alt="dsh-wechat-article logo"></p>
 
-# dsh-wewrite
+# dsh-wechat-article
 
 [![CI](https://github.com/jerryjiao/dsh-wewrite/actions/workflows/ci.yml/badge.svg)](https://github.com/jerryjiao/dsh-wewrite/actions/workflows/ci.yml)
 [![Website](https://github.com/jerryjiao/dsh-wewrite/actions/workflows/website.yml/badge.svg)](https://github.com/jerryjiao/dsh-wewrite/actions/workflows/website.yml)
@@ -22,7 +22,7 @@
 npx @deepseek-ai/dsh plugin --profile web add github:jerryjiao/dsh-wewrite#v0.2.0
 ```
 
-安装完成后如需卸载：`npx @deepseek-ai/dsh plugin --profile web remove dsh-wewrite`。
+安装完成后如需卸载：`npx @deepseek-ai/dsh plugin --profile web remove dsh-wechat-article`。
 
 > 关于产物形态：仓库直接提交了 `lib/` 预构建产物（dist-committed），这是有意决策——DSH 从 git 安装插件不会执行 build 脚本，预构建路径让你不必在 pnpm 侧加任何 `allowBuilds` 信任声明，装完即用。
 
@@ -32,7 +32,7 @@ npx @deepseek-ai/dsh plugin --profile web add github:jerryjiao/dsh-wewrite#v0.2.
 npx @deepseek-ai/dsh web
 ```
 
-打开 http://127.0.0.1:3080 ，会话视图环里会出现「wewrite 工作台」tab。
+打开 http://127.0.0.1:3080 ，会话视图环里会出现「wechat-article 工作台」tab。
 
 **第 3 步：配置凭据**
 
@@ -53,7 +53,7 @@ npx @deepseek-ai/dsh web
 
 ### 对话框直写（推荐入口，v0.4.0 起）
 
-装好后在 DSH 对话框里直接说「用 wewrite 写一篇……」——agent 会驱动写作管线，六步进度（选题 → 大纲 → 成稿 → 门禁 → 渲染 → 配图）以卡片形式实时出现在对话流里；管线跑完出成稿卡（标题/字数/门禁结论），门禁未过会给出可行动的失败引导。对 agent 说「推草稿箱」时，宿主原生审批面板先弹出（含文章标题与门禁状态）——**你点允许之前，插件零微信 API 调用**（fail-closed：审批不可用即拒绝执行）。另有 `/wewrite <主题>` 命令与 `@` 引用已有文章两个轻入口。
+装好后在 DSH 对话框里直接说「用 wechat 写一篇……」——agent 会驱动写作管线，六步进度（选题 → 大纲 → 成稿 → 门禁 → 渲染 → 配图）以卡片形式实时出现在对话流里；管线跑完出成稿卡（标题/字数/门禁结论），门禁未过会给出可行动的失败引导。对 agent 说「推草稿箱」时，宿主原生审批面板先弹出（含文章标题与门禁状态）——**你点允许之前，插件零微信 API 调用**（fail-closed：审批不可用即拒绝执行）。另有 `/wechat-article <主题>` 命令与 `@` 引用已有文章两个轻入口。
 
 <p><img src="assets/screenshots/09-chat-run-progress.png" alt="对话直写：写作管线运行卡实时出现在对话时间线，显示六步进度" width="720"></p>
 
@@ -115,7 +115,7 @@ RRULE 规则与下次运行时间人类可读展示（规则原文收进悬停�
 
 单包双端（host + client），DSH Cordis 插件形态：
 
-<p><img src="assets/diagram/architecture.png" alt="dsh-wewrite 架构图：DSH Web 工作台经 RPC 到宿主插件（写作管线/定时调度/微信草稿箱/图片生成），落本地存储/凭据/DSH 模型，草稿箱指向公众号" width="768"></p>
+<p><img src="assets/diagram/architecture.png" alt="dsh-wechat-article 架构图：DSH Web 工作台经 RPC 到宿主插件（写作管线/定时调度/微信草稿箱/图片生成），落本地存储/凭据/DSH 模型，草稿箱指向公众号" width="768"></p>
 
 <details>
 <summary>文字版</summary>
@@ -123,13 +123,13 @@ RRULE 规则与下次运行时间人类可读展示（规则原文收进悬停�
 <pre>
 DSH Web UI（React 18，http://127.0.0.1:3080）
   ├─ 侧边栏「打开写作台」入口（sidebar.footer.action）→ shell.overlay 全屏浮层
-  └─ wewrite 工作台 tab（conversation.view，双入口并存）
+  └─ wechat-article 工作台 tab（conversation.view，双入口并存）
        │  选题（热榜 + 逐条 AI 速览）│ 编辑器（Markdown + AI 选中改写）│ 微信预览
        │  运行历史 │ 定时计划 │ 设置
        │  connection.rpc（仅 loopback 回环，authority 校验）
        ▼
 DSH Host（Node + Cordis）
-  └─ dsh-wewrite 宿主插件：WeWriteService（唯一写权威，操作串行化）
+  └─ dsh-wechat-article 宿主插件：WeChatArticleService（唯一写权威，操作串行化）
        ├─ pipeline/   六步引擎：选题→大纲→成稿→门禁→渲染→配图
        │               文本步调 ctx.llm，确定性步骤纯代码执行
        ├─ scheduler/  RRULE 归一化 → durable occurrence claim → 派发 run
@@ -157,7 +157,7 @@ DSH Host（Node + Cordis）
 
 **图片供应商链**
 
-- 缺省链只含 openai（模型锁定 `gpt-image-2`，凭据引用 `WEWRITE_IMG_OPENAI`）。
+- 缺省链只含 openai（模型锁定 `gpt-image-2`，凭据引用 `WECHAT_ARTICLE_IMG_OPENAI`）。
 - 可增排其余 8 家（doubao / dashscope / jimeng / minimax / azure_openai / gemini / openrouter / replicate），每家可配专属 API Key、模型名与 base URL；顺序即 fallback 顺序。
 - 单图上限 10MB，单篇正文图上限 10 张。
 
@@ -178,7 +178,7 @@ DSH Host（Node + Cordis）
 | 默认主题 | professional-clean | 三套：professional-clean / tech-dark / minimal-gray |
 | 默认图尺寸 | 1024x1024 | 可选 1024x1536 / 1536x1024 / 1344x768 / 768x1344 |
 | 运行历史上限 | 200 | 1–1000，超出自动修剪终态记录 |
-| Agent 工具 | 关 | 打开后可在 DSH Agent 会话里用 `wewrite_run` / `wewrite_push_draft` / `wewrite_list_schedules` 三个工具 |
+| Agent 工具 | 关 | 打开后可在 DSH Agent 会话里用 `wechat_run` / `wechat_push_draft` / `wechat_list_schedules` 三个工具 |
 | 调度轮询间隔 | 30 秒 | 宿主级配置项（cordis.patch.yml 层） |
 
 ## 安全声明
@@ -212,7 +212,7 @@ v0.1/v0.2 没有，这是有意的安全默认（见安全声明）。后续版�
 
 ## 版本兼容表
 
-| dsh-wewrite | DSH | Node | React | 状态 |
+| dsh-wechat-article | DSH | Node | React | 状态 |
 |---|---|---|---|---|
 | v0.2.0+ | v0.1.x developer preview（2026-08-13 发布） | ^22.19.0 \|\| >=24.0.0 | 18（宿主提供，peer） | 已验证（2026-08-20 基线：358 单测 + E2E fresh/demo 52 用例全绿，含 v0.3 未发版改动） |
 | v0.1.0 – v0.1.4 | v0.1.x developer preview（2026-08-13 发布） | ^22.19.0 \|\| >=24.0.0 | 18（宿主提供，peer） | 已验证（2026-08 基线，DSH master@2026-08-17 实测） |
@@ -268,7 +268,7 @@ NODE_PATH=/Users/mac/Documents/workspace/node_modules npm run test:e2e
 
 ## English
 
-**What.** dsh-wewrite is a plugin for DeepSeek Harness (DSH) that turns a WeChat official-account AI writing pipeline—topic, outline, draft, quality gates, render, images, draft box—into a local web workbench. Models and credentials stay yours: text generation uses your DSH model config, secrets never leave `~/.dsh`. Since v0.3: per-item AI digest for trending topics (fetches the linked article and summarizes it in Chinese, falls back to title-only), selection-based AI rewrite in the editor (rewrites only what you highlight, undoable), and a sidebar entry that opens the full workbench as an overlay—no session required.
+**What.** dsh-wechat-article is a plugin for DeepSeek Harness (DSH) that turns a WeChat official-account AI writing pipeline—topic, outline, draft, quality gates, render, images, draft box—into a local web workbench. Models and credentials stay yours: text generation uses your DSH model config, secrets never leave `~/.dsh`. Since v0.3: per-item AI digest for trending topics (fetches the linked article and summarizes it in Chinese, falls back to title-only), selection-based AI rewrite in the editor (rewrites only what you highlight, undoable), and a sidebar entry that opens the full workbench as an overlay—no session required.
 
 **Install.** `npx @deepseek-ai/dsh plugin --profile web add github:jerryjiao/dsh-wewrite#v0.2.0`, then `npx @deepseek-ai/dsh web` and open http://127.0.0.1:3080 . Fill in your official-account AppID/AppSecret in the workbench settings, run the connection test, pick a topic, and push your first draft. Requires DSH v0.1.x developer preview and Node ^22.19.0 || >=24.0.0.
 

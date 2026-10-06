@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { WewriteRpc } from '../lib/rpc';
+import type { WeChatArticleRpc } from '../lib/rpc';
 import { RUN_DETAIL_ENDPOINT, safeParseRunDetail, type RunDetail } from './meta';
 
 /**
@@ -25,7 +25,7 @@ function selectorKey(selector: RunDetailSelector | undefined): string {
 }
 
 export function useRunDetail(
-  rpc: WewriteRpc,
+  rpc: WeChatArticleRpc,
   selector: RunDetailSelector | undefined,
   active: boolean,
 ): RunDetail | undefined {

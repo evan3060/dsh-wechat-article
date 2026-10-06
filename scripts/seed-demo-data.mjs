@@ -33,7 +33,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { findHostPids } from './hostctl.mjs';
 
-const UNIT = join(homedir(), '.dsh/storages/dsh_wewrite.json');
+const UNIT = join(homedir(), '.dsh/storages/dsh_wechat_article.json');
 
 const now = () => new Date();
 const iso = (base, minAgo) => new Date(base.getTime() - minAgo * 60_000).toISOString();
@@ -127,7 +127,7 @@ export function seedDemoData(unit) {
     [articleId]: {
       v: 1,
       id: articleId,
-      slug: 'dsh-wewrite-pipeline',
+      slug: 'dsh-wechat-article-pipeline',
       title: '把公众号写作管线装进 DeepSeek Harness',
       digest: '选题、写作、门禁、排版、配图、草稿箱串成一条可复现的管线，定时只进草稿箱，群发永远留给人工。',
       status: 'rendered',
@@ -244,7 +244,7 @@ export function seedDemoData(unit) {
   // 图片链裁单家（H01 前置：images 步 1 次 401 快速失败；G06 两态兼容不受影响）
   unit.global.settings = {
     ...unit.global.settings,
-    imageProviders: [{ providerId: 'openai', credentialRef: 'WEWRITE_IMG_OPENAI' }],
+    imageProviders: [{ providerId: 'openai', credentialRef: 'WECHAT_ARTICLE_IMG_OPENAI' }],
   };
 
   return unit;

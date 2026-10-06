@@ -1,12 +1,12 @@
-# dsh-wewrite 对话深度结合 PRD（chat-integration）
+# dsh-wechat-article 对话深度结合 PRD（chat-integration）
 
 | 项 | 内容 |
 |---|---|
-| 产品 | dsh-wewrite — DSH 微信公众号 AI 写作插件，「对话深度结合」功能线 |
+| 产品 | dsh-wechat-article — DSH 微信公众号 AI 写作插件，「对话深度结合」功能线 |
 | 版本 | chat-integration PRD（里程碑 M1/M2/M3；发版号由总监在发版时定，预计并入 v0.4.x 序列） |
 | 作者 | 许清楚（MVP 专家团 PM），2026-08-20 |
 | 状态 | Draft → 待项目总监裁决 |
-| 上游输入 | 调研报告 `workspace/docs/reviews/2026-08-20-dsh-wewrite-chat-integration-research.md`（技术通道已确证，方向 Jerry 已拍板「混合式」，本文不翻案）；`docs/prd.md`（v0.1 PRD，用户画像与产品价值观沿用不重述）；worktree `feat/chat-integration` 源码现状 |
+| 上游输入 | 调研报告 `workspace/docs/reviews/2026-08-20-dsh-wechat-article-chat-integration-research.md`（技术通道已确证，方向 Jerry 已拍板「混合式」，本文不翻案）；`docs/prd.md`（v0.1 PRD，用户画像与产品价值观沿用不重述）；worktree `feat/chat-integration` 源码现状 |
 | 下游 | 架构师（seam 落地/确认机制选型）、设计师（卡片视觉）、QA（EARS 验收基线） |
 | 边界 | 既有项目加能力；「AI 改稿、UI 专业化」属并行开发线，与本线正交，**不在本 PRD 范围** |
 
@@ -14,7 +14,7 @@
 
 ## 1. 问题陈述
 
-**谁**：已安装 dsh-wewrite 的 DSH 用户（技术型公众号号主为主，见 v0.1 PRD §2）。
+**谁**：已安装 dsh-wechat-article 的 DSH 用户（技术型公众号号主为主，见 v0.1 PRD §2）。
 
 **什么痛点**：插件的全部能力被锁在一个独立全屏「写作台」浮层里，与用户花时间最多的**对话流**完全割裂：
 
@@ -47,7 +47,7 @@
 
 ### 2.2 生态格局基线（引自调研报告，不重述论证）
 
-调研报告 §三确认七种「对话结合」实现模式（A 草稿即对话卡片 / B 工具结果富卡片 / C composer 书写视图 / D 面板+对话同屏 / E 内容注入 / F DOM 覆盖 / G chat 内交互表单），本 PRD 只采用官方正道：**A + B + 官方 composer/命令/补全通道**；明确拒绝 F（DOM 覆盖，维护成本公认高）。写作领域无现成 chat 内嵌写作管线插件（最接近的是 composer-expand / markdown-preview / open-app，均非管线）——**dsh-wewrite 做成后是 DSH 生态该品类第一个**。
+调研报告 §三确认七种「对话结合」实现模式（A 草稿即对话卡片 / B 工具结果富卡片 / C composer 书写视图 / D 面板+对话同屏 / E 内容注入 / F DOM 覆盖 / G chat 内交互表单），本 PRD 只采用官方正道：**A + B + 官方 composer/命令/补全通道**；明确拒绝 F（DOM 覆盖，维护成本公认高）。写作领域无现成 chat 内嵌写作管线插件（最接近的是 composer-expand / markdown-preview / open-app，均非管线）——**dsh-wechat-article 做成后是 DSH 生态该品类第一个**。
 
 ### 2.3 差异化（用户为什么用对话版而不是去写作台点按钮）
 
@@ -65,7 +65,7 @@
 主角画像沿用 v0.1 PRD §2.1（技术型号主，本机已配好 DSH 模型与公众号凭据）。
 
 1. **意图发起**：晚上九点，Rose 在 DSH 对话框顺手打：「写一篇讲 Cloudflare Workers 冷启动实测的公众号文，口语一点」。不开任何面板。
-2. **执行可视**：agent 调用 `wewrite_run`，对话流出现**管线卡**——主题、六步管线（选题→大纲→成稿→门禁→渲染→配图）、运行中状态。Rose 继续聊别的或干等，对话不被阻塞。
+2. **执行可视**：agent 调用 `wechat_run`，对话流出现**管线卡**——主题、六步管线（选题→大纲→成稿→门禁→渲染→配图）、运行中状态。Rose 继续聊别的或干等，对话不被阻塞。
 3. **结果停留对话**：管线到终态，卡片更新为**成稿摘要**——标题、字数、门禁结论（通过/未过+分项）、配图数、文章标识。Rose 就地追问「门禁哪几项过了」，agent 基于工具返回作答。
 4. **精修车间**：Rose 想改两段——M2 起点卡片上「在写作台打开」直达该文章；M1 期间卡片文案指引从侧栏入口进（功能等价，多一步）。写作台双栏编辑器里 AI 选中改写、微信预览过目（预览与推送产物字节一致），保存。
 5. **发布确认**：回对话框说「推草稿箱」→ agent 调推送工具 → **确认提示**（文章标题+门禁状态）→ Rose 确认 → **发布卡**：mediaId、指引「公众平台后台 → 内容与互动 → 图文素材」。未过门禁的文章在确认环节呈现未过项，用户可显式覆盖（语义与写作台一致）。
@@ -99,41 +99,41 @@
 
 **范围**：
 - Agent 工具默认启用（现状 `agentToolsEnabled: false` 翻转，`src/host/tools.ts` / `cordis.patch.yml:6`）
-- 工具面：`wewrite_run`（扩参：主题/图数，参数语义与写作台一致）、`wewrite_push_draft`（恒需确认）、新增 `wewrite_list_articles`（轻量查询）
+- 工具面：`wechat_run`（扩参：主题/图数，参数语义与写作台一致）、`wechat_push_draft`（恒需确认）、新增 `wechat_list_articles`（轻量查询）
 - 声明式工具卡片：`presentCall` / `presentResult`（generic 卡，纯函数，replay 安全）
 - 推送安全确认机制（机制选型归架构师：DSH 工具审批 seam 或工具内确认语义，PRD 只锁产品语义）
 
 **EARS**：
 
-- **AC-M1-01** When 插件安装完成且用户未显式关闭 Agent 工具，then the system shall 在全部（含后续新建）agent 会话注册 `wewrite_run`、`wewrite_push_draft`、`wewrite_list_articles` 三个工具，工具描述准确传达用途、参数与「只进草稿箱不群发」的边界。
+- **AC-M1-01** When 插件安装完成且用户未显式关闭 Agent 工具，then the system shall 在全部（含后续新建）agent 会话注册 `wechat_run`、`wechat_push_draft`、`wechat_list_articles` 三个工具，工具描述准确传达用途、参数与「只进草稿箱不群发」的边界。
 - **AC-M1-02** When 任一工具注册因宿主 API 缺失而失败，then the system shall 降级（console 警告 + 其余功能不受影响），不得导致插件整体失活或宿主报错。
-- **AC-M1-03** When agent 调用 `wewrite_run` 且 topic 非空，then the system shall 启动管线并即时返回 runId；If topic 为空或 `image_count` 越界，then the system shall 返回结构化错误码（不抛异常、不启动管线）。Where `image_count` 缺省，the system shall 以 0 图推进（默认零图片成本）。
-- **AC-M1-04** When agent 调用 `wewrite_list_articles`，then the system shall 返回文章轻量清单（id/标题/状态/门禁结论/更新时间），且不含任何凭据或脱敏前字段。
-- **AC-M1-05** When agent 调用 `wewrite_push_draft`，then the system shall 先要求用户确认；**未经确认，不得发起任何微信 API 调用**。确认提示须含文章标题与门禁结论。
+- **AC-M1-03** When agent 调用 `wechat_run` 且 topic 非空，then the system shall 启动管线并即时返回 runId；If topic 为空或 `image_count` 越界，then the system shall 返回结构化错误码（不抛异常、不启动管线）。Where `image_count` 缺省，the system shall 以 0 图推进（默认零图片成本）。
+- **AC-M1-04** When agent 调用 `wechat_list_articles`，then the system shall 返回文章轻量清单（id/标题/状态/门禁结论/更新时间），且不含任何凭据或脱敏前字段。
+- **AC-M1-05** When agent 调用 `wechat_push_draft`，then the system shall 先要求用户确认；**未经确认，不得发起任何微信 API 调用**。确认提示须含文章标题与门禁结论。
 - **AC-M1-06** When 确认通过且文章已过门禁，then the system shall 推送草稿箱并在工具返回中给出 mediaId/thumbMediaId；If 文章未过门禁，then the system shall 呈现未过项，仅在用户于确认环节显式选择覆盖时执行推送（覆盖语义与写作台一致）。
-- **AC-M1-07** When `wewrite_run` 被调用，then the system shall 在对话时间线渲染该工具的运行卡（主题、参数摘要、运行中状态），不得出现原始 JSON 裸块。
+- **AC-M1-07** When `wechat_run` 被调用，then the system shall 在对话时间线渲染该工具的运行卡（主题、参数摘要、运行中状态），不得出现原始 JSON 裸块。
 - **AC-M1-08** When 管线到达终态，then the system shall 将卡片更新为结果摘要——成功：标题/字数/门禁结论/配图数/文章标识 + 「在写作台查看」文字指引（M1 无跳转按钮，M2 升级）；失败：失败步骤 + 脱敏原因 + 可行动指引（如门禁未过→去写作台改稿重推）。
-- **AC-M1-09** When `wewrite_push_draft` 完成或失败，then the system shall 渲染发布结果卡——成功：去向指引（公众平台后台→图文素材）+ mediaId；失败：分类错误与指引（含 errcode 40164 IP 白名单专项，同写作台诊断口径）。
+- **AC-M1-09** When `wechat_push_draft` 完成或失败，then the system shall 渲染发布结果卡——成功：去向指引（公众平台后台→图文素材）+ mediaId；失败：分类错误与指引（含 errcode 40164 IP 白名单专项，同写作台诊断口径）。
 - **AC-M1-10** While 管线运行中（卡片处于运行态），the system shall 不阻塞对话消息收发与时间线渲染。
 - **AC-M1-11** If 会话被回放（历史加载/日志重放），then the system shall 以相同卡片形态呈现该次工具调用（presenter 为纯函数，流式与回放共用）。
 - **AC-M1-12** When 用户在设置页关闭 Agent 工具总开关，then the system shall 停止向新建 agent 注册工具并回收已注册项；已显式关过的存量用户在版本升级后保持关闭（默认值翻转只影响新安装与从未修改过该设置的用户）。
 
 ### M2 二期：草稿即对话卡片（插件 UI 长进对话流，官方正道）
 
-二期目标：管线状态变化以 **wewrite 事件族**写入会话流，client 注册 ConversationNodeDefinition 渲染**草稿状态卡**（大纲→成稿→门禁→发布状态机）；卡片可交互，一键跳写作台。从「工具的两态卡」升级为「全程活卡」。
+二期目标：管线状态变化以 **wechat-article 事件族**写入会话流，client 注册 ConversationNodeDefinition 渲染**草稿状态卡**（大纲→成稿→门禁→发布状态机）；卡片可交互，一键跳写作台。从「工具的两态卡」升级为「全程活卡」。
 
 **故事**：As a 号主，I want 每篇稿子在我的对话流里有一张随管线推进而生长的卡片，so that 我随时回来都能看到它走到了哪一步，并一键跳进精修车间。
 
 **范围**：
-- 事件族定义（`wewrite/run-start`、`wewrite/article-updated`、`wewrite/gate-passed`、`wewrite/draft-pushed` 等，host 侧管线各步写入 session log）
+- 事件族定义（`wechat-article/run-start`、`wechat-article/article-updated`、`wechat-article/gate-passed`、`wechat-article/draft-pushed` 等，host 侧管线各步写入 session log）
 - client 注册 ConversationNodeDefinition + `conversation.chat.node` keyed 渲染器
 - 卡片交互：点击打开写作台浮层并定位文章（复用现有 overlay 桥，`src/client/index.tsx:27-48`）
 - 工具卡与事件卡的收敛（agent 触发路径不出现双份全量卡）
 
 **EARS**：
 
-- **AC-M2-01** When 管线任一步骤状态变化（开始/完成/失败），then the system shall 以 wewrite 事件族写入触发来源所在的会话事件流，事件负载含 runId、articleId 与步骤标识。
-- **AC-M2-02** When 会话时间线摄入 wewrite 事件，then the system shall 以草稿状态卡渲染；同 runId 的后续事件归并更新同一张卡（状态机：大纲→成稿→门禁→发布），不重复开新卡。
+- **AC-M2-01** When 管线任一步骤状态变化（开始/完成/失败），then the system shall 以 wechat-article 事件族写入触发来源所在的会话事件流，事件负载含 runId、articleId 与步骤标识。
+- **AC-M2-02** When 会话时间线摄入 wechat-article 事件，then the system shall 以草稿状态卡渲染；同 runId 的后续事件归并更新同一张卡（状态机：大纲→成稿→门禁→发布），不重复开新卡。
 - **AC-M2-03** When 用户重新打开历史会话，then the system shall 按事件流重建卡片至最终态（replay 三路摄入按 (kind,id) 归并），不重复、不丢卡、不破坏会话加载。
 - **AC-M2-04** When 用户点击卡片主区或「在写作台打开」动作，then the system shall 打开写作台浮层并定位到该文章（编辑器载入该文）。
 - **AC-M2-05** When 同一管线运行既有工具调用又有事件产生（agent 触发路径），then the system shall 在时间线呈现单一权威进度卡（工具触发行 + 事件状态卡不双份展示全量信息；收敛机制由架构师定）。
@@ -145,11 +145,11 @@
 
 三期目标：把入口做得更浅——`/` 命令直开管线、输入框挂件、`@` 引用已有文章、chat 内选题交互。
 
-**故事**：As a 高频用户，I want 不用打完整句子也能触发写作（`/wewrite`、输入框按钮、`@` 一篇文章），so that 驾驶舱的操作成本趋近于零。
+**故事**：As a 高频用户，I want 不用打完整句子也能触发写作（`/wechat-article`、输入框按钮、`@` 一篇文章），so that 驾驶舱的操作成本趋近于零。
 
 **EARS**（C7/C8 优先做，C9/C10 时间盒内选做）：
 
-- **AC-M3-01**（C7）When 用户在输入框键入 `/`，then the system shall 在补全列表给出 `/wewrite`（描述与参数提示）；When 用户提交 `/wewrite <主题>`，then the system shall 以该主题启动管线，效果等效调用 `wewrite_run`。
+- **AC-M3-01**（C7）When 用户在输入框键入 `/`，then the system shall 在补全列表给出 `/wechat-article`（描述与参数提示）；When 用户提交 `/wechat-article <主题>`，then the system shall 以该主题启动管线，效果等效调用 `wechat_run`。
 - **AC-M3-02**（C8）Where composer 挂件存在，the system shall 在输入框右侧提供「写作」按钮（笔形 SVG 图标，lucide-react），点击展开快捷入口（新文章 / 最近文章 / 去选题中心）。
 - **AC-M3-03**（C9，选做）When 用户键入 `@` 并选择一篇文章，then the system shall 将该文章引用序列化进输入（ReferenceCodec），agent 下一轮可感知所引文章。
 - **AC-M3-04**（C10，选做）Where 用户在对话中请求选题建议，then the system shall 经 userQuestions 呈现候选选题（含来源与 AI 速览摘要），用户选择后以所选主题进入管线。
@@ -164,10 +164,10 @@ RICE 口径（对齐 v0.1 PRD §5）：Reach=受影响用户占比（1-10，DSH 
 |---|---|---|---|---|---|---|---|
 | C1 | Agent 工具默认启用 + 推送安全确认 | 10 | 2 | 100% | 0.5 | **40.0** | M1 |
 | C2 | 声明式工具卡片（presentCall/presentResult） | 10 | 2 | 100% | 1 | **20.0** | M1 |
-| C3 | 工具面扩充（`wewrite_list_articles`、run 参数对齐写作台） | 7 | 1 | 100% | 0.5 | **14.0** | M1 |
+| C3 | 工具面扩充（`wechat_list_articles`、run 参数对齐写作台） | 7 | 1 | 100% | 0.5 | **14.0** | M1 |
 | C6 | 卡片交互：打开写作台并定位文章 | 8 | 2 | 80% | 1 | **12.8** | M2（依赖 C4） |
 | C8 | composer「写作」挂件 | 6 | 1 | 80% | 0.5 | **9.6** | M3 |
-| C7 | `/wewrite` slash 命令 | 6 | 1 | 100% | 1 | **6.0** | M3 |
+| C7 | `/wechat-article` slash 命令 | 6 | 1 | 100% | 1 | **6.0** | M3 |
 | C4 | 草稿即对话卡片（事件族 + 状态机渲染，双端） | 9 | 3 | 80% | 4 | **5.4** | M2 |
 | C10 | userQuestions 选题交互 | 5 | 2 | 80% | 1.5 | **5.3** | M3 选做 |
 | C9 | `@` 文章引用（inputTriggers） | 4 | 1 | 50% | 1.5 | **1.3** | M3 选做 |
@@ -237,7 +237,7 @@ RICE 口径（对齐 v0.1 PRD §5）：Reach=受影响用户占比（1-10，DSH 
 | # | 类别 | 事项 | 当前倾向 / 处置 |
 |---|---|---|---|
 | R1 | 平台风险 | DSH 0.1.0-rc 官方预告破坏性变更，对话线新用 seam 数量多于存量 | 全 seam try/catch 降级 + 版本 pin + 宿主升级复核清单（交架构师）；降级底线=写作台不受影响 |
-| R2 | 采纳风险 | Agent 工具默认开：模型在无关对话里误调 `wewrite_run` 造成 token/图片开销 | 工具描述写清触发边界（仅明确写作意图时）；`image_count` 默认 0；设置页一键关；README 明示 |
+| R2 | 采纳风险 | Agent 工具默认开：模型在无关对话里误调 `wechat_run` 造成 token/图片开销 | 工具描述写清触发边界（仅明确写作意图时）；`image_count` 默认 0；设置页一键关；README 明示 |
 | R3 | 协同风险 | 与并行线（AI 改稿/UI 专业化）共享 `src/client/index.tsx`、README、设置页 | 本线 M1 尽量只动 host 侧（tools.ts）+ 声明式 presenter（零 React），把 client 侧大改留到 M2 协调合并顺序 |
 | OD-1 | design-decision-to-evaluate | 推送确认机制选型：DSH 工具审批 seam（tools/pre-execute）vs 工具内确认语义 vs userQuestions | 交架构师在 spec 阶段定；PRD 只锁产品语义（AC-M1-05/06） |
 | OD-2 | design-decision-to-evaluate | M2 工具卡与事件卡的收敛呈现（AC-M2-05）具体机制 | 交架构师；产品底线是时间线单一权威卡 |
@@ -252,12 +252,12 @@ RICE 口径（对齐 v0.1 PRD §5）：Reach=受影响用户占比（1-10，DSH 
 在干净 DSH profile 上执行并通过以下全程，才判定对应里程碑交付完成（每期各自跑一遍相适应的子集）：
 
 1. `npx @deepseek-ai/dsh plugin --profile web add github:jerryjiao/dsh-wewrite#<tag>` 安装无 plain dependency 警告；起 `dsh web`。
-2. 新建会话，输入「用 wewrite 写一篇关于 X 的文章」→ 时间线出现管线运行卡（主题/参数/运行中）→ 终态更新为成稿摘要卡（标题/字数/门禁/配图数）。（M1）
+2. 新建会话，输入「用 wechat 写一篇关于 X 的文章」→ 时间线出现管线运行卡（主题/参数/运行中）→ 终态更新为成稿摘要卡（标题/字数/门禁/配图数）。（M1）
 3. 继续对话「把它推进草稿箱」→ 出现确认（标题+门禁状态）→ 确认 → 发布卡（mediaId + 后台指引）；公众号后台「图文素材」出现新草稿。（M1）
 4. **错误流**：a) 模拟 agent 直接调用推送工具（跳过用户确认）→ 断言零微信 API 调用发生；b) 配置错误代理 URL → 发布卡给出 IP 白名单/代理分类指引，无半成品草稿。（M1）
 5. 关闭设置页 Agent 工具总开关 → 新会话中工具不可见；重开 → 恢复。（M1）
 6. 打开历史会话 → 工具卡/事件卡以相同形态回放，不重复不丢卡；卡片点击打开写作台并定位该文章。（M1 回放项 / M2）
-7. `@` 引用一篇文章下发指令 / `/wewrite 主题` 直开管线 / userQuestions 选候选题。（M3，选做项随做随验）
+7. `@` 引用一篇文章下发指令 / `/wechat-article 主题` 直开管线 / userQuestions 选候选题。（M3，选做项随做随验）
 8. grep 全部新代码路径日志与卡片渲染输出：无明文 secret/access_token；视觉走查 P0 三条（无 emoji 功能图标、无紫粉渐变、无占位文案）。
 9. 稳定性：第 2-3 步演示脚本以 E2E 固化并 **pass³**。
 
@@ -285,10 +285,10 @@ advisory: [
   {建议项: "C4 的 Effort(4人月) 是全线最大单点，建议架构师在 spec 里把它拆成 host 事件族与 client 渲染两个可独立验收的工作包", 理由: "双端可并行，且 host 事件族先行时 M1 卡片已有兜底呈现"}
 ]
 evidence: [
-  {artifact_ref: "/Users/mac/Documents/projects/dsh-wewrite-chat/docs/pipeline-chat/prd.md", line: 1, 说明: "本 PRD 全文（问题/旅程/三期 EARS/RICE/out-of-scope/成功指标/端到端验证）"},
-  {artifact_ref: "/Users/mac/Documents/workspace/docs/reviews/2026-08-20-dsh-wewrite-chat-integration-research.md", line: 97, 说明: "三期框架与混合式定位的上游依据（Jerry 已拍板，本文细化未翻案）"},
-  {artifact_ref: "/Users/mac/Documents/projects/dsh-wewrite-chat/src/host/tools.ts", line: 21, 说明: "现状工具面实证：仅 wewrite_run（fixed 主题）+ wewrite_push_draft，agentToolsEnabled 默认关，与 PRD 问题陈述一致"},
-  {artifact_ref: "/Users/mac/Documents/projects/dsh-wewrite-chat/src/shared/contract.ts", line: 35, 说明: "loopback RPC 绕过 agent 的现状证据"},
-  {artifact_ref: "/Users/mac/Documents/projects/dsh-wewrite-chat/docs/prd.md", line: 91, 说明: "v0.1 产品价值观（只进草稿箱/无默认遥测/P0 视觉门禁）沿用引用"}
+  {artifact_ref: "/Users/mac/Documents/projects/dsh-wechat-article-chat/docs/pipeline-chat/prd.md", line: 1, 说明: "本 PRD 全文（问题/旅程/三期 EARS/RICE/out-of-scope/成功指标/端到端验证）"},
+  {artifact_ref: "/Users/mac/Documents/workspace/docs/reviews/2026-08-20-dsh-wechat-article-chat-integration-research.md", line: 97, 说明: "三期框架与混合式定位的上游依据（Jerry 已拍板，本文细化未翻案）"},
+  {artifact_ref: "/Users/mac/Documents/projects/dsh-wechat-article-chat/src/host/tools.ts", line: 21, 说明: "现状工具面实证：仅 wechat_run（fixed 主题）+ wechat_push_draft，agentToolsEnabled 默认关，与 PRD 问题陈述一致"},
+  {artifact_ref: "/Users/mac/Documents/projects/dsh-wechat-article-chat/src/shared/contract.ts", line: 35, 说明: "loopback RPC 绕过 agent 的现状证据"},
+  {artifact_ref: "/Users/mac/Documents/projects/dsh-wechat-article-chat/docs/prd.md", line: 91, 说明: "v0.1 产品价值观（只进草稿箱/无默认遥测/P0 视觉门禁）沿用引用"}
 ]
 ```

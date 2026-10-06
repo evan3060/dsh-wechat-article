@@ -1,5 +1,5 @@
 # 官网自动发布：构建 Astro 站点并部署到 GitHub Pages。
-# 站点地址：https://jerryjiao.github.io/dsh-wewrite/（astro.config base='/dsh-wewrite/'）
+# 站点地址：https://evan3060.github.io/dsh-wechat-article/（astro.config base='/dsh-wechat-article/'）
 name: Website
 
 on:
@@ -43,7 +43,7 @@ jobs:
       - name: 验证 Pages base 前缀
         run: |
           test -f website/dist/index.html
-          grep -q '/dsh-wewrite/' website/dist/index.html
+          grep -q '/dsh-wechat-article/' website/dist/index.html
 
       - name: 上传 Pages 产物
         uses: actions/upload-pages-artifact@v3

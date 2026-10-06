@@ -43,13 +43,13 @@ export function PipelineStepper({
 
   if (compact) {
     return (
-      <div className="ww-stepper ww-stepper--compact">
-        <ol className="ww-stepper__list">
+      <div className="wa-stepper wa-stepper--compact">
+        <ol className="wa-stepper__list">
           {STAGES.map((stage) => (
-            <li key={stage.name} className={run.status === 'succeeded' ? 'ww-stage ww-stage--done' : 'ww-stage'}>
-              <span className="ww-stage__lead">
-                {run.status === 'succeeded' ? <Icon name="check" size={16} /> : <span className="ww-stage__hollow" aria-hidden="true" />}
-                <span className="ww-stage__name">{stage.label}</span>
+            <li key={stage.name} className={run.status === 'succeeded' ? 'wa-stage wa-stage--done' : 'wa-stage'}>
+              <span className="wa-stage__lead">
+                {run.status === 'succeeded' ? <Icon name="check" size={16} /> : <span className="wa-stage__hollow" aria-hidden="true" />}
+                <span className="wa-stage__name">{stage.label}</span>
               </span>
             </li>
           ))}
@@ -59,32 +59,32 @@ export function PipelineStepper({
   }
 
   return (
-    <div className="ww-stepper">
-      <div className="ww-stepper__head">
-        <h3 className="ww-stepper__title">正在生成《{topic}》</h3>
-        <span className="ww-stepper__meta">
+    <div className="wa-stepper">
+      <div className="wa-stepper__head">
+        <h3 className="wa-stepper__title">正在生成《{topic}》</h3>
+        <span className="wa-stepper__meta">
           {RUN_STATUS_LABEL[run.status]} · 预计 3–5 分钟
         </span>
       </div>
-      <ol className="ww-stepper__list">
+      <ol className="wa-stepper__list">
         {STAGES.map((stage) => (
-          <li key={stage.name} className={run.status === 'succeeded' ? 'ww-stage ww-stage--done' : 'ww-stage'}>
-            <span className="ww-stage__lead">
+          <li key={stage.name} className={run.status === 'succeeded' ? 'wa-stage wa-stage--done' : 'wa-stage'}>
+            <span className="wa-stage__lead">
               {run.status === 'succeeded' ? (
                 <Icon name="check" size={16} />
               ) : (
-                <span className="ww-stage__hollow" aria-hidden="true" />
+                <span className="wa-stage__hollow" aria-hidden="true" />
               )}
-              <span className="ww-stage__name">{stage.label}</span>
+              <span className="wa-stage__name">{stage.label}</span>
             </span>
           </li>
         ))}
       </ol>
       {run.status === 'running' || run.status === 'queued' ? (
-        <p className="ww-stepper__fallback">阶段明细随 run 记录回传；当前以整体状态跟踪。</p>
+        <p className="wa-stepper__fallback">阶段明细随 run 记录回传；当前以整体状态跟踪。</p>
       ) : null}
       {failed && run.error ? (
-        <div className="ww-stage__error">
+        <div className="wa-stage__error">
           <p>
             {run.error.message} <CodeChip>{run.error.code}</CodeChip>
           </p>
@@ -95,7 +95,7 @@ export function PipelineStepper({
           ) : null}
         </div>
       ) : null}
-      <div className="ww-stepper__foot">
+      <div className="wa-stepper__foot">
         {onBackground ? (
           <Button variant="ghost" size="sm" onClick={onBackground}>
             转入后台

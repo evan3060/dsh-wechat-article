@@ -1,4 +1,4 @@
-# dsh-wewrite UI/UX 方向文档（Phase 1 产出）
+# dsh-wechat-article UI/UX 方向文档（Phase 1 产出）
 
 > 作者：颜好看（MVP 专家团设计师） | 日期：2026-08-18
 > 输入：`docs/FACTS.md`（共享事实包）+ 本机 DSH 实装源码调研 + doocs/md 仓库调研 + 组件库公开资料对比
@@ -68,7 +68,7 @@
 
 ### 1.2 设计原则（6 条）
 
-1. **宿主同源（Host-native）**：一切颜色/字体/动效经 `--ww-*` 语义 token 间接引用宿主 `--dsw-*` token。插件在浅色 DSH 里是浅色，在深色/换肤 DSH 里自动跟随。**不自带主题切换开关**（宿主已有，重复 = 冲突源）。
+1. **宿主同源（Host-native）**：一切颜色/字体/动效经 `--wa-*` 语义 token 间接引用宿主 `--dsw-*` token。插件在浅色 DSH 里是浅色，在深色/换肤 DSH 里自动跟随。**不自带主题切换开关**（宿主已有，重复 = 冲突源）。
 2. **克重平涂（Stripe 式）**：主操作色 = 品牌蓝纯色平涂；层级靠灰阶明度递进 + 1px 边框，不靠阴影堆叠；无渐变、无发光、无毛玻璃。
 3. **工程编辑风（code-editorial）**：等宽字体用于一切「机器味」信息（slug、模型名、时间戳、门禁规则 ID、cron 表达式）；细描边图标；卡片圆角克制（8px 上限为主）；线框分层优先于阴影。
 4. **中文是第一公民**：界面全中文真实产品文案，不用英文占位；中文排版按 16px 正文 / 1.7 行高 / 每行 ≤ 34 字设计。
@@ -90,7 +90,7 @@
 | P0 门禁 | 构造保证手段 |
 |---|---|
 | ① 禁 emoji 作功能图标 | Spec 锁 lucide-react 为**唯一**图标库；组件层只暴露 `<Icon name>` 封装，业务代码不直接写 SVG；CI 扫人格文件的 emoji 正则 `[\x{1F300}-\x{1F9FF}\x{2600}-\x{26FF}\x{2700}-\x{27BF}]`（白名单：仅 UGC 正文） |
-| ② 禁紫→粉渐变主视觉 | token 层**不定义任何 gradient token**——`--ww-*` 全部是纯色/边框/阴影引用；加 stylelint 规则 `declaration-property-value-disallowed-list: linear-gradient`（除微信预览画布内的文章内容样式——那是 UGC 排版主题，非 UI chrome，且微信主题本身也不含紫粉渐变）；紫粉四色值不出现在任何 token |
+| ② 禁紫→粉渐变主视觉 | token 层**不定义任何 gradient token**——`--wa-*` 全部是纯色/边框/阴影引用；加 stylelint 规则 `declaration-property-value-disallowed-list: linear-gradient`（除微信预览画布内的文章内容样式——那是 UGC 排版主题，非 UI chrome，且微信主题本身也不含紫粉渐变）；紫粉四色值不出现在任何 token |
 | ③ 禁 AI 模板味 | ①空状态全部用真实中文产品文案（本文 §3 已写死示例，前端不得改写成「欢迎使用」）；②示例数据用有机真实值（如「阅读 4,721」而非「10,000+」）；③无营销 Hero——这是工具界面，首屏 = 工作内容本身；④颜色全部经 token 引用，组件内零裸 hex（`#fff`/`#000` 亦用 token） |
 
 ---
@@ -103,7 +103,7 @@
 
 ```
 DSH 宿主外壳（sidebar / composer，宿主资产，不动）
-└── [中心栏] dsh-wewrite 面板
+└── [中心栏] dsh-wechat-article 面板
     ├── 面板顶栏（二级导航 Tab ×5 + 右侧：公众号连接状态 · 版本号）
     └── 内容区（按 Tab 切换 5 个页面）
 ```
@@ -372,7 +372,7 @@ DSH 宿主外壳（sidebar / composer，宿主资产，不动）
 | 候选 | 主题跟随 `--dsw-*` | no-build 友好 | 视觉一致性 | 评估 |
 |---|---|---|---|---|
 | **A. 官方 primitives 为主 + 定制补充**（推荐） | 原生（就是宿主组件） | peerDep 零打包 | 完全同源 | Button/Input/Menu/Modal/Toast/Tooltip/Pill/StateDot/DisclosureRow/RiskConfirmation/MarkdownText/CodeBlock 已覆盖本项目 80% 原子需求 |
-| B. shadcn+Radix（次选，仅补缺） | 需改造为 CSS 变量映射（shadcn 本就 CSS vars 体系，改造浅） | 代码拷入 | 需全量重皮 | 只在需要复杂无头交互（如可访问日期选择）且官方 primitives 缺位时**按需拷入单个组件**并重映射到 `--ww-*` |
+| B. shadcn+Radix（次选，仅补缺） | 需改造为 CSS 变量映射（shadcn 本就 CSS vars 体系，改造浅） | 代码拷入 | 需全量重皮 | 只在需要复杂无头交互（如可访问日期选择）且官方 primitives 缺位时**按需拷入单个组件**并重映射到 `--wa-*` |
 | C. Arco Design | 自带粒子变量体系，双 token 体系并存 | 需构建 | 字节设计语言 | 落选：视觉冲突 + 维护两套主题 |
 | D. Ant Design v5 | CSS-in-JS 运行时 + 自带设计语言 | 需构建 | 后台脸（AI 模板味高危项） | 落选：运行时开销、包体、`#1677ff` 蓝与宿主蓝打架 |
 
@@ -390,36 +390,36 @@ DSH 宿主外壳（sidebar / composer，宿主资产，不动）
 
 ### 6.1 命名与分层策略
 
-插件自有语义层 `--ww-*`（wewrite），**默认值全部指向宿主 token**；宿主 token 缺位处（圆角/间距）用自有 primitive。这样 Phase 2 的 design-tokens.json 每项都有「自有语义名 → 宿主引用 → 解析值（light/dark）」三列，浅深主题零媒体查询。
+插件自有语义层 `--wa-*`（wechat-article），**默认值全部指向宿主 token**；宿主 token 缺位处（圆角/间距）用自有 primitive。这样 Phase 2 的 design-tokens.json 每项都有「自有语义名 → 宿主引用 → 解析值（light/dark）」三列，浅深主题零媒体查询。
 
 ### 6.2 色板（蓝纯色主色 + 中性灰阶，无渐变）
 
 ```
---ww-accent            → var(--dsw-alias-button-info-fill)      /* light #4176E6 / dark #679EFE */
---ww-accent-hover      → var(--dsw-alias-button-info-hover)     /* light #679EFE / dark #4176E6 */
---ww-accent-active     → var(--dsw-static-deepseek-600)         /* #4868B2 */
---ww-accent-on         → #FFFFFF（token 化为 --ww-accent-on，不裸写）
---ww-accent-subtle     → var(--dsw-static-deepseek-50)          /* #EDF3FE，选中态底/焦点环底 */
---ww-accent-ring       → rgba(65,118,230,.32)                   /* focus ring，accent 32% 透明 */
+--wa-accent            → var(--dsw-alias-button-info-fill)      /* light #4176E6 / dark #679EFE */
+--wa-accent-hover      → var(--dsw-alias-button-info-hover)     /* light #679EFE / dark #4176E6 */
+--wa-accent-active     → var(--dsw-static-deepseek-600)         /* #4868B2 */
+--wa-accent-on         → #FFFFFF（token 化为 --wa-accent-on，不裸写）
+--wa-accent-subtle     → var(--dsw-static-deepseek-50)          /* #EDF3FE，选中态底/焦点环底 */
+--wa-accent-ring       → rgba(65,118,230,.32)                   /* focus ring，accent 32% 透明 */
 
---ww-bg                → var(--dsw-alias-bg-base)               /* light #FFFFFF / dark #151517 */
---ww-surface           → var(--dsw-alias-bg-layer-2)            /* light #FFFFFF / dark #2C2C2E */
---ww-surface-sunken    → var(--dsw-specific-sidebar-fill)       /* light #F9FAFB / dark #1B1B1C，嵌套区/预览画布外圈 */
---ww-fg                → var(--dsw-alias-label-primary)         /* light #0F1115 / dark #F9FAFB */
---ww-fg-secondary      → var(--dsw-alias-label-secondary)       /* light #61666B / dark #CFD3D6 */
---ww-fg-tertiary       → var(--dsw-alias-label-tertiary)        /* light #81858C / dark #81858C */
---ww-border            → var(--dsw-alias-border-l2)             /* rgba(0,0,0,.10) / rgba(255,255,255,.12) */
---ww-border-strong     → var(--dsw-alias-border-l3)
---ww-divider           → var(--dsw-alias-border-l1)
+--wa-bg                → var(--dsw-alias-bg-base)               /* light #FFFFFF / dark #151517 */
+--wa-surface           → var(--dsw-alias-bg-layer-2)            /* light #FFFFFF / dark #2C2C2E */
+--wa-surface-sunken    → var(--dsw-specific-sidebar-fill)       /* light #F9FAFB / dark #1B1B1C，嵌套区/预览画布外圈 */
+--wa-fg                → var(--dsw-alias-label-primary)         /* light #0F1115 / dark #F9FAFB */
+--wa-fg-secondary      → var(--dsw-alias-label-secondary)       /* light #61666B / dark #CFD3D6 */
+--wa-fg-tertiary       → var(--dsw-alias-label-tertiary)        /* light #81858C / dark #81858C */
+--wa-border            → var(--dsw-alias-border-l2)             /* rgba(0,0,0,.10) / rgba(255,255,255,.12) */
+--wa-border-strong     → var(--dsw-alias-border-l3)
+--wa-divider           → var(--dsw-alias-border-l1)
 
---ww-success           → var(--dsw-alias-state-success-primary) /* #22C55E */
---ww-warn              → var(--dsw-alias-state-warn-primary)    /* #F59E0B */
---ww-danger            → var(--dsw-alias-state-error-primary)   /* #EC1313 */
---ww-info              → var(--dsw-alias-state-business-primary)/* #4176E6，与 accent 同源 */
+--wa-success           → var(--dsw-alias-state-success-primary) /* #22C55E */
+--wa-warn              → var(--dsw-alias-state-warn-primary)    /* #F59E0B */
+--wa-danger            → var(--dsw-alias-state-error-primary)   /* #EC1313 */
+--wa-info              → var(--dsw-alias-state-business-primary)/* #4176E6，与 accent 同源 */
 
 /* 微信预览画布（UGC 内容区，固定浅色——微信文章永远是浅底） */
---ww-canvas-bg         → #FFFFFF（固定值，不随主题，画布内是文章排版主题的域）
---ww-canvas-frame      → var(--dsw-alias-border-l2)
+--wa-canvas-bg         → #FFFFFF（固定值，不随主题，画布内是文章排版主题的域）
+--wa-canvas-frame      → var(--dsw-alias-border-l2)
 ```
 
 - **每屏 accent ≤ 2 处可见**：主 CTA（「开始写作」「推草稿箱」）+ 单一选中态。热榜「写这个」为次要按钮（ghost），不抢主路径。
@@ -429,9 +429,9 @@ DSH 宿主外壳（sidebar / composer，宿主资产，不动）
 ### 6.3 字体
 
 ```
---ww-font-ui      → var(--dsw-font-family)         /* -apple-system…PingFang SC…Microsoft YaHei */
---ww-font-code    → var(--ds-font-family-code)     /* SF Mono / JetBrains Mono / Fira Code… */
---ww-font-canvas  → -apple-system…PingFang SC（画布内文章字体由排版主题控制，默认系统栈）
+--wa-font-ui      → var(--dsw-font-family)         /* -apple-system…PingFang SC…Microsoft YaHei */
+--wa-font-code    → var(--ds-font-family-code)     /* SF Mono / JetBrains Mono / Fira Code… */
+--wa-font-canvas  → -apple-system…PingFang SC（画布内文章字体由排版主题控制，默认系统栈）
 ```
 
 零网络字体（本地工具 + 性能 + DSH 同款栈）。JetBrains Mono 在已装用户机器上生效，未装回落 SF Mono/Consolas——与宿主行为完全一致。
@@ -442,7 +442,7 @@ DSH 宿主外壳（sidebar / composer，宿主资产，不动）
 
 ```
 间距：4px 网格   4 / 8 / 12 / 16 / 20 / 24 / 32 / 48（编辑器内边距 20，列表行高 44 触摸底线）
-圆角：--ww-radius-sm 4px（badge/输入框） · --ww-radius-md 6px（按钮/菜单项） · --ww-radius-lg 8px（卡片/画布/弹层，上限）
+圆角：--wa-radius-sm 4px（badge/输入框） · --wa-radius-md 6px（按钮/菜单项） · --wa-radius-lg 8px（卡片/画布/弹层，上限）
 阴影：优先 --dsw-shadow-lv1/2/3（宿主已有）；面板内卡片默认 border 分层 + 无阴影，仅弹层/下拉用 lv2+
 动效：全盘宿主值 100/200/300ms + cubic-bezier(0.4,0,0.2,1)；禁 >400ms；prefers-reduced-motion 全局关
 ```
@@ -481,7 +481,7 @@ DSH 宿主外壳（sidebar / composer，宿主资产，不动）
 | 6 | 圆角卡片 + 彩色左边框 | 通过：分组靠 border-l2 全边框 + hover 变色，无 border-left 强调手法 |
 | 7 | 虚构指标（"10,000+ 用户信赖"） | 通过：数字全部来自真实回流（阅读 4,721 式有机值）或真实门禁分数 |
 | 8 | 填充式文案（Seamless/Unleash/Elevate） | 通过：文案全是具体动作词：「推草稿箱」「AI 修这稿」「定位到段落」 |
-| 9 | 硬编码颜色（组件内裸 hex） | 通过：全部经 --ww-* → --dsw-* 链；CI stylelint 禁裸 hex（白名单仅画布内排版主题） |
+| 9 | 硬编码颜色（组件内裸 hex） | 通过：全部经 --wa-* → --dsw-* 链；CI stylelint 禁裸 hex（白名单仅画布内排版主题） |
 | 10 | 相同卡片网格无限重复 | 通过：文章库用数据表格而非三卡网格；写作台「最近文章」限 6 条且非等宽强调 |
 | 11 | 幽灵卡片（1px 边框 + blur≥16px 阴影同存） | 通过：卡片 = 边框分层无阴影；阴影仅弹层 lv2+ |
 | 12 | 过度圆角（卡片 ≥24px） | 通过：圆角上限 8px |

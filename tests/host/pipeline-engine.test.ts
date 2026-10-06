@@ -134,7 +134,7 @@ describe('run 生命周期：queued -> running -> 终态', () => {
     expect(deps.llm.stream).toHaveBeenCalledTimes(2);
   });
 
-  it('llm.stream 调用带 purpose=wewrite-pipeline + provider/model/system（F22 + GenerateOptions 协议）', async () => {
+  it('llm.stream 调用带 purpose=wechat-article-pipeline + provider/model/system（F22 + GenerateOptions 协议）', async () => {
     const deps = makeDeps();
     await makeEngine(deps).start({ trigger: 'manual', params: baseParams });
 
@@ -148,7 +148,7 @@ describe('run 生命周期：queued -> running -> 终态', () => {
         system: string;
         messages: { role: string; content: { type: string; text: string }[] }[];
       };
-      expect(options.purpose).toBe('wewrite-pipeline');
+      expect(options.purpose).toBe('wechat-article-pipeline');
       expect(options.provider).toBe('zhipu');
       expect(options.model).toBe('glm-4.5-flash');
       expect(options.system.length).toBeGreaterThan(0);
@@ -404,7 +404,7 @@ describe('runHistoryLimit 修剪（Spec §6 runs 表约束）', () => {
 describe('await done 句柄（chat-integration M1：service.runCompletion 的 engine 侧句柄，architecture §3/§8）', () => {
   // 钉定 PipelineEngine 新增面：awaitDone(runId): Promise<RunRecord | undefined>
   // —— 活跃 run 在终态时 resolve 出该 run 的 RunRecord；未知 runId resolve undefined（不挂起不抛错）。
-  // 消费方：service.runCompletion（wewrite_run 工具 execute 等终态用）。六步编排零改（§7 保证 3）。
+  // 消费方：service.runCompletion（wechat_run 工具 execute 等终态用）。六步编排零改（§7 保证 3）。
 
   /** 第二次 llm 调用（draft 步）挂起直至 release 的可控引擎。 */
   function makeGatedDeps() {

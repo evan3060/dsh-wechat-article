@@ -2,7 +2,7 @@
 
 | 项 | 内容 |
 |---|---|
-| 产品 | dsh-wewrite — DSH 宿主的公众号 AI 写作管线插件 |
+| 产品 | dsh-wechat-article — DSH 宿主的公众号 AI 写作管线插件 |
 | 版本 | 测试架构 v0.1（对 v0.1.5 发版） |
 | 作者 | 高见远（MVP 专家团架构师），2026-08-19 |
 | 上游 | docs/spec.md v0.1.0、docs/tech-architecture.md v0.1、docs/qa-test-plan.md、.agent/memory/pitfalls.jsonl（dsh-llm-seam-real-protocol）、项目总监 2026-08-19 晚亲测现状 |
@@ -26,8 +26,8 @@
 | S7 | 图片供应商 9 家（openai/doubao/dashscope/jimeng/minimax/azure_openai/gemini/openrouter/replicate）**不含智谱**；glm-4v-flash 是视觉理解模型非生图，智谱生图（CogView 系列）不在插件矩阵 | 实测 |
 | S8 | 写作台「开始写作」硬编码 `imageCount: 1`（topic-panel.tsx:68）——UI 真跑路径必然执行 images 步；无凭据时 fallback 链按序全试（每家 1 次 AUTH 类失败），步 `failed` 但 run `succeeded`（AC-9 无图推进） | 实测 |
 | S9 | playwright 1.62.1 在 workspace 根 node_modules；`import 'playwright'` 从本项目向上解析命中（scripts/tmp-probe-btn.mjs 实证）；项目 devDeps 无 @playwright/test | 实测 |
-| S10 | 安装链路：profile `github:jerryjiao/dsh-wewrite#v0.1.4`（v0.1.4 已装）+ 手动 `cp lib/` 覆盖 `~/.dsh/profiles/web/node_modules/dsh-wewrite/lib/`（08-19 17:39 实证生效） | 实测 |
-| S11 | storage unit `~/.dsh/storages/dsh_wewrite.json` 顶层 `{unit, global:{v,settings,claimedOccurrences}, tables:{articles,runs,schedules,images}}`；现网 3 文章/4 run/1 schedule | 实测 |
+| S10 | 安装链路：profile `github:jerryjiao/dsh-wewrite#v0.1.4`（v0.1.4 已装）+ 手动 `cp lib/` 覆盖 `~/.dsh/profiles/web/node_modules/dsh-wechat-article/lib/`（08-19 17:39 实证生效） | 实测 |
+| S11 | storage unit `~/.dsh/storages/dsh_wechat_article.json` 顶层 `{unit, global:{v,settings,claimedOccurrences}, tables:{articles,runs,schedules,images}}`；现网 3 文章/4 run/1 schedule | 实测 |
 | S12 | settings `llmDefault` 默认 `{}`——模型未配时管线启动立即失败，engine 显式报 `llm-not-configured`（「模型服务未配置：请在 设置 → 模型服务 选择供应商与模型后再运行管线」） | 实测 |
 | S13 | 智谱免费模型限流档位官方页面需登录 usercenter 查看，公开文档无具体数字（社区旧资料：GLM-4-Flash 早期新用户 2 并发）——按「低并发低 QPM」做防御设计 | 实测（查证过程） |
 
@@ -131,13 +131,13 @@ restart = `stop() → start()`；stop 顺序：`process.kill(pid, 'SIGTERM')` �
 **立即收尾动作**（本文档落地时执行一次）：
 
 ```bash
-cd /Users/mac/Documents/workspace/apps/dsh-wewrite
+cd /Users/mac/Documents/workspace/apps/dsh-wechat-article
 node scripts/hostctl.mjs status   # 预期：PID 45194, ZHIPU_API_KEY: MISSING
 node scripts/hostctl.mjs restart  # kill 45194 → 带 env 重启 → waitReady
 node scripts/hostctl.mjs status   # 预期：新 PID, ZHIPU_API_KEY: OK
 ```
 
-可选护栏（给 Jerry 的人工入口，不强制）：`alias dsh-web='node ~/Documents/workspace/apps/dsh-wewrite/scripts/hostctl.mjs restart'` 写进 .zshrc——保证人工起宿主也走同一注入点。
+可选护栏（给 Jerry 的人工入口，不强制）：`alias dsh-web='node ~/Documents/workspace/apps/dsh-wechat-article/scripts/hostctl.mjs restart'` 写进 .zshrc——保证人工起宿主也走同一注入点。
 
 ### 1.2 管线免费模型选择（ADR-010 附带）
 
@@ -158,7 +158,7 @@ node scripts/hostctl.mjs status   # 预期：新 PID, ZHIPU_API_KEY: OK
 
 1. **不为智谱加生图 provider**。glm-4v-flash 是识图（视觉理解）模型，不是生图；智谱生图是 CogView 系列，不在源管线 9 家矩阵、不在 Spec 锁定范围（Spec §3 反范围蔓延）。测试轮零改动。
 2. **E2E 管线真跑不跳过 images 步，而是走真实失败降级路径**。写作台 UI 硬编码 `imageCount: 1`（S8）——真跑必然执行 images 步。没有配任何图片 key 时该步 AUTH 失败、run 仍 `succeeded`（AC-9 无图推进），这本身就是 Spec P1 验收标准的真实路径，比跳过覆盖更全。
-3. **为省时降噪，E2E 数据准备时把 fallback 链裁成单家**。默认链 9 家会逐家发真 HTTP（9 次 401，约 10-25 秒网络噪声）。E2E demo 相位写 storage 时把 `global.settings.imageProviders` 置为单条 `[{providerId:'openai', credentialRef:'WEWRITE_IMG_OPENAI'}]`——images 步 1 次 401 快速失败，总时长和确定性都最优（helpers/storage.mjs 职责，见 §2.3）。默认链的完整 fallback 编排已由 vitest `providers-registry.test.ts` ×8 mock 覆盖，不依赖 E2E 重复验证。
+3. **为省时降噪，E2E 数据准备时把 fallback 链裁成单家**。默认链 9 家会逐家发真 HTTP（9 次 401，约 10-25 秒网络噪声）。E2E demo 相位写 storage 时把 `global.settings.imageProviders` 置为单条 `[{providerId:'openai', credentialRef:'WECHAT_ARTICLE_IMG_OPENAI'}]`——images 步 1 次 401 快速失败，总时长和确定性都最优（helpers/storage.mjs 职责，见 §2.3）。默认链的完整 fallback 编排已由 vitest `providers-registry.test.ts` ×8 mock 覆盖，不依赖 E2E 重复验证。
 4. **真实生图验收留手工**（gpt-image-2 需 OpenAI 付费 key，不属智谱免费测试轮），挂在 qa-test-plan §6 手工清单，本轮不自动化。
 
 ---
@@ -226,7 +226,7 @@ E2E 最大风险是「宿主+storage 是共享单例状态」。解法：runner 
 
 | 相位 | 宿主动作 | storage 动作 | 跑哪些用例 |
 |---|---|---|---|
-| fresh | stop → start | 备份现网 unit 到 `/tmp/dsh-wewrite-e2e-backup.json` → 重置为最小空 unit（`{unit:'dsh_wewrite', global:{v:1,settings:{},claimedOccurrences:{}}, tables:{articles:{},runs:{},schedules:{},images:{}}}`，S11 形状；实施首日先 cat 现网 unit 对齐顶层字段再定稿） | 空态用例 + 导航 + 热榜 + 设置配置流（A/B01/B03/C/D06/G01-G05/I02） |
+| fresh | stop → start | 备份现网 unit 到 `/tmp/dsh-wechat-article-e2e-backup.json` → 重置为最小空 unit（`{unit:'dsh_wechat_article', global:{v:1,settings:{},claimedOccurrences:{}}, tables:{articles:{},runs:{},schedules:{},images:{}}}`，S11 形状；实施首日先 cat 现网 unit 对齐顶层字段再定稿） | 空态用例 + 导航 + 热榜 + 设置配置流（A/B01/B03/C/D06/G01-G05/I02） |
 | demo | stop → start | 调 `seedDemo()`：仿 seed-demo-data.mjs 写 1 article/1 run/1 schedule 进 tables + `global.settings.imageProviders` 置单条 openai 链（§1.3-3）；**不动 llmDefault**（fresh 相位 G05 已配好，保留） | 有数据用例（B02/B04*/D01-D05/D07/E/F/G06-G09） |
 | live | 保持运行 | 无改动 | 智谱真跑（H01-H05） |
 | restore | stop → start | 从备份恢复 unit | I01（断连恢复顺带验证），随后 runner 收尾校验 storage 与备份一致 |
@@ -243,7 +243,7 @@ E2E 最大风险是「宿主+storage 是共享单例状态」。解法：runner 
 3. workspace 打开：placeholder 双语正则定位输入行 → fill `/tmp/dsh-demo-workspace` → Enter；已存在则点侧栏 workspace 项（原脚本两条路径全保留）；
 4. 首消息激活会话：composer fill `e2e-init` → Enter——**不依赖模型回包成功**（capture 注释实证：无 key 报错但视图环已挂载），宿主 sessions 目录会积累少量 init 会话，无害不清理（避免误删真实 session）；
 5. 点「写作台」tab（tabNames 数组保留双 locale 回退）；
-6. 终点断言：`.dsh-wewrite-panel` 可见 + `#wewrite-panel-content` 存在。
+6. 终点断言：`.dsh-wechat-article-panel` 可见 + `#wechat-article-panel-content` 存在。
 
 browser context 参数（helper 内固定）：`locale: 'zh-CN'`、`viewport: {width:1440, height:900}`、`deviceScaleFactor: 1`（测试不要 2x，省内存；截图排查够用）。每个相位开始新建 context 跑一次 openWorkbench，相位内复用。
 
@@ -255,7 +255,7 @@ browser context 参数（helper 内固定）：`locale: 'zh-CN'`、`viewport: {w
 
 ```
 npm run build                                    # esbuild lib/index.js+shared.js+client.js + tsc types
-cp -R lib/* ~/.dsh/profiles/web/node_modules/dsh-wewrite/lib/
+cp -R lib/* ~/.dsh/profiles/web/node_modules/dsh-wechat-article/lib/
 node scripts/hostctl.mjs restart                 # 宿主重启强制加载新 lib
 ```
 
@@ -263,16 +263,16 @@ node scripts/hostctl.mjs restart                 # 宿主重启强制加载新 l
 
 ### 2.4 测试用例矩阵（51 用例，全用例无遗漏）
 
-约定：前置列的相位即执行窗口；「面板」指 `.dsh-wewrite-panel` 内区域；断言全部 DOM 锚点（role/aria-label/text/class），不用像素对比。已知锚点速查：面板根 `.dsh-wewrite-panel`；顶栏 `nav[aria-label="WeWrite 工作台导航"]`；内容区 `#wewrite-panel-content`；写作台输入 `placeholder="输入主题，直接开写…"`；生成弹层标题 `正在生成《…》`；六步标签 选题分析/研究与提纲/初稿写作/质量门禁/排版转换/配图生成（S6）；设置导航 `nav[aria-label="设置分组"]`。
+约定：前置列的相位即执行窗口；「面板」指 `.dsh-wechat-article-panel` 内区域；断言全部 DOM 锚点（role/aria-label/text/class），不用像素对比。已知锚点速查：面板根 `.dsh-wechat-article-panel`；顶栏 `nav[aria-label="公众号工作台导航"]`；内容区 `#wechat-article-panel-content`；写作台输入 `placeholder="输入主题，直接开写…"`；生成弹层标题 `正在生成《…》`；六步标签 选题分析/研究与提纲/初稿写作/质量门禁/排版转换/配图生成（S6）；设置导航 `nav[aria-label="设置分组"]`。
 
 #### A 导航（5）
 
 | 编号 | 前置 | 步骤 | 断言 |
 |---|---|---|---|
-| A01 | fresh，已进面板 | 读顶栏 | `nav[aria-label="WeWrite 工作台导航"]` 内 5 个按钮，文本 = 写作台/选题中心/文章库/定时任务/设置，首个带 `aria-current="true"` |
-| A02 | A01 | 逐个点 5 Tab | 每次点击后目标按钮 `aria-current="true"` 且 `#wewrite-panel-content` 内出现对应面板容器（写作台 `.ww-topic`、选题 `.ww-aside`、文章库表格行容器、定时 `.ww-view-tab`、设置 `.ww-settings`） |
-| A03 | demo 相位，D01 后 | 文章库点文章行 → 进编辑器 → 点返回按钮（arrow-left「返回文章库」） | 编辑器页头出现（`.ww-editor-head`）；返回后文章库表格重新可见 |
-| A04 | demo 相位 | `page.setViewportSize({width:860,height:900})`（<900 断点，App.tsx NARROW_BREAKPOINT）→ 进设置 → 恢复 1440 | 窄屏：设置出现 `.ww-settings--narrow` + `.ww-settings__chip` 按钮、无 `.ww-settings__nav-item`；恢复后竖导航回归 |
+| A01 | fresh，已进面板 | 读顶栏 | `nav[aria-label="公众号工作台导航"]` 内 5 个按钮，文本 = 写作台/选题中心/文章库/定时任务/设置，首个带 `aria-current="true"` |
+| A02 | A01 | 逐个点 5 Tab | 每次点击后目标按钮 `aria-current="true"` 且 `#wechat-article-panel-content` 内出现对应面板容器（写作台 `.wa-topic`、选题 `.wa-aside`、文章库表格行容器、定时 `.wa-view-tab`、设置 `.wa-settings`） |
+| A03 | demo 相位，D01 后 | 文章库点文章行 → 进编辑器 → 点返回按钮（arrow-left「返回文章库」） | 编辑器页头出现（`.wa-editor-head`）；返回后文章库表格重新可见 |
+| A04 | demo 相位 | `page.setViewportSize({width:860,height:900})`（<900 断点，App.tsx NARROW_BREAKPOINT）→ 进设置 → 恢复 1440 | 窄屏：设置出现 `.wa-settings--narrow` + `.wa-settings__chip` 按钮、无 `.wa-settings__nav-item`；恢复后竖导航回归 |
 | A05 | fresh（未配公众号，storage 重置保证 appid 空） | 看顶栏连接徽标 | 徽标 `aria-label` 含「公众号未配置」 |
 
 #### B 写作台（4）
@@ -282,16 +282,16 @@ node scripts/hostctl.mjs restart                 # 宿主重启强制加载新 l
 | B01 | fresh（空库） | 进写作台 | 待办区空态文案可见（「今日待办（0）」或空态引导块）+ 最近文章空态；「开始写作」按钮 `disabled` |
 | B02 | demo | 进写作台 | 待办列表渲染 demo 数据推导的条目（数量>0）；最近文章卡列表含《把公众号写作管线装进 DeepSeek Harness》 |
 | B03 | fresh/demo 均可 | 输入框填纯空格 → 清空 → 填有效主题 | 空主题时按钮 `disabled`；填入后按钮 enabled（topic.trim().length===0 语义） |
-| B04* | live（并入 H01 体内，不独立跑） | H01 发起生成后收起 overlay | 写作台待办列表首行出现「正在生成《主题》」live 行（`.ww-topic__todo--live`） |
+| B04* | live（并入 H01 体内，不独立跑） | H01 发起生成后收起 overlay | 写作台待办列表首行出现「正在生成《主题》」live 行（`.wa-topic__todo--live`） |
 
 #### C 选题中心（5）
 
 | 编号 | 前置 | 步骤 | 断言 |
 |---|---|---|---|
 | C01 | fresh | 进选题中心，等列表加载 | 热榜列表出现条目行（真 HN API；若外网不可达则断言 AC-3 失败隔离态：失败源提示出现且页面不白屏——两态其一通过） |
-| C02 | C01 | 点刷新按钮 | 按钮 loading 态（`.ww-spin` 或 disabled）出现后恢复，列表重新渲染或失败态保持结构 |
+| C02 | C01 | 点刷新按钮 | 按钮 loading 态（`.wa-spin` 或 disabled）出现后恢复，列表重新渲染或失败态保持结构 |
 | C03 | C01 | 右栏「添加关键词」输入 `AI` → 提交 → 出现 Pill → 点 Pill 删除 | Pill 文本=AI 出现；删除后消失（localStorage 持久：刷新页面后仍在——提交后 reload 再断言一次） |
-| C04 | C03 有关键词 | 刷新热榜 → 开「只看命中」筛选 | 命中行有高亮 class（`--ww-accent-subtle` 底）；开关后全部行可见；无命中时显示「没有命中…」空态文案 |
+| C04 | C03 有关键词 | 刷新热榜 → 开「只看命中」筛选 | 命中行有高亮 class（`--wa-accent-subtle` 底）；开关后全部行可见；无命中时显示「没有命中…」空态文案 |
 | C05 | C01 | 点任一条目「写这个」 | 进入生成流：overlay 出现且标题含该条目标题（live 相位外允许终态 failed——fresh 相位未配模型时即 I02 语义；此处只断言 overlay 打开+stepper 渲染） |
 
 #### D 文章库（7）
@@ -299,19 +299,19 @@ node scripts/hostctl.mjs restart                 # 宿主重启强制加载新 l
 | 编号 | 前置 | 步骤 | 断言 |
 |---|---|---|---|
 | D01 | demo | 进文章库 | 表格渲染：demo 文章行含标题、slug 副行（等宽）、状态点列、门禁列、更新时间列 |
-| D02 | D01 | 打开状态筛选菜单（`.ww-menu-trigger`）→ 选「已渲染」 | 菜单项含 全部/编辑中/已渲染/已推送/失败；选择后仅 status=rendered 行可见（demo 文章保留） |
+| D02 | D01 | 打开状态筛选菜单（`.wa-menu-trigger`）→ 选「已渲染」 | 菜单项含 全部/编辑中/已渲染/已推送/失败；选择后仅 status=rendered 行可见（demo 文章保留） |
 | D03 | D01 | 搜索框输入 demo 文章标题片段 | 仅匹配行可见；清空后全部回归 |
 | D04 | D01 | 筛选=已渲染 + 搜索不相关词 `zzz` | 表格空态（0 行 + 空态提示） |
-| D05 | D01 | 点 demo 文章标题行 | 下钻编辑器（`.ww-editor-head` 出现，A03 对称验证） |
+| D05 | D01 | 点 demo 文章标题行 | 下钻编辑器（`.wa-editor-head` 出现，A03 对称验证） |
 | D06 | fresh（空库） | 进文章库 | 空表格空态文案，无报错 |
-| D07 | demo | 看门禁列 | demo run（gates succeeded）对应行门禁列为通过图标/文本（`.ww-gate-*` 或语义色 success 类） |
+| D07 | demo | 看门禁列 | demo run（gates succeeded）对应行门禁列为通过图标/文本（`.wa-gate-*` 或语义色 success 类） |
 
 #### E 编辑器（7）
 
 | 编号 | 前置 | 步骤 | 断言 |
 |---|---|---|---|
-| E01 | demo，D05 后 | 点三视图 tab（`.ww-view-tabs[aria-label="编辑器视图"]`） | 三个 role=tab 可见（编辑/微信预览/门禁报告语义），切换后对应视图容器出现（编辑 CodeMirror / 预览画布 / GateReport） |
-| E02 | E01 | 编辑器内追加一行文本 → 触发失焦 | 页头出现「自动保存于 …」（`.ww-editor-head__saved`）；reload 页面重进后文本仍在（article/save 真落库） |
+| E01 | demo，D05 后 | 点三视图 tab（`.wa-view-tabs[aria-label="编辑器视图"]`） | 三个 role=tab 可见（编辑/微信预览/门禁报告语义），切换后对应视图容器出现（编辑 CodeMirror / 预览画布 / GateReport） |
+| E02 | E01 | 编辑器内追加一行文本 → 触发失焦 | 页头出现「自动保存于 …」（`.wa-editor-head__saved`）；reload 页面重进后文本仍在（article/save 真落库） |
 | E03 | E01 | 切「微信预览」 | 预览画布容器出现且内含渲染 HTML（容器 innerHTML 含内联 style 属性、正文文本非空——预览=产物走 article/preview RPC） |
 | E04 | E01 | 切「门禁报告」 | GateReport 组件区域渲染（结构可见；v0.1 契约无 gates 步明细，允许占位性「暂无报告」文案，断言容器存在不白屏） |
 | E05 | fresh（appid 空 → pushDraft 必然失败且**不可能触达微信**，确定性失败态） | demo 相位外的备选：在 demo 相位用 demo 文章点「推草稿箱」 | error toast 出现（ToastHost error 类），无 success toast；不出现 mediaId 回填 |
@@ -343,7 +343,7 @@ node scripts/hostctl.mjs restart                 # 宿主重启强制加载新 l
 | G06 | demo | 图片供应商组 | 9 家列表渲染 + 默认链顺序（openai 首位）；只验渲染排序，不真生成 |
 | G07 | demo | API 代理组点「连接测试」（凭据无效/缺） | 失败态提示出现且分类可见（AC-1 语义的 UI 面；不锚具体 errcode） |
 | G08 | demo | 发布纪律组 | 「只进草稿箱/无自动群发」说明文案可见，页面无任何群发入口控件 |
-| G09 | demo，窄屏（A04 viewport） | 窄屏进设置 | 分组导航呈 chip 行（`.ww-settings__chip`），5 组全部可达可切换 |
+| G09 | demo，窄屏（A04 viewport） | 窄屏进设置 | 分组导航呈 chip 行（`.wa-settings__chip`），5 组全部可达可切换 |
 
 #### H 管线 E2E——智谱真跑（5，live 相位）
 

@@ -24,10 +24,10 @@ import { writeFileSync } from 'node:fs';
 
 async function startRunFromRail(page, topic) {
   await gotoWorkbench(page);
-  await page.locator('.ww-rail__new').first().click();
+  await page.locator('.wa-rail__new').first().click();
   await page.locator(LOC.railNewForm).first().waitFor({ state: 'visible', timeout: 5000 });
-  await page.locator('[data-testid="ww-rail-new-input"]').first().fill(topic);
-  await page.locator('[data-testid="ww-rail-new-submit"]').first().click();
+  await page.locator('[data-testid="wa-rail-new-input"]').first().fill(topic);
+  await page.locator('[data-testid="wa-rail-new-submit"]').first().click();
   await expectVisible(page.getByText(`正在生成《${topic}》`).first(), {
     timeout: 15000,
     msg: `提交后应出现生成 overlay（${topic}）`,
@@ -47,7 +47,7 @@ export default [
       hostctl('stop');
       await page.waitForTimeout(1500); // 等 RPC 轮询撞上断连（一次性等待，非断言轮询）
       const panelCount = await page.locator(LOC.panelRoot).count();
-      assert.ok(panelCount > 0, '断连后面板根 .dsh-wewrite-panel 不应从 DOM 消失（不白屏）');
+      assert.ok(panelCount > 0, '断连后面板根 .dsh-wechat-article-panel 不应从 DOM 消失（不白屏）');
       const bodyText = await page.evaluate(() => document.body.innerText.length);
       assert.ok(bodyText > 0, '断连后页面不应变成空白文档');
 
@@ -77,11 +77,11 @@ export default [
       await ctx.openPanel(page);
 
       await startRunFromRail(page, '未配模型失败路径');
-      await expectVisible(page.locator('.ww-stage__error').first(), {
+      await expectVisible(page.locator('.wa-stage__error').first(), {
         timeout: 30000,
         msg: '未配模型时 run 应快速失败（错误区块出现）',
       });
-      const errText = await page.locator('.ww-stage__error').first().innerText();
+      const errText = await page.locator('.wa-stage__error').first().innerText();
       assert.ok(
         errText.includes('模型服务未配置'),
         `失败信息应含「模型服务未配置」（S12 文案锚点，实际：「${errText.slice(0, 120)}」）`,
@@ -90,11 +90,11 @@ export default [
       await expectVisible(retry, { msg: '失败态应出现「重试本阶段」按钮' });
       assert.equal(await retry.isDisabled(), false, '重试按钮应可点');
       await retry.click();
-      await expectVisible(page.locator('.ww-stage__error').first(), {
+      await expectVisible(page.locator('.wa-stage__error').first(), {
         timeout: 30000,
         msg: '重试后应再次失败（llmDefault 仍空——retryGeneration 路径闭环）',
       });
-      assert.equal(await page.locator('.ww-toast--success').count(), 0, '失败路径不应有成功 toast（负向）');
+      assert.equal(await page.locator('.wa-toast--success').count(), 0, '失败路径不应有成功 toast（负向）');
 
       // 还原 G05 配置（保住 demo/live 相位贯穿），宿主恢复运行
       hostctl('stop');

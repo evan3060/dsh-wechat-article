@@ -14,7 +14,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 await page.goto('http://127.0.0.1:3080', { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(4000);
 
-const entry = await page.$('[data-testid="ww-sidebar-entry"]');
+const entry = await page.$('[data-testid="wa-sidebar-entry"]');
 if (!entry) {
   console.log('NO-ENTRY: sidebar entry not found. body classes:', await page.evaluate(() => document.body.className));
   await page.screenshot({ path: OUT });
@@ -22,7 +22,7 @@ if (!entry) {
   process.exit(0);
 }
 await entry.click();
-await page.waitForSelector('[data-testid="ww-overlay"]', { timeout: 5000 });
+await page.waitForSelector('[data-testid="wa-overlay"]', { timeout: 5000 });
 await page.waitForTimeout(1000);
 
 const vh = await page.evaluate(() => window.innerHeight);
@@ -43,9 +43,9 @@ for (const y of [vh - 6, vh - 20, vh - 48, vh - 80, vh - 116]) {
 }
 
 const geo = await page.evaluate(() => {
-  const ov = document.querySelector('.ww-overlay');
-  const body = ov && ov.querySelector('.ww-overlay__body');
-  const panel = document.querySelector('.dsh-wewrite-panel');
+  const ov = document.querySelector('.wa-overlay');
+  const body = ov && ov.querySelector('.wa-overlay__body');
+  const panel = document.querySelector('.dsh-wechat-article-panel');
   const out = {};
   if (ov) { const r = ov.getBoundingClientRect(); out.overlay = { top: r.top, bottom: r.bottom, h: Math.round(r.height) }; }
   if (body) { const r = body.getBoundingClientRect(); out.body = { top: r.top, bottom: r.bottom, h: Math.round(r.height) }; }

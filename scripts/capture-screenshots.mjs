@@ -79,7 +79,7 @@ if (await composer.count()) {
 }
 
 // 3) 找到插件 tab（宿主 conversation.view 环，label=写作台/Workbench）
-const tabNames = ['写作台', 'Workbench', 'WeWrite', 'wewrite'];
+const tabNames = ['写作台', 'Workbench', 'WeChatArticle', 'wechat-article'];
 let tab = null;
 for (const n of tabNames) {
   const el = page.getByRole('tab', { name: n, exact: false });
@@ -88,7 +88,7 @@ for (const n of tabNames) {
   if (await btn.count()) { tab = btn.first(); break; }
 }
 if (!tab) {
-  console.error('!! wewrite tab 未找到——截图中止，列出页面可点文本辅助排查：');
+  console.error('!! wechat-article tab 未找到——截图中止，列出页面可点文本辅助排查：');
   console.error((await page.locator('button, [role=tab], a').allInnerTexts().catch(() => [])).slice(0, 40).join(' | '));
   await shot(page, '00-debug-main');
   await browser.close();
@@ -110,15 +110,15 @@ const goTab = async (testid) => {
 await shot(page, '01-workbench');
 
 // 04 编辑器：点左栏种子文章行确保聚焦态，双栏视图
-const row = page.locator('[data-testid^="ww-rail-row-"]').first();
+const row = page.locator('[data-testid^="wa-rail-row-"]').first();
 if (await row.count()) {
   await row.click().catch(() => {});
   await sleep(2000);
-  const split = page.locator('[data-testid="ww-view-tab-split"]').first();
+  const split = page.locator('[data-testid="wa-view-tab-split"]').first();
   if (await split.count()) { await split.click().catch(() => {}); await sleep(1500); }
   await shot(page, '04-editor');
   // 05 仅预览视图（画布井 + 手机 notch）
-  const previewTab = page.locator('[data-testid="ww-view-tab-preview"]').first();
+  const previewTab = page.locator('[data-testid="wa-view-tab-preview"]').first();
   if (await previewTab.count()) {
     await previewTab.click().catch(() => {});
     await sleep(2500);
@@ -126,9 +126,9 @@ if (await row.count()) {
   }
 }
 
-if (await goTab('ww-topbar-tab-hotspots')) { await sleep(3500); await shot(page, '02-hotspots'); }
-if (await goTab('ww-topbar-tab-schedule')) { await sleep(1500); await shot(page, '06-schedule'); }
-if (await goTab('ww-topbar-settings')) {
+if (await goTab('wa-topbar-tab-hotspots')) { await sleep(3500); await shot(page, '02-hotspots'); }
+if (await goTab('wa-topbar-tab-schedule')) { await sleep(1500); await shot(page, '06-schedule'); }
+if (await goTab('wa-topbar-settings')) {
   await sleep(1500);
   await shot(page, '07-settings');
   const imgNav = page.getByText('图片供应商', { exact: false }).first();

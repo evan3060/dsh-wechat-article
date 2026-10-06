@@ -27,10 +27,10 @@ const runValue = () => ({
   gatePassed: true,
 });
 
-const runMeta = () => ({ ...runValue(), tool: 'wewrite_run' as const, topic: 'Cloudflare Workers 冷启动实测' });
+const runMeta = () => ({ ...runValue(), tool: 'wechat_run' as const, topic: 'Cloudflare Workers 冷启动实测' });
 
 const pushMeta = () => ({
-  tool: 'wewrite_push_draft' as const,
+  tool: 'wechat_push_draft' as const,
   articleId: 'art_9',
   title: 'Cloudflare Workers 冷启动实测',
   ok: true,
@@ -38,14 +38,14 @@ const pushMeta = () => ({
 });
 
 const rewriteMeta = () => ({
-  tool: 'wewrite_rewrite' as const,
+  tool: 'wechat_rewrite' as const,
   charsIn: 120,
   charsOut: 98,
   ok: true,
 });
 
 const suggestTopicsMeta = () => ({
-  tool: 'wewrite_suggest_topics' as const,
+  tool: 'wechat_suggest_topics' as const,
   topics: [
     { title: '某引擎开源一夜 8 万星', source: 'hackernews', digest: '这条在讲什么：开源热度与生态观察。' },
     { title: '新前端框架发布', source: 'github', digest: '这条在讲什么：编译时框架的新路线。' },
@@ -91,7 +91,7 @@ describe('E2 meta schema：round-trip / strict / 无损 JSON（全部 meta）', 
 
       it('tool 字面量标记：错 tool 值拒（E3 识别面）', () => {
         const fixture = testCase.fixture();
-        const wrong = { ...fixture, tool: 'not-a-wewrite-tool' };
+        const wrong = { ...fixture, tool: 'not-a-wechat-article-tool' };
         expect(testCase.schema.safeParse(wrong).success).toBe(false);
         const missing = { ...fixture };
         delete (missing as { tool?: string }).tool;
@@ -101,7 +101,7 @@ describe('E2 meta schema：round-trip / strict / 无损 JSON（全部 meta）', 
   }
 });
 
-describe('RunToolValueSchema（wewrite_run canonical value，architecture §2.3）', () => {
+describe('RunToolValueSchema（wechat_run canonical value，architecture §2.3）', () => {
   it('status 终态枚举四值；running 等非终态拒', () => {
     for (const status of ['succeeded', 'failed', 'cancelled', 'interrupted']) {
       expect(RunToolValueSchema.safeParse({ ...runValue(), status }).success).toBe(true);
@@ -130,12 +130,12 @@ describe('RunToolValueSchema（wewrite_run canonical value，architecture §2.3�
 
 describe('RunToolMetaSchema（value 超集 + E3 标记，architecture §2.3）', () => {
   it('RunToolValue 合法值 + {tool, topic} 即合法 meta（超集关系）', () => {
-    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wewrite_run', topic: 'T' }).success).toBe(true);
+    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wechat_run', topic: 'T' }).success).toBe(true);
   });
 
   it('缺 topic 拒；topic 非字符串拒', () => {
-    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wewrite_run' }).success).toBe(false);
-    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wewrite_run', topic: 42 }).success).toBe(false);
+    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wechat_run' }).success).toBe(false);
+    expect(RunToolMetaSchema.safeParse({ ...runValue(), tool: 'wechat_run', topic: 42 }).success).toBe(false);
   });
 
   it('value 层非法的 payload 在 meta 层同样拒（digest 超限等）', () => {
@@ -145,10 +145,10 @@ describe('RunToolMetaSchema（value 超集 + E3 标记，architecture §2.3）',
 
 describe('PushToolMetaSchema / RewriteToolMetaSchema 细项（architecture §2.3）', () => {
   it('Push：articleId/title/ok 必填；mediaId 可选；失败形态带 error 合法', () => {
-    expect(PushToolMetaSchema.safeParse({ tool: 'wewrite_push_draft', articleId: 'a1', title: 'T', ok: true }).success).toBe(true);
-    const failed = { tool: 'wewrite_push_draft', articleId: 'a1', title: 'T', ok: false, error: { code: 'wechat-40164', message: 'IP 不在白名单' } };
+    expect(PushToolMetaSchema.safeParse({ tool: 'wechat_push_draft', articleId: 'a1', title: 'T', ok: true }).success).toBe(true);
+    const failed = { tool: 'wechat_push_draft', articleId: 'a1', title: 'T', ok: false, error: { code: 'wechat-40164', message: 'IP 不在白名单' } };
     expect(PushToolMetaSchema.safeParse(failed).success).toBe(true);
-    expect(PushToolMetaSchema.safeParse({ tool: 'wewrite_push_draft', title: 'T', ok: true }).success).toBe(false);
+    expect(PushToolMetaSchema.safeParse({ tool: 'wechat_push_draft', title: 'T', ok: true }).success).toBe(false);
   });
 
   it('Rewrite：charsIn/charsOut 整数；非整数拒', () => {
@@ -161,14 +161,14 @@ describe('PushToolMetaSchema / RewriteToolMetaSchema 细项（architecture §2.3
 describe('SuggestTopicsMetaSchema（Spec §5 增补：热榜 top-N 带 AI 速览）', () => {
   it('topics 条目 = {title, source, digest}，缺一拒、空串拒', () => {
     const item = { title: '标题', source: 'hackernews', digest: '速览' };
-    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wewrite_suggest_topics', topics: [item] }).success).toBe(true);
-    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wewrite_suggest_topics', topics: [{ source: 'hackernews', digest: 'd' }] }).success).toBe(false);
-    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wewrite_suggest_topics', topics: [{ ...item, title: '' }] }).success).toBe(false);
-    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wewrite_suggest_topics', topics: [{ ...item, digest: '' }] }).success).toBe(false);
+    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wechat_suggest_topics', topics: [item] }).success).toBe(true);
+    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wechat_suggest_topics', topics: [{ source: 'hackernews', digest: 'd' }] }).success).toBe(false);
+    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wechat_suggest_topics', topics: [{ ...item, title: '' }] }).success).toBe(false);
+    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wechat_suggest_topics', topics: [{ ...item, digest: '' }] }).success).toBe(false);
   });
 
   it('topics 条目未知字段拒（strict 嵌套）', () => {
     const polluted = { title: '标题', source: 's', digest: 'd', url: 'https://不应出现在速览卡' };
-    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wewrite_suggest_topics', topics: [polluted] }).success).toBe(false);
+    expect(SuggestTopicsMetaSchema.safeParse({ tool: 'wechat_suggest_topics', topics: [polluted] }).success).toBe(false);
   });
 });

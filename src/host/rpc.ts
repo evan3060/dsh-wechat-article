@@ -5,7 +5,7 @@
 
 import { RPC_AUTHORITY, RPC_CHANNEL, rpcContract, type RunParams, type RpcEndpoint } from '../shared/contract';
 import type { ConnectionRpcService, HostLogger } from './platform';
-import type { WeWriteService } from './service';
+import type { WeChatArticleService } from './service';
 
 type ContractEntry = { readonly request: { safeParse(input: unknown): { success: boolean; data?: unknown; error?: { issues: { path: (string | number)[]; message: string }[] } } }; readonly response: { safeParse(input: unknown): { success: boolean; data?: unknown; error?: { issues: { path: (string | number)[]; message: string }[] } } } };
 
@@ -34,7 +34,7 @@ interface RpcPayload {
   readonly timeZone?: string;
 }
 
-async function dispatch(service: WeWriteService, endpoint: RpcEndpoint, payload: RpcPayload): Promise<unknown> {
+async function dispatch(service: WeChatArticleService, endpoint: RpcEndpoint, payload: RpcPayload): Promise<unknown> {
   switch (endpoint) {
     case 'snapshot':
       return service.snapshot();
@@ -166,13 +166,13 @@ function toHostRpcErrorEnvelope(
 }
 
 /** 注册 loopback 通道；rpc 服务缺失时降级为 no-op + 警告（架构 §9.1）。 */
-export function registerWewriteRpc(
+export function registerWeChatArticleRpc(
   rpc: ConnectionRpcService | undefined,
-  service: WeWriteService,
+  service: WeChatArticleService,
   logger?: HostLogger,
 ): Promise<() => void> {
   if (!rpc) {
-    logger?.warn('dsh-wewrite: connection.rpc 服务缺失，Web 面板不可用（Agent 工具仍可用）');
+    logger?.warn('dsh-wechat-article: connection.rpc 服务缺失，Web 面板不可用（Agent 工具仍可用）');
     return Promise.resolve(() => undefined);
   }
   const truncate = (text: string): string => (text.length > 500 ? `${text.slice(0, 500)}…` : text);

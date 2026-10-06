@@ -1,4 +1,4 @@
-# dsh-wewrite 官网设计方向（website-direction.md）
+# dsh-wechat-article 官网设计方向（website-direction.md）
 
 > 日期：2026-08-18 ｜ 设计师：颜好看（MVP 开发专家团）
 > 输入：docs/DESIGN.md（既有设计契约，官网直接继承其语言）+ docs/prd.md §1/§3 + README.md（内容真源）+ Jerry 审美硬约束
@@ -49,13 +49,13 @@
 ├──────────────────────────────────────────────────────────────────────┤
 │ HERO ───────────────────────────── 白底 ───────── 容器 1080px ───────│
 │ ┌────────────── 左栏 7fr ──────────┐ ┌──────── 右栏 5fr ────────────┐│
-│ │ [mark 40px] dsh-wewrite（mono）  │ │ 安装块（sunken 底+1px 边框） ││
+│ │ [mark 40px] dsh-wechat-article（mono）  │ │ 安装块（sunken 底+1px 边框） ││
 │ │                                  │ │ ┌──────────────────────────┐ ││
 │ │ H1 行1：从选题到草稿箱的           │ │ │ bash 标签        [copy]  │ ││
 │ │      公众号写作管线（40px/700）  │ │ │ $ npx @deepseek-ai/dsh   │ ││
 │ │ H1 行2：一条命令装进 DSH         │ │ │   plugin --profile web   │ ││
 │ │      （40px/700，accent 纯色）   │ │ │   add github:jerryjiao/  │ ││
-│ │                                  │ │ │   dsh-wewrite#v0.1.0     │ ││
+│ │                                  │ │ │   dsh-wechat-article#v0.1.0     │ ││
 │ │ 副文两行（16px/400，fg-secondary）│ │ │ $ npx @deepseek-ai/dsh   │ ││
 │ │                                  │ │ │   web                     │ ││
 │ │ [GitHub 仓库(star)] [5 分钟上手↓]│ │ │ → http://127.0.0.1:3080  │ ││
@@ -119,7 +119,7 @@
 │   ▸ Q3 管线失败会留下半成品草稿吗？                                  │
 ├──────────────────────────────────────────────────────────────────────┤
 │ FOOTER ──────────────────────── sunken 底，顶 1px divider ───────────│
-│   左：[mark 24] dsh-wewrite ＋ 一句话（14px）＋ © 2026 Jerry Jiao   │
+│   左：[mark 24] dsh-wechat-article ＋ 一句话（14px）＋ © 2026 Jerry Jiao   │
 │   右：GitHub 仓库 ｜ 文档 ｜ Issues ｜ MIT License（14px 链接列）     │
 │   底行（等宽/12px/fg-secondary）：默认只进草稿箱 · 凭据只落本地 · 无遥测│
 └──────────────────────────────────────────────────────────────────────┘
@@ -213,30 +213,30 @@
 
 ## 4. Token 方案（--site-\*，官网独立于插件 UI 但同语言）
 
-> 官网只有浅色主题（Jerry 硬约束：浅色底深色内容；暗色模式不进本期）。色彩值与 docs/DESIGN.md light 列一一对应，仅 token 前缀由 `--ww-` 换 `--site-`（官网无 DSH 宿主可引用，token 直接落值而非引用 `--dsw-*`）。
+> 官网只有浅色主题（Jerry 硬约束：浅色底深色内容；暗色模式不进本期）。色彩值与 docs/DESIGN.md light 列一一对应，仅 token 前缀由 `--wa-` 换 `--site-`（官网无 DSH 宿主可引用，token 直接落值而非引用 `--dsw-*`）。
 
 ### 4.1 颜色
 
 | 角色 | Token | 值 | 与 DESIGN.md 关系 | 用途 |
 |---|---|---|---|---|
-| 页面基底 | `--site-bg` | `#FFFFFF` | 同 `--ww-bg` light | 页面主底 |
-| 凹区基底 | `--site-bg-sunken` | `#F9FAFB` | 同 `--ww-surface-sunken` light | 交替章节底、安装块 |
-| 卡片表面 | `--site-surface` | `#FFFFFF` | 同 `--ww-surface` light | 管线块（sunken 章节内） |
-| 主文字 | `--site-fg` | `#0F1115` | 同 `--ww-fg` light | 标题/正文（对比度 ≈17:1） |
-| 次级文字 | `--site-fg-secondary` | `#61666B` | 同 `--ww-fg-secondary` light | 副文/说明/引句（≈4.9:1，过 AA） |
-| 品牌强调 | `--site-accent` | `#4176E6` | 同 `--ww-accent` light | 主 CTA、H1 第二行、链接（纯色平涂，零渐变） |
-| 强调悬停 | `--site-accent-hover` | `#679EFE` | 同 `--ww-accent-hover` light | hover 态 |
-| 强调按下 | `--site-accent-active` | `#4868B2` | 同 `--ww-accent-active` light | active 态 |
-| 强调前景 | `--site-accent-on` | `#FFFFFF` | 同 `--ww-accent-on` | accent 上的文字 |
-| 强调浅底 | `--site-accent-subtle` | `#EDF3FE` | 同 `--ww-accent-subtle` | 链接 hover 底、选中底 |
-| 焦点环 | `--site-focus-ring` | `0 0 0 3px rgba(65,118,230,.32)` | 同 `--ww-focus-ring` light | focus-visible |
-| 默认边框 | `--site-border` | `rgba(0,0,0,.10)` | 同 `--ww-border` light | 卡块/安装块/pre 块 |
+| 页面基底 | `--site-bg` | `#FFFFFF` | 同 `--wa-bg` light | 页面主底 |
+| 凹区基底 | `--site-bg-sunken` | `#F9FAFB` | 同 `--wa-surface-sunken` light | 交替章节底、安装块 |
+| 卡片表面 | `--site-surface` | `#FFFFFF` | 同 `--wa-surface` light | 管线块（sunken 章节内） |
+| 主文字 | `--site-fg` | `#0F1115` | 同 `--wa-fg` light | 标题/正文（对比度 ≈17:1） |
+| 次级文字 | `--site-fg-secondary` | `#61666B` | 同 `--wa-fg-secondary` light | 副文/说明/引句（≈4.9:1，过 AA） |
+| 品牌强调 | `--site-accent` | `#4176E6` | 同 `--wa-accent` light | 主 CTA、H1 第二行、链接（纯色平涂，零渐变） |
+| 强调悬停 | `--site-accent-hover` | `#679EFE` | 同 `--wa-accent-hover` light | hover 态 |
+| 强调按下 | `--site-accent-active` | `#4868B2` | 同 `--wa-accent-active` light | active 态 |
+| 强调前景 | `--site-accent-on` | `#FFFFFF` | 同 `--wa-accent-on` | accent 上的文字 |
+| 强调浅底 | `--site-accent-subtle` | `#EDF3FE` | 同 `--wa-accent-subtle` | 链接 hover 底、选中底 |
+| 焦点环 | `--site-focus-ring` | `0 0 0 3px rgba(65,118,230,.32)` | 同 `--wa-focus-ring` light | focus-visible |
+| 默认边框 | `--site-border` | `rgba(0,0,0,.10)` | 同 `--wa-border` light | 卡块/安装块/pre 块 |
 | 边框加深 | `--site-border-strong` | `rgba(0,0,0,.20)` | 自有（官网层级少，补一级） | S4 列顶线、安装块顶栏 |
-| 分隔线 | `--site-divider` | `rgba(0,0,0,.04)` | 同 `--ww-divider` light | 行间/列间/页脚顶 |
-| 等宽带底 | `--site-code-bg` | `#EBEEF2` | 同 `--ww-code-bg` light | 行内代码、pre 块底 |
-| 成功 | `--site-success` | `#22C55E` | 同 `--ww-success` | 门禁语义标注 |
-| 警示 | `--site-warn` | `#F59E0B` | 同 `--ww-warn` | 备用（FAQ 40164 场景可用） |
-| 失败 | `--site-danger` | `#EC1313` | 同 `--ww-danger` | 备用 |
+| 分隔线 | `--site-divider` | `rgba(0,0,0,.04)` | 同 `--wa-divider` light | 行间/列间/页脚顶 |
+| 等宽带底 | `--site-code-bg` | `#EBEEF2` | 同 `--wa-code-bg` light | 行内代码、pre 块底 |
+| 成功 | `--site-success` | `#22C55E` | 同 `--wa-success` | 门禁语义标注 |
+| 警示 | `--site-warn` | `#F59E0B` | 同 `--wa-warn` | 备用（FAQ 40164 场景可用） |
+| 失败 | `--site-danger` | `#EC1313` | 同 `--wa-danger` | 备用 |
 
 - **构造保证：token 表零 gradient 定义，紫粉四色（#7C3AED / #A855F7 / #EC4899 / #6366F1）零出现**——P0-2 由构造成立，非事后扫描。
 - 组件内禁裸 hex：全部经 `--site-*` 引用（`#fff`/`#000` 同样 token 化）。
@@ -246,7 +246,7 @@
 
 | Token | 栈 | 用途 |
 |---|---|---|
-| `--site-font-body` | `-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif` | 全部中文界面文字（系统栈零加载，与插件 `--ww-font-ui` 同思路） |
+| `--site-font-body` | `-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif` | 全部中文界面文字（系统栈零加载，与插件 `--wa-font-ui` 同思路） |
 | `--site-font-mono` | `"JetBrains Mono", "SF Mono", "Fira Code", Consolas, monospace` | 安装命令、架构图、步骤号、meta 行、wordmark、流程条 |
 
 - JetBrains Mono **自托管 woff2**（latin 子集，400/500 两档，`font-display: swap`，回落系统 mono）。不引 Google Fonts CDN——官网自身不向第三方泄露访客，与「无遥测」价值观同构。
@@ -303,7 +303,7 @@
 - 第 1 段（scissors）「工具链是断的」：「排版工具只有排版。Markdown 编辑器把稿子变成微信图文，但选题、写作、配图、推送还是人肉串联，最后一公里是复制粘贴进公众号后台。」
 - 第 2 段（lock）「SaaS 是黑盒」：「闭源写作工具按年订阅，模型不是你自己的，风格不可控，内容数据要经过第三方服务器。」
 - 第 3 段（wrench）「开源管线门槛高」：「命令行工具环境折腾，微信 IP 白名单和凭据配置劝退大部分人；而且几乎没有方案能定时跑完自动进草稿箱。」
-- 转折句：「→ dsh-wewrite 把一条真实运营中的管线装进 DSH：装完即用，默认只进草稿箱。」
+- 转折句：「→ dsh-wechat-article 把一条真实运营中的管线装进 DSH：装完即用，默认只进草稿箱。」
 - 合并说明（文档注记，不上页面）：PRD §1 共四条痛点，官网按「三段」呈现：③ 开源管线门槛高与④ 没有定时化合并为第 3 段——两者同属「管线工具的工程缺位」，且四条变三条后每条信息密度更实。
 
 **S2 5 分钟上手**
@@ -383,7 +383,7 @@
 
 ### 6.2 wordmark 排布（系统字体排版，非生图）
 
-- 写法：全小写 `dsh-wewrite`（repo 名 / CLI 名原样——它是代码名，用代码字体呈现即最诚实）。
+- 写法：全小写 `dsh-wechat-article`（repo 名 / CLI 名原样——它是代码名，用代码字体呈现即最诚实）。
 - 字体：`--site-font-mono`（JetBrains Mono 500），字距 0。
 - 尺寸两档：导航/Footer 14-15px；Hero 20px（配 mark 40px）。
 - mark 与 wordmark 组合：mark 在左（含 8% 内边距的方图，展示时 radius 8px），wordmark 基线与 mark 视觉中线对齐，mark:wordmark 高度比 ≈ 1.7:1（40px mark 配 20px 字）。
@@ -447,7 +447,7 @@
 ### 9.1 技术栈与结构
 
 - **Astro 静态单页**（workspace 静态站默认栈）：`website/` 目录（repo 根下），单 `index.astro` + `global.css`（含 `--site-*` tokens，命名与本文档一一对应）+ 内联 `<script>`。零框架运行时、零外部 JS 依赖。
-- `astro.config.mjs`：`site: 'https://jerryjiao.github.io'`，`base: '/dsh-wewrite/'`（GitHub Pages 项目页子路径；若绑自定义域名则去 base）。
+- `astro.config.mjs`：`site: 'https://jerryjiao.github.io'`，`base: '/dsh-wechat-article/'`（GitHub Pages 项目页子路径；若绑自定义域名则去 base）。
 - 发布：`.github/workflows/website.yml` —— `withastro/action` 构建 + `actions/deploy-pages`，main 分支推送即发布。
 
 ### 9.2 JS 预算与交互（<3KB 内联脚本）

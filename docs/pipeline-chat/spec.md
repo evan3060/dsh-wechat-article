@@ -1,4 +1,4 @@
-# Spec — dsh-wewrite 对话深度结合（chat-integration）
+# Spec — dsh-wechat-article 对话深度结合（chat-integration）
 
 > 生成日期：2026-08-20 ｜ 项目总监：Jarvis（mvp-dev-team 编排）
 > 基于：PRD（docs/pipeline-chat/prd.md）+ 架构（docs/pipeline-chat/architecture.md，含勘误 1/2）+ UIUX（docs/pipeline-chat/uiux.md）
@@ -9,8 +9,8 @@
 
 ## 1. 产品定义
 
-- **一句话**：把 dsh-wewrite 从「独立浮层写作台」改造成「对话是驾驶舱，写作台是精修车间」——在 DSH 对话框里说一句话，看着管线选题→大纲→成稿→过门禁→进草稿箱，全程卡片呈现，一键跳写作台精修。
-- **目标用户**：已安装 dsh-wewrite 的 DSH 用户（技术型公众号号主）。
+- **一句话**：把 dsh-wechat-article 从「独立浮层写作台」改造成「对话是驾驶舱，写作台是精修车间」——在 DSH 对话框里说一句话，看着管线选题→大纲→成稿→过门禁→进草稿箱，全程卡片呈现，一键跳写作台精修。
+- **目标用户**：已安装 dsh-wechat-article 的 DSH 用户（技术型公众号号主）。
 - **核心问题**：插件能力被锁在浮层里，agent 是瞎子（loopback RPC 绕过 agent），产物不可见，开源演示吃亏。
 
 ## 2. 范围（锁定——三期全量，Jerry 08-20 拍板）
@@ -19,13 +19,13 @@
 |---|---|---|---|
 | M1 | C1 工具默认启用+推送审批（pre-execute ask，fail-closed） | AC-M1-01~12 | 40.0 |
 | M1 | C2 声明式工具卡（presentCall/presentResult，generic+text） | AC-M1-07~11 | 20.0 |
-| M1 | C3 工具面扩充：wewrite_run 扩参 / wewrite_list_articles 新增 / wewrite_rewrite（对齐写作台既有改稿能力） | AC-M1-03~04 | 14.0 |
+| M1 | C3 工具面扩充：wechat_run 扩参 / wechat_list_articles 新增 / wechat_rewrite（对齐写作台既有改稿能力） | AC-M1-03~04 | 14.0 |
 | M2 | C4 草稿即对话卡：toolview 运行卡 + turnTail 产物行（deliverables 官方模式，**零自定义 session 事件**） | AC-M2-01~08（载体修正版，§9） | 5.4 |
 | M2 | C6 卡片点击→打开写作台并定位文章（overlay 桥扩展） | AC-M2-04 | 12.8 |
-| M3 | C7 `/wewrite` slash 命令（host ctx.commands + commandview 卡） | AC-M3-01 | 6.0 |
+| M3 | C7 `/wechat-article` slash 命令（host ctx.commands + commandview 卡） | AC-M3-01 | 6.0 |
 | M3 | C8 composer「写作」按钮（conversation.input.right，**直开写作台，无菜单**——Spec 裁决，见 §13） | AC-M3-02（简化版） | 9.6 |
 | M3 | C9 `@` 文章引用源（ctx.inputTriggers + ReferenceCodec） | AC-M3-03 | 1.3 |
-| M3 | C10 选题交互 = 新增工具 `wewrite_suggest_topics`（热榜 top-N 带 AI 速览）+ agent 原生问答工具呈现候选（**Spec 裁决：不直接用 ctx.userQuestions，见 §13**） | AC-M3-04 | 5.3 |
+| M3 | C10 选题交互 = 新增工具 `wechat_suggest_topics`（热榜 top-N 带 AI 速览）+ agent 原生问答工具呈现候选（**Spec 裁决：不直接用 ctx.userQuestions，见 §13**） | AC-M3-04 | 5.3 |
 
 ## 3. 明确不做（Out-of-Scope，锁定）
 
@@ -45,7 +45,7 @@ PRD §6 全部 10 条照锁（并行线范围 / 不移除写作台 / 不群发 /
 | 构建 | esbuild + tsc（lib/ committed，build 必跑） | 既有 | 不变 |
 | 工具定义 | 手构结构体，dsh-tools 仅 devDep | ADR-011 | 不扩大运行时依赖面 |
 
-关键决策：ADR-010（chat 载体=工具生命周期+client Definition）、ADR-011、ADR-012、ADR-013（运行态=3s 轮询）——全文见 architecture.md §10；**OD-1 定案：wewrite_push_draft 经 tools/pre-execute ask 裁决触发宿主审批面板，降级 fail-closed（实现细节以 architecture §4.4 补充节为准）**。
+关键决策：ADR-010（chat 载体=工具生命周期+client Definition）、ADR-011、ADR-012、ADR-013（运行态=3s 轮询）——全文见 architecture.md §10；**OD-1 定案：wechat_push_draft 经 tools/pre-execute ask 裁决触发宿主审批面板，降级 fail-closed（实现细节以 architecture §4.4 补充节为准）**。
 
 ## 5. 契约清单（开发唯一依据，真源=architecture.md）
 
@@ -53,37 +53,37 @@ PRD §6 全部 10 条照锁（并行线范围 / 不移除写作台 / 不群发 /
 
 | 工具 | 参数 | 对接 service | timeoutMs | 卡片 |
 |---|---|---|---|---|
-| wewrite_run | topic(必填)/image_count(0-10,默认0)/theme? | startRun→runCompletion；abort→cancelRun | 600000 | generic |
-| wewrite_rewrite | text(1-8000)/instruction(1-200)/title? | rewriteText（45s 语义保留） | 60000 | generic |
-| wewrite_push_draft | article_id(必填) | pushArticleDraft；**执行前经 pre-execute ask 审批** | 120000 | generic |
-| wewrite_list_articles | limit?(默认10) | listArticles 轻投影 | 15000 | 默认 |
-| wewrite_suggest_topics（M3 新增） | count?(默认3,上限5) | hotspots 列表+digestHotspotItem 逐条速览 | 60000 | generic（来源+标题+速览摘要） |
+| wechat_run | topic(必填)/image_count(0-10,默认0)/theme? | startRun→runCompletion；abort→cancelRun | 600000 | generic |
+| wechat_rewrite | text(1-8000)/instruction(1-200)/title? | rewriteText（45s 语义保留） | 60000 | generic |
+| wechat_push_draft | article_id(必填) | pushArticleDraft；**执行前经 pre-execute ask 审批** | 120000 | generic |
+| wechat_list_articles | limit?(默认10) | listArticles 轻投影 | 15000 | 默认 |
+| wechat_suggest_topics（M3 新增） | count?(默认3,上限5) | hotspots 列表+digestHotspotItem 逐条速览 | 60000 | generic（来源+标题+速览摘要） |
 
 **RPC 新增端点 1 个**：`run/detail`（request {runId} → response RunDetail=RunSummary+steps[]+topic；**信封 {ok,value}/{ok,error} + 通道前导斜杠**，坑#dsh-rpc-envelope）。
 
-**E2 meta schema**：`src/shared/agent-tool-contract.ts`（zod，architecture §2.3 为真源；suggest_topics 补一条 SuggestTopicsMeta：{tool:'wewrite_suggest_topics', topics:[{title,source,digest}]}）。硬约束：meta 无损 JSON（stringify→parse 等值测试）。
+**E2 meta schema**：`src/shared/agent-tool-contract.ts`（zod，architecture §2.3 为真源；suggest_topics 补一条 SuggestTopicsMeta：{tool:'wechat_suggest_topics', topics:[{title,source,digest}]}）。硬约束：meta 无损 JSON（stringify→parse 等值测试）。
 
 ## 6. 数据契约（E1/E2/E3 三层，无 DB 变更）
 
-E1 进度=RunRecord.steps（engine 零改，仅加 await done 句柄）；E2 终局=tool result canonical+meta（known 事件，回放安全）；E3 Turn 聚合=client ConversationNodeDefinition `'wewrite-deliverables'`（match 自家 tool/result，状态机 drafted→pushed，decline-before-mount）。真源 architecture §2/§5。
+E1 进度=RunRecord.steps（engine 零改，仅加 await done 句柄）；E2 终局=tool result canonical+meta（known 事件，回放安全）；E3 Turn 聚合=client ConversationNodeDefinition `'wechat-article-deliverables'`（match 自家 tool/result，状态机 drafted→pushed，decline-before-mount）。真源 architecture §2/§5。
 
 ## 7. UI 面清单（锁定）
 
 | UI 面 | 槽位/机制 | 视觉真源 |
 |---|---|---|
-| 运行卡（六步进度→成稿卡） | tool.call.toolview keyed `wewrite_run` | uiux §1/§3 |
-| 改写卡/推送卡 | toolview keyed `wewrite_rewrite`/`wewrite_push_draft` | uiux §1 |
+| 运行卡（六步进度→成稿卡） | tool.call.toolview keyed `wechat_run` | uiux §1/§3 |
+| 改写卡/推送卡 | toolview keyed `wechat_rewrite`/`wechat_push_draft` | uiux §1 |
 | Turn 产物行 | conversation.chat.turnTail + Definition | uiux §1/§4 |
-| 命令行卡 | conversation.chat.commandview keyed `wewrite` | 宿主 fallback 先行（uiux advisory） |
+| 命令行卡 | conversation.chat.commandview keyed `wechat-article` | 宿主 fallback 先行（uiux advisory） |
 | composer 按钮 | conversation.input.right（28px pen-line，直开写作台） | uiux §5 |
-| @ 引用源 | ctx.inputTriggers name `wewrite-articles`；serialize=标题+摘要+前N字；失败**阻塞发送不静默**（S11） | uiux §5 |
+| @ 引用源 | ctx.inputTriggers name `wechat-article-articles`；serialize=标题+摘要+前N字；失败**阻塞发送不静默**（S11） | uiux §5 |
 | 卡片↔写作台联动 | overlay-bridge 扩展 intent {articleId}；App 挂载 consumeOverlayIntent→navigate | uiux §4 |
 
 **收敛规则（OD-2 定案）**：timeline 运行卡=toolview（工具行升级）；turn 末产物=turnTail 行；两者互斥不双份（architecture §5.2）。
 
 ## 8. Design Token（锁定）
 
-追加 4 个 layout token：`--ww-chat-head-h:36px`、`--ww-stage-seg-w:20px`、`--ww-stage-track-h:4px`、`--ww-composer-entry-h:28px`。**零新增颜色**；token 作用域三域（.dsh-wewrite-panel / .ww-chat-node / .ww-composer-entry）单一定义。图标沿用 Icon.tsx（lucide 名），不新开库。
+追加 4 个 layout token：`--wa-chat-head-h:36px`、`--wa-stage-seg-w:20px`、`--wa-stage-track-h:4px`、`--wa-composer-entry-h:28px`。**零新增颜色**；token 作用域三域（.dsh-wechat-article-panel / .wa-chat-node / .wa-composer-entry）单一定义。图标沿用 Icon.tsx（lucide 名），不新开库。
 
 ## 9. 验收标准（EARS，QA 测试唯一依据）
 
@@ -92,12 +92,12 @@ E1 进度=RunRecord.steps（engine 零改，仅加 await done 句柄）；E2 终
 | 编号 | 修正后 EARS | 原因 |
 |---|---|---|
 | AC-M2-01 | When 管线经 agent 工具运行，then 进度经 RunRecord.steps + run/detail RPC 可被运行卡消费；终局投影持久化于 tool/result 的 canonical/meta（不写任何自定义 session 事件） | 勘误 1 |
-| AC-M2-02 | When 时间线摄入 wewrite 工具事件，then the system shall 以 toolview 卡+turnTail 产物行呈现（同一 run 单一权威呈现，§7 收敛规则） | 勘误 1+OD-2 |
+| AC-M2-02 | When 时间线摄入 wechat-article 工具事件，then the system shall 以 toolview 卡+turnTail 产物行呈现（同一 run 单一权威呈现，§7 收敛规则） | 勘误 1+OD-2 |
 | AC-M2-03 | When 重新打开历史会话，then settled 卡按持久化 callView/resultView/meta 原样回放，不重复不丢卡 | 勘误 1 |
 | AC-M2-05 | 并入 AC-M2-02（收敛规则定案后无独立验收面） | OD-2 定案 |
 | AC-M2-07 | If meta 含未知字段或 schema 不符，then 卡片降级为 resultView 文本兜底，不破坏会话加载 | 勘误 1 |
 | AC-M3-02 | Where composer 挂件存在，the system shall 在输入框右侧提供 28px 笔形按钮，点击**直接打开写作台浮层**（无菜单） | Spec 裁决（克制原则） |
-| AC-M3-04 | When 用户请求选题建议，then agent 经 `wewrite_suggest_topics` 工具获热榜候选（含来源与速览）并以其原生问答能力呈现候选；用户选择后以所选主题进入管线 | Spec 裁决（工具承载，替代直接调 ctx.userQuestions） |
+| AC-M3-04 | When 用户请求选题建议，then agent 经 `wechat_suggest_topics` 工具获热榜候选（含来源与速览）并以其原生问答能力呈现候选；用户选择后以所选主题进入管线 | Spec 裁决（工具承载，替代直接调 ctx.userQuestions） |
 
 其余 EARS（AC-M1-01~12、AC-M2-04/06/08、AC-M3-01/03）按 PRD 原文执行。
 

@@ -24,11 +24,11 @@ const sess = page.locator('a,button,[role=button]').filter({ hasText: /程序员
 console.log('v8 会话条目:', await page.locator('a,button,[role=button]').filter({ hasText: /程序员与写作/ }).count());
 if (await sess.count()) { await sess.click().catch(() => {}); await sleep(9000); }
 const st = await page.evaluate(() => ({
-  runCards: document.querySelectorAll('.ww-chatcard--run').length,
-  tails: document.querySelectorAll('.ww-chatcard--tail').length,
+  runCards: document.querySelectorAll('.wa-chatcard--run').length,
+  tails: document.querySelectorAll('.wa-chatcard--tail').length,
   openDesk: [...document.querySelectorAll('button')].filter((b) => /打开写作台|在写作台打开/.test(b.textContent || '')).length,
-  runText: (document.querySelector('.ww-chatcard--run')?.textContent || '').slice(0, 160),
-  tailText: (document.querySelector('.ww-chatcard--tail')?.textContent || '').slice(0, 120),
+  runText: (document.querySelector('.wa-chatcard--run')?.textContent || '').slice(0, 160),
+  tailText: (document.querySelector('.wa-chatcard--tail')?.textContent || '').slice(0, 120),
 }));
 console.log('回放状态:', JSON.stringify(st, null, 1));
 await sleep(2000);
@@ -38,10 +38,10 @@ await shot(page, '10-chat-final');
 if (st.openDesk > 0) {
   await page.getByRole('button', { name: /打开写作台|在写作台打开/ }).first().click().catch(() => {});
   await sleep(3500);
-  if (await page.locator('[data-testid="ww-overlay"]').count()) {
+  if (await page.locator('[data-testid="wa-overlay"]').count()) {
     console.log('卡片→浮层联动 ✅');
     await shot(page, '13-chat-card-to-overlay');
-    await page.locator('[data-testid="ww-overlay-close"]').first().click().catch(async () => {
+    await page.locator('[data-testid="wa-overlay-close"]').first().click().catch(async () => {
       await page.keyboard.press('Escape');
     });
     await sleep(1500);

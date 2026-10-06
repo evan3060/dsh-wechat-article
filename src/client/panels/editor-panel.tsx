@@ -164,7 +164,7 @@ export function EditorPanel({
 
   if (doc.loadError) {
     return (
-      <div className="ww-editor-page ww-editor-page--padded">
+      <div className="wa-editor-page wa-editor-page--padded">
         <ErrorNote title="文章加载失败。" hint={doc.loadError} action={<Button variant="outline" size="sm" onClick={doc.retryLoad}>重试</Button>} />
       </div>
     );
@@ -172,7 +172,7 @@ export function EditorPanel({
 
   if (!article) {
     return (
-      <div className="ww-editor-page ww-editor-page--padded" aria-busy="true">
+      <div className="wa-editor-page wa-editor-page--padded" aria-busy="true">
         <SkeletonBlock lines={6} />
       </div>
     );
@@ -186,11 +186,11 @@ export function EditorPanel({
   const effectiveView: EditorView = narrow && view === 'split' ? 'edit' : view;
 
   return (
-    <div className="ww-editor-page">
-      <header className="ww-editor-head">
-        <div className="ww-editor-head__main">
+    <div className="wa-editor-page">
+      <header className="wa-editor-head">
+        <div className="wa-editor-head__main">
           {leading}
-          <h2 className="ww-editor-head__title" title={article.title}>{article.title}</h2>
+          <h2 className="wa-editor-head__title" title={article.title}>{article.title}</h2>
           <StatusBadge tone={badge.tone} label={badge.label} />
         </div>
         <EditorHeadActions
@@ -208,7 +208,7 @@ export function EditorPanel({
       </header>
 
       <div
-        className={effectiveView === 'split' ? 'ww-editor-body ww-editor-body--split' : 'ww-editor-body'}
+        className={effectiveView === 'split' ? 'wa-editor-body wa-editor-body--split' : 'wa-editor-body'}
         style={effectiveView === 'split' ? { gridTemplateColumns: splitColumns(splitRatio) } : undefined}
       >
         {effectiveView !== 'preview' ? <EditorWorkbench value={doc.markdown} onChange={doc.handleMarkdownChange} title={article.title} /> : null}
@@ -232,18 +232,18 @@ export function EditorPanel({
           <>{countWords(doc.markdown).toLocaleString('zh-Hans-CN')} 字</>,
           <button
             type="button"
-            className="ww-statusstrip__gate"
-            data-testid="ww-gate-chip"
+            className="wa-statusstrip__gate"
+            data-testid="wa-gate-chip"
             aria-expanded={gateOpen}
-            aria-controls="ww-gate-overlay"
+            aria-controls="wa-gate-overlay"
             onClick={() => onGateOpenChange(!gateOpen)}
           >
             <Icon
               name={gateStatus.blocking ? 'shield-alert' : 'shield-check'}
               size={12}
-              className={gateStatus.blocking ? 'ww-statusstrip__gate-icon--warn' : 'ww-statusstrip__gate-icon--ok'}
+              className={gateStatus.blocking ? 'wa-statusstrip__gate-icon--warn' : 'wa-statusstrip__gate-icon--ok'}
             />
-            <span className="ww-statusstrip__gate-label">门禁 {gateStatus.label}</span>
+            <span className="wa-statusstrip__gate-label">门禁 {gateStatus.label}</span>
             <Icon name="chevron-up" size={12} />
           </button>,
           <>图 {article.bodyImageIds.length} 张</>,
@@ -274,13 +274,13 @@ export function EditorPanel({
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setGateBlockOpen(false)}>继续修改</Button>
-            <Button variant="ghost" size="sm" className="ww-danger-ghost" onClick={() => { setGateBlockOpen(false); void pushDraft(); }}>
+            <Button variant="ghost" size="sm" className="wa-danger-ghost" onClick={() => { setGateBlockOpen(false); void pushDraft(); }}>
               仍然推送
             </Button>
           </>
         }
       >
-        <p className="ww-modal-note">
+        <p className="wa-modal-note">
           推送前可在 <CodeChip>门禁报告</CodeChip> 面板查看未过规则并逐项修复。
         </p>
       </Modal>

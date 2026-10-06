@@ -1,4 +1,4 @@
-/** WeWriteService（架构 §3）：host 级唯一服务；写操作串行化。重活已拆 images/wechat-flow/articles-store/schedules-store/views。 */
+/** WeChatArticleService（架构 §3）：host 级唯一服务；写操作串行化。重活已拆 images/wechat-flow/articles-store/schedules-store/views。 */
 
 import { CONTRACT_VERSION, type ArticleDetail, type ArticleListItem, type ConfigView, type HotspotDigestItem, type HotspotItem, type HotspotItemDigest, type RunDetail, type RunParams, type RunSummary, type ScheduleViewModel, type SnapshotResponse } from '../shared/contract';
 import { CREDENTIAL_REFS, DEFAULT_IMAGE_PROVIDER_CHAIN } from '../shared/image-provider-ids';
@@ -20,10 +20,10 @@ import { ScheduleStore } from './schedules-store';
 import { diagnoseWeChat, pushArticleDraft, type WeChatFlowDeps } from './wechat-flow';
 import { truncateMessage } from './redaction';
 import { buildConfigView, runToDetail, runToSummary, scheduleToView } from './views';
-import { toServiceError, WewriteServiceError } from './service-errors';
+import { toServiceError, WeChatArticleServiceError } from './service-errors';
 import type { DiagnoseResult } from './wechat/client';
 
-export { WewriteServiceError };
+export { WeChatArticleServiceError };
 
 export interface ServiceDeps {
   readonly domain: StorageDomainHandle;
@@ -43,7 +43,7 @@ export interface ServiceDeps {
 const HOTSPOT_DIGEST_TIMEOUT_MS = 45_000;
 const REWRITE_TIMEOUT_MS = 45_000;
 
-export class WeWriteService {
+export class WeChatArticleService {
   private readonly tables: DomainTables;
   private readonly runStore: RunStore;
   private readonly engine: PipelineEngine;
@@ -61,7 +61,7 @@ export class WeWriteService {
 
   private constructor(private readonly deps: ServiceDeps) {
     this.tables = openTables(deps.domain);
-    this.logger = deps.logger ?? resolveLogger({}, 'dsh-wewrite');
+    this.logger = deps.logger ?? resolveLogger({}, 'dsh-wechat-article');
     this.nowFn = deps.now ?? (() => new Date());
     this.state = parseGlobalState(deps.domain.global.get(), this.logger);
     this.callBindings = createCallRunBindings();
@@ -109,8 +109,8 @@ export class WeWriteService {
     });
   }
 
-  static async open(deps: ServiceDeps): Promise<WeWriteService> {
-    const service = new WeWriteService(deps);
+  static async open(deps: ServiceDeps): Promise<WeChatArticleService> {
+    const service = new WeChatArticleService(deps);
     await service.persistState();
     const recovered = await service.engine.resumeInterrupted();
     if (recovered > 0) service.logger.warn(`宿主停机打断 ${recovered} 个 run，已标记 interrupted（不自动补偿重跑）`);
@@ -185,7 +185,7 @@ export class WeWriteService {
     const startedAt = Date.now();
     const { provider, model } = this.state.settings.llmDefault;
     if (!provider || !model) {
-      throw new WewriteServiceError('llm-not-configured', '尚未配置默认模型：请先到「设置」里选择 AI 供应商与模型，再改写选中段落');
+      throw new WeChatArticleServiceError('llm-not-configured', '尚未配置默认模型：请先到「设置」里选择 AI 供应商与模型，再改写选中段落');
     }
     const timeoutMs = this.deps.rewriteTimeoutMs ?? REWRITE_TIMEOUT_MS;
     const controller = new AbortController();
@@ -194,7 +194,7 @@ export class WeWriteService {
       const outcome = await streamLlmText(
         this.deps.llm as unknown as PipelineLlm,
         {
-          purpose: 'wewrite-article-rewrite',
+          purpose: 'wechat-article-article-rewrite',
           system: rewriteSystemPrompt(),
           user: rewriteUserPrompt(input),
           provider,
@@ -204,17 +204,17 @@ export class WeWriteService {
         controller.signal,
       );
       if (outcome.status === 'aborted') {
-        throw new WewriteServiceError('rewrite-timeout', `AI 改写超时（${Math.round(timeoutMs / 1000)} 秒），已取消，请重试`);
+        throw new WeChatArticleServiceError('rewrite-timeout', `AI 改写超时（${Math.round(timeoutMs / 1000)} 秒），已取消，请重试`);
       }
       // rewrite-error 分流：LLM 供应商错误的 code/message 原样透传
-      if (outcome.status === 'error') throw new WewriteServiceError(outcome.code, outcome.message);
-      if (!outcome.text) throw new WewriteServiceError('rewrite-empty', '模型未返回任何改写内容，请重试');
+      if (outcome.status === 'error') throw new WeChatArticleServiceError(outcome.code, outcome.message);
+      if (!outcome.text) throw new WeChatArticleServiceError('rewrite-empty', '模型未返回任何改写内容，请重试');
       this.logger.info(
         `article rewrite ok：model=${model} ${Date.now() - startedAt}ms in=${input.text.length} out=${outcome.text.length}`,
       );
       return { text: outcome.text };
     } catch (error) {
-      const code = error instanceof WewriteServiceError ? error.code : 'unknown';
+      const code = error instanceof WeChatArticleServiceError ? error.code : 'unknown';
       this.logger.warn(`article rewrite failed（${code}）：${error instanceof Error ? error.message : String(error)}`);
       throw error;
     } finally {
@@ -242,7 +242,7 @@ export class WeWriteService {
     return { ok: this.engine.cancel(runId) };
   }
 
-  /** chat-integration M1：等待 run 到终态（wewrite_run 工具 execute 等终态用；未知 runId → undefined）。 */
+  /** chat-integration M1：等待 run 到终态（wechat_run 工具 execute 等终态用；未知 runId → undefined）。 */
   async runCompletion(runId: string): Promise<RunRecord | undefined> {
     return this.engine.awaitDone(runId);
   }
@@ -252,7 +252,7 @@ export class WeWriteService {
     const runId = selector.runId ?? (selector.callId ? this.callBindings.resolve(selector.callId) : undefined);
     const record = runId ? this.runStore.get(runId) : undefined;
     const hint = selector.callId ? `callId: ${selector.callId}` : `runId: ${selector.runId ?? ''}`;
-    if (!record) throw new WewriteServiceError('run-not-found', `运行记录不存在（${hint}）`);
+    if (!record) throw new WeChatArticleServiceError('run-not-found', `运行记录不存在（${hint}）`);
     return runToDetail(record);
   }
 
@@ -318,7 +318,7 @@ export class WeWriteService {
       const gateBefore = this.agentToolsEnabled();
       const parsed = SettingsRecordSchema.safeParse({ ...this.state.settings, ...patch });
       if (!parsed.success) {
-        throw new WewriteServiceError('config-invalid', `设置校验失败：${parsed.error.issues[0]?.message ?? '未知问题'}`);
+        throw new WeChatArticleServiceError('config-invalid', `设置校验失败：${parsed.error.issues[0]?.message ?? '未知问题'}`);
       }
       this.state = { ...this.state, settings: parsed.data, ...(Object.prototype.hasOwnProperty.call(patch, 'agentToolsEnabled') ? { agentToolsTouched: true } : {}) }; // AC-M1-12：显式写开关即打 touched
       await this.persistState();

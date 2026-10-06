@@ -23,30 +23,30 @@ export function ProgressCard({ open, onCollapse }: { open: boolean; onCollapse: 
 
   return (
     <aside
-      className="ww-progress-card"
+      className="wa-progress-card"
       role="region"
       aria-label="生成进度"
-      data-testid="ww-progress-card"
-      id="ww-progress-card"
+      data-testid="wa-progress-card"
+      id="wa-progress-card"
     >
-      <div className="ww-progress-card__head">
-        <Icon name="loader-circle" size={16} className="ww-progress-card__state" />
-        <span className="ww-progress-card__topic" title={generation.topic}>{generation.topic}</span>
+      <div className="wa-progress-card__head">
+        <Icon name="loader-circle" size={16} className="wa-progress-card__state" />
+        <span className="wa-progress-card__topic" title={generation.topic}>{generation.topic}</span>
         <button
           type="button"
-          className="ww-progress-card__collapse"
-          data-testid="ww-progress-card-collapse"
+          className="wa-progress-card__collapse"
+          data-testid="wa-progress-card-collapse"
           aria-label="收起进度卡片"
           onClick={onCollapse}
         >
           <Icon name="x" size={20} />
         </button>
       </div>
-      <div className="ww-progress-card__body">
+      <div className="wa-progress-card__body">
         <PipelineStepper run={activeRun} topic={generation.topic} compact />
-        {failed && activeRun.error ? <p className="ww-progress-card__error">{activeRun.error.message}</p> : null}
+        {failed && activeRun.error ? <p className="wa-progress-card__error">{activeRun.error.message}</p> : null}
       </div>
-      <div className="ww-progress-card__foot">
+      <div className="wa-progress-card__foot">
         {failed ? (
           <Button variant="ghost" size="sm" icon={<Icon name="rotate-ccw" size={16} />} onClick={() => void retryGeneration()}>
             重试
@@ -55,8 +55,8 @@ export function ProgressCard({ open, onCollapse }: { open: boolean; onCollapse: 
           <Button
             variant="ghost"
             size="sm"
-            className="ww-danger-ghost"
-            data-testid="ww-progress-card-cancel"
+            className="wa-danger-ghost"
+            data-testid="wa-progress-card-cancel"
             icon={<Icon name="x" size={16} />}
             onClick={() => void cancelGeneration()}
           >

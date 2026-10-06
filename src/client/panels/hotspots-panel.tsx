@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Input, Pill } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { HotspotItem } from '@/shared/contract';
-import { describeRpcFailure, WewriteRpcError } from '../lib/rpc';
+import { describeRpcFailure, WeChatArticleRpcError } from '../lib/rpc';
 import { domainOf, formatTime, hotspotSourceLabel } from '../lib/format';
 import { EmptyState, ErrorNote, SkeletonRow } from '../components/bits';
 import { HotspotItemDigest } from '../components/HotspotItemDigest';
@@ -10,11 +10,11 @@ import { useStore } from '../store';
 
 /**
  * 选题中心（DESIGN §9.2）：左热榜列表（行 44px 按热度排序）+ 右「我的选题关键词」窄栏。
- * 命中关键词的行底 --ww-accent-subtle；「写这个」带 topic 直进生成流程。
+ * 命中关键词的行底 --wa-accent-subtle；「写这个」带 topic 直进生成流程。
  * v0.3 R1：行展开区 = 原文链接行 + 逐条 AI 速览块（HotspotItemDigest，懒加载+逐条缓存）。
  */
 
-const KEYWORDS_STORAGE_KEY = 'dsh-wewrite.hotspot-keywords';
+const KEYWORDS_STORAGE_KEY = 'dsh-wechat-article.hotspot-keywords';
 
 function loadKeywords(): string[] {
   try {
@@ -56,7 +56,7 @@ export function HotspotsPanel() {
       const items = await rpc.call<HotspotItem[]>('hotspots/fetch', { limit: 30 });
       setState({ status: 'ready', items, fetchedAtIso: new Date().toISOString() });
     } catch (error) {
-      setState({ status: 'error', message: error instanceof WewriteRpcError ? error.message : String(error) });
+      setState({ status: 'error', message: error instanceof WeChatArticleRpcError ? error.message : String(error) });
     }
   }, [rpc]);
 
@@ -85,20 +85,20 @@ export function HotspotsPanel() {
   }
 
   return (
-    <div className={store.narrow ? 'ww-hotspots ww-hotspots--narrow' : 'ww-hotspots'}>
-      <div className="ww-hotspots__main">
-        <div className="ww-pagebar">
+    <div className={store.narrow ? 'wa-hotspots wa-hotspots--narrow' : 'wa-hotspots'}>
+      <div className="wa-hotspots__main">
+        <div className="wa-pagebar">
           {/* Bluewash §4-2：选题域页头识别点（橙） */}
-          <span className="ww-pagebar__dot" data-view="topics" />
-          <h2 className="ww-pagebar__title">热门榜</h2>
+          <span className="wa-pagebar__dot" data-view="topics" />
+          <h2 className="wa-pagebar__title">热门榜</h2>
           {state.status === 'ready' ? (
             <>
-              <span className="ww-pagebar__count">· {visible.length}</span>
-              <span className="ww-pagebar__meta">更新于 {formatTime(state.fetchedAtIso)}</span>
+              <span className="wa-pagebar__count">· {visible.length}</span>
+              <span className="wa-pagebar__meta">更新于 {formatTime(state.fetchedAtIso)}</span>
             </>
           ) : null}
-          <div className="ww-pagebar__spacer" />
-          <Button variant="ghost" size="sm" icon={<Icon name={state.status === 'loading' ? 'loader-circle' : 'refresh-cw'} size={16} className={state.status === 'loading' ? 'ww-spin' : undefined} />} onClick={() => void fetchHotspots()}>
+          <div className="wa-pagebar__spacer" />
+          <Button variant="ghost" size="sm" icon={<Icon name={state.status === 'loading' ? 'loader-circle' : 'refresh-cw'} size={16} className={state.status === 'loading' ? 'wa-spin' : undefined} />} onClick={() => void fetchHotspots()}>
             {t('action.refresh')}
           </Button>
         </div>
@@ -132,19 +132,19 @@ export function HotspotsPanel() {
             />
           )
         ) : (
-          <ul className="ww-hotspot-list">
+          <ul className="wa-hotspot-list">
             {visible.map((item) => (
-              <li key={`${item.source}-${item.rank}-${item.title}`} className={hit(item) ? 'ww-hotspot ww-hotspot--hit' : 'ww-hotspot'}>
-                <div className="ww-hotspot__liner">
+              <li key={`${item.source}-${item.rank}-${item.title}`} className={hit(item) ? 'wa-hotspot wa-hotspot--hit' : 'wa-hotspot'}>
+                <div className="wa-hotspot__liner">
                   <button
                     type="button"
-                    className="ww-hotspot__row"
+                    className="wa-hotspot__row"
                     aria-expanded={expanded === item.title}
                     onClick={() => setExpanded(expanded === item.title ? null : item.title)}
                   >
-                    <span className={item.rank <= 3 ? 'ww-hotspot__rank ww-hotspot__rank--top' : 'ww-hotspot__rank'}>#{item.rank}</span>
-                    <span className="ww-hotspot__title">{item.title}</span>
-                    <span className="ww-hotspot__meta">
+                    <span className={item.rank <= 3 ? 'wa-hotspot__rank wa-hotspot__rank--top' : 'wa-hotspot__rank'}>#{item.rank}</span>
+                    <span className="wa-hotspot__title">{item.title}</span>
+                    <span className="wa-hotspot__meta">
                       {hotspotSourceLabel(item.source)} · {domainOf(item.url)}
                     </span>
                     <Icon name={expanded === item.title ? 'chevron-down' : 'chevron-right'} size={16} />
@@ -152,7 +152,7 @@ export function HotspotsPanel() {
                   {/* L5 动作前置：hover/键盘聚焦行时可见「写这个」，单击即以该条目为题启动管线 */}
                   <button
                     type="button"
-                    className="ww-hotspot__write"
+                    className="wa-hotspot__write"
                     aria-label={`写这个：${item.title}`}
                     onClick={() => void startGeneration({ topicMode: 'fixed', topic: item.title }, item.title)}
                   >
@@ -161,9 +161,9 @@ export function HotspotsPanel() {
                   </button>
                 </div>
                 {expanded === item.title ? (
-                  <div className="ww-hotspot__expand">
+                  <div className="wa-hotspot__expand">
                     {/* 展开区垂直秩序：原文链接（确定性信息）在上，AI 速览（机器生成）在下 */}
-                    <a className="ww-link" href={item.url} target="_blank" rel="noreferrer">
+                    <a className="wa-link" href={item.url} target="_blank" rel="noreferrer">
                       <Icon name="external-link" size={16} /> 原文链接（{domainOf(item.url)}）
                     </a>
                     <HotspotItemDigest item={item} />
@@ -175,19 +175,19 @@ export function HotspotsPanel() {
         )}
       </div>
 
-      <aside className="ww-hotspots__keywords">
-        <h3 className="ww-aside-title">我的选题关键词</h3>
-        <div className="ww-keywords">
+      <aside className="wa-hotspots__keywords">
+        <h3 className="wa-aside-title">我的选题关键词</h3>
+        <div className="wa-keywords">
           {keywords.map((word) => (
             /* P5：Pill 本体不再整删（静态 chip），删除收敛到独立 × 按钮（真 button + aria-label） */
-            <span className="ww-keyword" key={word}>
+            <span className="wa-keyword" key={word}>
               <Pill>
                 {word}
                 <button
                   type="button"
-                  className="ww-keyword__x"
+                  className="wa-keyword__x"
                   aria-label={`移除关键词「${word}」`}
-                  data-testid="ww-keyword-remove"
+                  data-testid="wa-keyword-remove"
                   onClick={() => setKeywords((current) => current.filter((item) => item !== word))}
                 >
                   <Icon name="x" size={16} />
@@ -195,9 +195,9 @@ export function HotspotsPanel() {
               </Pill>
             </span>
           ))}
-          {keywords.length === 0 ? <p className="ww-aside-empty">还没有订阅关键词。添加后命中的条目会高亮。</p> : null}
+          {keywords.length === 0 ? <p className="wa-aside-empty">还没有订阅关键词。添加后命中的条目会高亮。</p> : null}
         </div>
-        <div className="ww-keywords__add">
+        <div className="wa-keywords__add">
           <Input
             placeholder="添加关键词"
             value={keywordDraft}
@@ -211,7 +211,7 @@ export function HotspotsPanel() {
             添加
           </Button>
         </div>
-        <button type="button" className={onlyHits ? 'ww-filter-toggle ww-filter-toggle--on' : 'ww-filter-toggle'} onClick={() => setOnlyHits((on) => !on)} aria-pressed={onlyHits}>
+        <button type="button" className={onlyHits ? 'wa-filter-toggle wa-filter-toggle--on' : 'wa-filter-toggle'} onClick={() => setOnlyHits((on) => !on)} aria-pressed={onlyHits}>
           <Icon name="filter" size={16} /> 命中筛选：{onlyHits ? '仅显示命中' : '看全部'}
         </button>
       </aside>

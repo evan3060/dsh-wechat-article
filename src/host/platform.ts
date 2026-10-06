@@ -5,7 +5,7 @@
  * 全部服务在 apply 内做存在性探测，缺失时降级为 console 警告（§9.1）。
  */
 
-import type { WewriteDomainSpec } from './domain';
+import type { WeChatArticleDomainSpec } from './domain';
 
 export interface KvTable<V> {
   get(key: string): V | undefined;
@@ -29,7 +29,7 @@ export interface StorageDomainHandle {
 }
 
 export interface StorageDomainService {
-  open(spec: WewriteDomainSpec): Promise<StorageDomainHandle>;
+  open(spec: WeChatArticleDomainSpec): Promise<StorageDomainHandle>;
 }
 
 export type RpcHandler = (endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>;
@@ -129,7 +129,7 @@ export interface ToolRunContext {
   readonly agent?: { readonly id?: unknown; readonly session?: unknown };
 }
 
-export interface WewriteToolOutputDefinition {
+export interface WeChatArticleToolOutputDefinition {
   /** object-root JsonSchemaNode（canonical value 的形状声明）。 */
   readonly schema: Record<string, unknown>;
   /** 模型面文本（纯函数，禁访问 service；流式与回放共用）。 */
@@ -138,11 +138,11 @@ export interface WewriteToolOutputDefinition {
   presentationMeta?(args: unknown, value: unknown): unknown;
 }
 
-export interface WewriteToolDefinition {
+export interface WeChatArticleToolDefinition {
   readonly name: string;
   readonly description: string;
   readonly parameters: Record<string, unknown>;
-  readonly output: WewriteToolOutputDefinition;
+  readonly output: WeChatArticleToolOutputDefinition;
   readonly timeoutMs?: number;
   execute(args: unknown, exec: ToolRunContext): Promise<unknown>;
   presentCall?(args: unknown): ToolCallView | undefined;

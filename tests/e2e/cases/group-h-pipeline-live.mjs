@@ -21,12 +21,12 @@ import {
 
 async function startRunFromRail(page, topic) {
   await gotoWorkbench(page);
-  const newBtn = page.locator('.ww-rail__new').first();
+  const newBtn = page.locator('.wa-rail__new').first();
   await newBtn.click();
   const form = page.locator(LOC.railNewForm).first();
   await form.waitFor({ state: 'visible', timeout: 5000 });
-  await page.locator('[data-testid="ww-rail-new-input"]').first().fill(topic);
-  await page.locator('[data-testid="ww-rail-new-submit"]').first().click();
+  await page.locator('[data-testid="wa-rail-new-input"]').first().fill(topic);
+  await page.locator('[data-testid="wa-rail-new-submit"]').first().click();
   await expectVisible(page.getByText(`正在生成《${topic}》`).first(), {
     timeout: 15000,
     msg: `提交后应出现生成 overlay（${topic}）`,
@@ -48,10 +48,10 @@ export default [
       const topic = '本地优先的 AI 工作流';
       await startRunFromRail(page, topic);
 
-      await expectVisible(page.locator('.ww-stepper').first(), { msg: 'stepper 未渲染' });
+      await expectVisible(page.locator('.wa-stepper').first(), { msg: 'stepper 未渲染' });
       const stageLabels = ['选题分析', '研究与提纲', '初稿写作', '质量门禁', '排版转换', '配图生成'];
       for (const label of stageLabels) {
-        await expectVisible(page.locator('.ww-stepper').getByText(label, { exact: true }).first(), {
+        await expectVisible(page.locator('.wa-stepper').getByText(label, { exact: true }).first(), {
           timeout: 4000,
           msg: `六步标签缺「${label}」`,
         });
@@ -64,26 +64,26 @@ export default [
         { timeout: 6000, msg: '转后台后 overlay 应收起' },
       );
       const card = page.locator(LOC.progressCard).first();
-      await expectVisible(card, { timeout: 6000, msg: '转后台后右下进度卡（ww-progress-card）应常驻' });
+      await expectVisible(card, { timeout: 6000, msg: '转后台后右下进度卡（wa-progress-card）应常驻' });
       assert.equal(await card.getAttribute('role'), 'region', '进度卡应为 region（aria-label=生成进度）');
       const dot = page.locator(LOC.progressDot).first();
-      await expectVisible(dot, { timeout: 4000, msg: '顶栏进度点（ww-progress-dot）应可见（AC-6）' });
+      await expectVisible(dot, { timeout: 4000, msg: '顶栏进度点（wa-progress-dot）应可见（AC-6）' });
       const dotLabel = await dot.getAttribute('aria-label');
       assert.ok(dotLabel?.includes('生成任务运行中'), `进度点 aria-label 语义（实际：${dotLabel}）`);
 
       // toggle 语义（三轮挂因）：progressCardOpen 提交后默认 true，dot 的
       // onToggleProgressCard = setProgressCardOpen(open => !open)——卡已展开时点 dot
-      // 是「收卡」。先点卡的收起钮（ww-progress-card-collapse）收起，再点 dot 验证
+      // 是「收卡」。先点卡的收起钮（wa-progress-card-collapse）收起，再点 dot 验证
       // toggle 的展开方向 + aria-expanded 跟随。
-      await page.locator('[data-testid="ww-progress-card-collapse"]').first().click();
+      await page.locator('[data-testid="wa-progress-card-collapse"]').first().click();
       await pollUntil(
         async () => (await page.locator(LOC.progressCard).count()) === 0,
         { timeout: 6000, msg: '点收起钮后进度卡应消失（收起=不渲染）' },
       );
 
-      await page.locator('[data-testid="ww-topbar-tab-hotspots"]').first().click(); // 跨 Tab（收起态）
+      await page.locator('[data-testid="wa-topbar-tab-hotspots"]').first().click(); // 跨 Tab（收起态）
       await expectVisible(dot, { timeout: 4000, msg: '切 Tab 后进度点应常驻可见（AC-6）' });
-      await expectVisible(page.locator('.ww-hotspots').first(), { timeout: 6000, msg: '选题页内容应正常渲染（进度不遮挡）' });
+      await expectVisible(page.locator('.wa-hotspots').first(), { timeout: 6000, msg: '选题页内容应正常渲染（进度不遮挡）' });
       await dot.click();
       await expectVisible(card, { timeout: 4000, msg: '收起态下点进度点应重新展开进度卡（toggle）' });
       assert.equal(await dot.getAttribute('aria-expanded'), 'true', '进度点应绑定卡开合（aria-expanded）');
@@ -101,7 +101,7 @@ export default [
         async () => (await page.locator(LOC.railList).getByText(topic, { exact: false }).count()) > 0,
         { timeout: 15000, msg: '终态后 rail 应有本主题文章行' },
       );
-      assert.equal(await page.locator('.ww-toast--error').count(), 0, '全绿路径不应出现 error toast');
+      assert.equal(await page.locator('.wa-toast--error').count(), 0, '全绿路径不应出现 error toast');
     },
   },
   {
@@ -124,7 +124,7 @@ export default [
         { timeout: 240000, interval: 3000, msg: '240s 内 rail 未出现 H01 真跑新文章行（管线可能仍在进行）' },
       );
       await row.locator('button').first().click();
-      const head = page.locator('.ww-editor-head').first();
+      const head = page.locator('.wa-editor-head').first();
       await expectVisible(head, { timeout: 12000, msg: '新文章编辑器未打开' });
       await expectVisible(head.getByText('已排版').first(), {
         timeout: 60000,
@@ -156,14 +156,14 @@ export default [
       const len = await cm.evaluate((el) => el.textContent?.length ?? 0);
       assert.ok(len > 200, `成稿 markdown 应 >200 字符（实际 ${len}）`);
 
-      await page.locator('[data-testid="ww-view-tab-preview"]').first().click();
+      await page.locator('[data-testid="wa-view-tab-preview"]').first().click();
       await pollUntil(
-        async () => (await page.locator('.ww-preview__rendering').count()) === 0,
+        async () => (await page.locator('.wa-preview__rendering').count()) === 0,
         { timeout: 15000, msg: '预览未就绪' },
       );
-      const html = await page.locator('.ww-preview__content').first().evaluate((el) => el.innerHTML);
+      const html = await page.locator('.wa-preview__content').first().evaluate((el) => el.innerHTML);
       assert.ok(html.includes('style='), '预览应含内联 style（真实排版产物）');
-      const text = await page.locator('.ww-preview__content').first().innerText();
+      const text = await page.locator('.wa-preview__content').first().innerText();
       assert.ok(text.trim().length > 50, `预览正文应非空（实际 ${text.trim().length} 字）`);
     },
   },
@@ -177,23 +177,23 @@ export default [
     fn: async (page) => {
       await gotoWorkbench(page);
       await page.locator(LOC.railList).locator('li', { hasText: '本地优先的 AI 工作流' }).first().locator('button').first().click();
-      await expectVisible(page.locator('.ww-statusstrip').getByText('门禁 已过').first(), {
+      await expectVisible(page.locator('.wa-statusstrip').getByText('门禁 已过').first(), {
         timeout: 8000,
         msg: 'StatusStrip 门禁项应为「门禁 已过」（gates succeeded 投影）',
       });
       assert.equal(
-        await page.locator(LOC.railList).locator('li', { hasText: '本地优先的 AI 工作流' }).locator('.ww-rail-btn__gate').count(),
+        await page.locator(LOC.railList).locator('li', { hasText: '本地优先的 AI 工作流' }).locator('.wa-rail-btn__gate').count(),
         0,
         '门禁已过的新文行不应有红色门禁标记（负向）',
       );
       // AC-9 等价断言：图片步真实失败降级 → run 仍 succeeded、无图
-      await expectVisible(page.locator('.ww-statusstrip').getByText(/图 0 张/).first(), {
+      await expectVisible(page.locator('.wa-statusstrip').getByText(/图 0 张/).first(), {
         timeout: 6000,
         msg: '图片步失败降级后应为「图 0 张」（AC-9 无图推进）',
       });
       await page.locator(LOC.gateChip).first().click();
       await expectVisible(page.locator(LOC.gateOverlay).first(), { timeout: 6000, msg: '门禁面板应可打开' });
-      await page.locator('[data-testid="ww-gate-overlay-close"]').first().click();
+      await page.locator('[data-testid="wa-gate-overlay-close"]').first().click();
     },
   },
   {
@@ -209,15 +209,15 @@ export default [
     fn: async (page) => {
       await pollUntil(
         async () => {
-          if ((await page.locator('.ww-toast').count()) === 0) return true;
-          await page.locator('.ww-toast .ww-toast__close').first().click().catch(() => {});
+          if ((await page.locator('.wa-toast').count()) === 0) return true;
+          await page.locator('.wa-toast .wa-toast__close').first().click().catch(() => {});
           return false;
         },
         { timeout: 8000, interval: 300, msg: 'toast 清场失败（残留成功 toast 会污染负向断言）' },
       );
       await startRunFromRail(page, '取消路径验证');
       await page.getByRole('button', { name: '取消生成' }).first().click();
-      await expectVisible(page.locator('.ww-toasts').getByText('已取消生成').first(), {
+      await expectVisible(page.locator('.wa-toasts').getByText('已取消生成').first(), {
         timeout: 8000,
         msg: '取消后应出现「已取消生成」toast',
       });
@@ -226,7 +226,7 @@ export default [
         { timeout: 8000, msg: '取消后 overlay 应关闭' },
       );
       assert.equal(await page.locator(LOC.progressDot).count(), 0, '取消后进度点应消失（终态非运行中）');
-      assert.equal(await page.locator('.ww-toast--success').count(), 0, '取消路径不应有成功 toast（负向）');
+      assert.equal(await page.locator('.wa-toast--success').count(), 0, '取消路径不应有成功 toast（负向）');
     },
   },
 
@@ -251,7 +251,7 @@ export default [
       const callPluginRpc = (endpoint, payload) =>
         page.evaluate(
           async ({ endpoint, payload }) => {
-            const res = await fetch(`/dsh-wewrite/${endpoint}`, {
+            const res = await fetch(`/dsh-wechat-article/${endpoint}`, {
               method: 'POST',
               headers: { 'content-type': 'application/json' },
               body: JSON.stringify({ type: 'client-request', rpcId: `e2e-h06-${endpoint}-${Date.now()}`, method: endpoint, payload }),

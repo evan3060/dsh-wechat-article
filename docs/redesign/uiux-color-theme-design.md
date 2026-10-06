@@ -1,4 +1,4 @@
-# dsh-wewrite 色彩主题 Bluewash — 视觉规格（设计师交付）
+# dsh-wechat-article 色彩主题 Bluewash — 视觉规格（设计师交付）
 
 > 作者：颜好看（MVP 开发专家团设计师） | 日期：2026-08-20
 > 输入：uiux-color-theme.md（本人方向篇，裁决与三层架构）+ src/client/styles/ 全部 12 css 现状 + docs/design/design-tokens.json v1.1.0 + 8 张真机截图
@@ -19,7 +19,7 @@
 | 组件 css 触点 | 7 处 | tokens.css（token 值与 dark 覆写块）+ topbar/base/panels/workbench/states/overlay 各一小段（§4） |
 | DOM 增量（新增，不改名不改结构） | 3 处 | tab `data-view` 属性 / pagebar 识别色圆点 span / rank Top3 修饰类（§4 逐处） |
 
-**不动清单**（明确出界，防止施工漂移）：--ww-bg（面板基底，light 保持白——「纸面不染」）、--ww-surface / --ww-surface-raised（卡面与浮层，保持宿主）、--ww-fg×4（文字）、--ww-interactive-hover/active（宿主 hover 本就是蓝灰 rgba(38,49,72)，已与主题相容）、语义色 7 个、--ww-accent / hover / active / on / ring（accent 家族原样）、--ww-code-bg（等宽带小面积，保留宿主）、微信画布族（canvas-bg/frame/font）、全部字号/间距/圆角/动效/布局/z token。
+**不动清单**（明确出界，防止施工漂移）：--wa-bg（面板基底，light 保持白——「纸面不染」）、--wa-surface / --wa-surface-raised（卡面与浮层，保持宿主）、--wa-fg×4（文字）、--wa-interactive-hover/active（宿主 hover 本就是蓝灰 rgba(38,49,72)，已与主题相容）、语义色 7 个、--wa-accent / hover / active / on / ring（accent 家族原样）、--wa-code-bg（等宽带小面积，保留宿主）、微信画布族（canvas-bg/frame/font）、全部字号/间距/圆角/动效/布局/z token。
 
 ---
 
@@ -54,11 +54,11 @@ rgba 基色 `rgb(38,54,94)` = `#26365E`（hsl 219,42%,26%）；dark 侧 `rgb(151
 
 | 槽 | light | dark | 用途（仅此四处，禁扩） |
 |---|---|---|---|
-| 写作域识别色 | `var(--ww-accent)` | `var(--ww-accent)` | 写作 Tab 激活 / 写作页头点 / rail 选中指示（既有） |
+| 写作域识别色 | `var(--wa-accent)` | `var(--wa-accent)` | 写作 Tab 激活 / 写作页头点 / rail 选中指示（既有） |
 | **view-topics** | `#C2410C` | `#FB923C` | 选题 Tab 激活文字+icon / 选题页头点 |
 | **view-schedule** | `#0F766E` | `#2DD4BF` | 定时 Tab 激活文字+icon / 定时页头点 |
 | **rank-top** | `#C2410C` | `#FB923C` | 热榜 Top3 名次数字（与 view-topics 同值独立槽：同为「热榜热度」域，日后可独立调档） |
-| 品牌时刻 glyph | `var(--ww-accent-subtle)` 底 + `var(--ww-accent)` icon | 同左（dark 自动） | 启动卡 glyph / hero 空态 glyph / 侧边栏入口 icon |
+| 品牌时刻 glyph | `var(--wa-accent-subtle)` 底 + `var(--wa-accent)` icon | 同左（dark 自动） | 启动卡 glyph / hero 空态 glyph / 侧边栏入口 icon |
 
 设置页**无识别色**（中性，Apple 先例）；文章库属写作域（rail 内）不单设。
 
@@ -72,9 +72,9 @@ rgba 基色 `rgb(38,54,94)` = `#26365E`（hsl 219,42%,26%）；dark 侧 `rgb(151
 
 | token | light | dark | usage | 落点 |
 |---|---|---|---|---|
-| `--ww-view-topics` | `#C2410C` | `#FB923C` | 选题域识别色：热榜 Tab 激活态文字与 icon、选题页头识别点。热力橙深档（orange-700），与 warn #F59E0B（琥珀黄调、状态专用）保持色距且视觉路径不重叠 | tokens.css 新增 §14 视图识别色段 |
-| `--ww-view-schedule` | `#0F766E` | `#2DD4BF` | 定时域识别色：定时 Tab 激活态文字与 icon、定时页头识别点。青（teal-700），时间/规律语义，与 success 绿距离充分 | 同上 |
-| `--ww-rank-top` | `#C2410C` | `#FB923C` | 热榜 Top3 名次数字（13px mono，4+ 名保持 fg-tertiary 灰）。数据可视化档；与 view-topics 同值但语义槽独立 | 同上 |
+| `--wa-view-topics` | `#C2410C` | `#FB923C` | 选题域识别色：热榜 Tab 激活态文字与 icon、选题页头识别点。热力橙深档（orange-700），与 warn #F59E0B（琥珀黄调、状态专用）保持色距且视觉路径不重叠 | tokens.css 新增 §14 视图识别色段 |
+| `--wa-view-schedule` | `#0F766E` | `#2DD4BF` | 定时域识别色：定时 Tab 激活态文字与 icon、定时页头识别点。青（teal-700），时间/规律语义，与 success 绿距离充分 | 同上 |
+| `--wa-rank-top` | `#C2410C` | `#FB923C` | 热榜 Top3 名次数字（13px mono，4+ 名保持 fg-tertiary 灰）。数据可视化档；与 view-topics 同值但语义槽独立 | 同上 |
 
 三个 token 均随主题翻转 → 全部进 dark 覆写块。
 
@@ -82,22 +82,22 @@ rgba 基色 `rgb(38,54,94)` = `#26365E`（hsl 219,42%,26%）；dark 侧 `rgb(151
 
 | token | 旧 css（host） | 旧 light / dark | 新 light / dark | 替代关系与理由 |
 |---|---|---|---|---|
-| `--ww-bg-page` | `var(--dsw-specific-sidebar-fill)` | `#F9FAFB` / `#1B1B1C` | `#F2F4F8` / `#1A1E26` | 宿主槽是无彩功能灰，无「品牌 tint」档；分叉为自有主题资产。hsl(219,33%,96%) / hsl(219,19%,13%)，与品牌蓝同 hue。宿主换肤不再跟随（§1-4 让渡声明） |
-| `--ww-surface-sunken` | `var(--dsw-specific-sidebar-fill)` | `#F9FAFB` / `#1B1B1C` | `#EBEEF5` / `#20242E` | 随台面同 hue 深一档（保持「槽比台面深」构造；segmented 槽仍有 border 双保险）。原与 bg-page 同源不同槽，现在两槽各自有值，宿主耦合解除 |
-| `--ww-accent-subtle` | `var(--dsw-static-deepseek-50)` | `#EDF3FE` / `#EDF3FE`（static 不翻转） | `#EDF3FE` / `#1E2B4D` | **修复项**：static 值在深色下是刺眼浅蓝（v0.3 §D1/§4-6 反复绕开的风险源）。light 保留宿主 deepseek-50 同值，dark 换深蓝选中底 |
-| `--ww-canvas-well` | `var(--dsw-alias-markdown-inline-code)` | `#EBEEF2` / `#2C2C2E` | `#E7EBF3` / `#222734` | 井底加入台面色温（原为灰调 code 槽借用，v0.2 注释已自称「唯一近似档」——本次转正为自有槽）。井感构造不变（比 sunken 深、比纸面深） |
-| `--ww-border` | `var(--dsw-alias-border-l2)` | `rgba(0,0,0,.10)` / `rgba(255,255,255,.12)` | `rgba(38,54,94,.13)` / `rgba(151,176,231,.15)` | 全部线框获得蓝灰笔触。叠白底 ≈ #E3E5EA，与旧值 #E6E6E6 等可见度（对比度不回退，见 §5） |
-| `--ww-border-strong` | `var(--dsw-alias-border-l3)` | `rgba(0,0,0,.12)` / `rgba(255,255,255,.16)` | `rgba(38,54,94,.19)` / `rgba(151,176,231,.21)` | 同上，强调档同步 |
-| `--ww-divider` | `var(--dsw-alias-border-l1)` | `rgba(0,0,0,.04)` / `rgba(255,255,255,.06)` | `rgba(38,54,94,.07)` / `rgba(151,176,231,.08)` | 分隔线微提可见度（原 .04 在 tint 底上进一步隐形） |
-| `--ww-skeleton` | `var(--dsw-alias-bg-skeleton)` | `rgba(0,0,0,.04)` / `rgba(255,255,255,.08)` | `rgba(38,54,94,.08)` / `rgba(151,176,231,.09)` | 骨架品牌灰（Stripe 式 tint 骨架），与 divider 同语言 |
+| `--wa-bg-page` | `var(--dsw-specific-sidebar-fill)` | `#F9FAFB` / `#1B1B1C` | `#F2F4F8` / `#1A1E26` | 宿主槽是无彩功能灰，无「品牌 tint」档；分叉为自有主题资产。hsl(219,33%,96%) / hsl(219,19%,13%)，与品牌蓝同 hue。宿主换肤不再跟随（§1-4 让渡声明） |
+| `--wa-surface-sunken` | `var(--dsw-specific-sidebar-fill)` | `#F9FAFB` / `#1B1B1C` | `#EBEEF5` / `#20242E` | 随台面同 hue 深一档（保持「槽比台面深」构造；segmented 槽仍有 border 双保险）。原与 bg-page 同源不同槽，现在两槽各自有值，宿主耦合解除 |
+| `--wa-accent-subtle` | `var(--dsw-static-deepseek-50)` | `#EDF3FE` / `#EDF3FE`（static 不翻转） | `#EDF3FE` / `#1E2B4D` | **修复项**：static 值在深色下是刺眼浅蓝（v0.3 §D1/§4-6 反复绕开的风险源）。light 保留宿主 deepseek-50 同值，dark 换深蓝选中底 |
+| `--wa-canvas-well` | `var(--dsw-alias-markdown-inline-code)` | `#EBEEF2` / `#2C2C2E` | `#E7EBF3` / `#222734` | 井底加入台面色温（原为灰调 code 槽借用，v0.2 注释已自称「唯一近似档」——本次转正为自有槽）。井感构造不变（比 sunken 深、比纸面深） |
+| `--wa-border` | `var(--dsw-alias-border-l2)` | `rgba(0,0,0,.10)` / `rgba(255,255,255,.12)` | `rgba(38,54,94,.13)` / `rgba(151,176,231,.15)` | 全部线框获得蓝灰笔触。叠白底 ≈ #E3E5EA，与旧值 #E6E6E6 等可见度（对比度不回退，见 §5） |
+| `--wa-border-strong` | `var(--dsw-alias-border-l3)` | `rgba(0,0,0,.12)` / `rgba(255,255,255,.16)` | `rgba(38,54,94,.19)` / `rgba(151,176,231,.21)` | 同上，强调档同步 |
+| `--wa-divider` | `var(--dsw-alias-border-l1)` | `rgba(0,0,0,.04)` / `rgba(255,255,255,.06)` | `rgba(38,54,94,.07)` / `rgba(151,176,231,.08)` | 分隔线微提可见度（原 .04 在 tint 底上进一步隐形） |
+| `--wa-skeleton` | `var(--dsw-alias-bg-skeleton)` | `rgba(0,0,0,.04)` / `rgba(255,255,255,.08)` | `rgba(38,54,94,.08)` / `rgba(151,176,231,.09)` | 骨架品牌灰（Stripe 式 tint 骨架），与 divider 同语言 |
 
 ### 2-C 修改：自有值原地更新 light 侧（3 个 shadow）
 
 | token | 旧 light（dark 不变） | 新 light | 理由 |
 |---|---|---|---|
-| `--ww-shadow-card` | `0 1px 2px rgba(15,17,21,0.05)` | `0 1px 2px rgba(30,44,76,0.06)` | 阴影蓝黑化：白卡在蓝灰台面上的投影带冷调（纯黑阴影在 tint 底上显「脏」） |
-| `--ww-shadow-overlay` | `0 8px 24px rgba(15,17,21,0.12)` | `0 8px 24px rgba(23,34,60,0.14)` | 同上 |
-| `--ww-shadow-modal` | `0 16px 48px rgba(15,17,21,0.16)` | `0 16px 48px rgba(23,34,60,0.18)` | 同上 |
+| `--wa-shadow-card` | `0 1px 2px rgba(15,17,21,0.05)` | `0 1px 2px rgba(30,44,76,0.06)` | 阴影蓝黑化：白卡在蓝灰台面上的投影带冷调（纯黑阴影在 tint 底上显「脏」） |
+| `--wa-shadow-overlay` | `0 8px 24px rgba(15,17,21,0.12)` | `0 8px 24px rgba(23,34,60,0.14)` | 同上 |
+| `--wa-shadow-modal` | `0 16px 48px rgba(15,17,21,0.16)` | `0 16px 48px rgba(23,34,60,0.18)` | 同上 |
 
 dark 覆写块三值（纯黑系）不变——暗色下阴影 hue 无感知。
 
@@ -126,12 +126,12 @@ body[data-ds-dark-theme] 作用域内需覆写的自有 token（15 个）：
    *     永不染大面积底（反廉价 §6-7）。设置页无识别色（中性先例）。
    * ========================================================== */
   /* 选题域（热榜）：热力橙深档，与 warn #F59E0B 保持色距、路径不重叠 */
-  --ww-view-topics: #C2410C;
+  --wa-view-topics: #C2410C;
   /* 定时域：青（时间/规律语义），与 success 绿距离充分 */
-  --ww-view-schedule: #0F766E;
-  /* 热榜 Top3 名次数字（4+ 保持 --ww-fg-tertiary）；与 view-topics
+  --wa-view-schedule: #0F766E;
+  /* 热榜 Top3 名次数字（4+ 保持 --wa-fg-tertiary）；与 view-topics
      同值独立槽：同属「热度」语义，日后可独立调档 */
-  --ww-rank-top: #C2410C;
+  --wa-rank-top: #C2410C;
 ```
 
 （§14 段放 §13 焦点环之后；三个 token 值在 dark 覆写块翻转，见 §3-2。）
@@ -141,24 +141,24 @@ body[data-ds-dark-theme] 作用域内需覆写的自有 token（15 个）：
 ```css
   /* L1 台面：品牌冷调蓝灰 hsl(219,33%,96%)。原宿主 sidebar-fill 为无彩灰，
      v1.2.0 分叉为自有主题资产（uiux-color-theme-design §2-B） */
-  --ww-bg-page: #F2F4F8;
+  --wa-bg-page: #F2F4F8;
   /* 凹区/槽：随台面同 hue 深一档（segmented 槽仍有 border 双保险） */
-  --ww-surface-sunken: #EBEEF5;
+  --wa-surface-sunken: #EBEEF5;
   /* 选中行底/命中标签底：light 保留 deepseek-50 同值；dark 换深蓝选中底
      （修复 static 值深色刺眼风险，v0.3 §D1 绕开项自此解除） */
-  --ww-accent-subtle: #EDF3FE;
+  --wa-accent-subtle: #EDF3FE;
   /* 画布井：v0.2 借用 code 槽转正为自有槽，加入台面色温 */
-  --ww-canvas-well: #E7EBF3;
+  --wa-canvas-well: #E7EBF3;
   /* 边框三档：蓝灰笔触 rgb(38,54,94)，叠白 ≈ #E3E5EA 与旧值等可见度 */
-  --ww-border: rgba(38, 54, 94, 0.13);
-  --ww-border-strong: rgba(38, 54, 94, 0.19);
-  --ww-divider: rgba(38, 54, 94, 0.07);
+  --wa-border: rgba(38, 54, 94, 0.13);
+  --wa-border-strong: rgba(38, 54, 94, 0.19);
+  --wa-divider: rgba(38, 54, 94, 0.07);
   /* 骨架品牌灰（与 divider 同语言） */
-  --ww-skeleton: rgba(38, 54, 94, 0.08);
+  --wa-skeleton: rgba(38, 54, 94, 0.08);
   /* 阴影 light 侧蓝黑化（dark 覆写值不变） */
-  --ww-shadow-card: 0 1px 2px rgba(30, 44, 76, 0.06);
-  --ww-shadow-overlay: 0 8px 24px rgba(23, 34, 60, 0.14);
-  --ww-shadow-modal: 0 16px 48px rgba(23, 34, 60, 0.18);
+  --wa-shadow-card: 0 1px 2px rgba(30, 44, 76, 0.06);
+  --wa-shadow-overlay: 0 8px 24px rgba(23, 34, 60, 0.14);
+  --wa-shadow-modal: 0 16px 48px rgba(23, 34, 60, 0.18);
 ```
 
 ### 3-2 dark 覆写块（整块替换 tokens.css 底部覆写块）
@@ -168,31 +168,31 @@ body[data-ds-dark-theme] 作用域内需覆写的自有 token（15 个）：
  * 深色主题覆写 — Bluewash 自有 token 全集（v1.2.0 扩容，15 个）；
  * 其余仍经 var(--dsw-*) 由宿主自动翻转
  * ========================================================== */
-body[data-ds-dark-theme] .dsh-wewrite-panel,
-body[data-ds-dark-theme] .ww-sidebar-entry,
-body[data-ds-dark-theme] .ww-overlay {
+body[data-ds-dark-theme] .dsh-wechat-article-panel,
+body[data-ds-dark-theme] .wa-sidebar-entry,
+body[data-ds-dark-theme] .wa-overlay {
   /* L1 台面（蓝黑系，Linear dark 式色温） */
-  --ww-bg-page: #1A1E26;
-  --ww-surface-sunken: #20242E;
-  --ww-canvas-well: #222734;
-  --ww-border: rgba(151, 176, 231, 0.15);
-  --ww-border-strong: rgba(151, 176, 231, 0.21);
-  --ww-divider: rgba(151, 176, 231, 0.08);
-  --ww-skeleton: rgba(151, 176, 231, 0.09);
+  --wa-bg-page: #1A1E26;
+  --wa-surface-sunken: #20242E;
+  --wa-canvas-well: #222734;
+  --wa-border: rgba(151, 176, 231, 0.15);
+  --wa-border-strong: rgba(151, 176, 231, 0.21);
+  --wa-divider: rgba(151, 176, 231, 0.08);
+  --wa-skeleton: rgba(151, 176, 231, 0.09);
 
   /* L2 选中底深蓝档 */
-  --ww-accent-subtle: #1E2B4D;
+  --wa-accent-subtle: #1E2B4D;
 
   /* L3 识别色提亮档 */
-  --ww-view-topics: #FB923C;
-  --ww-view-schedule: #2DD4BF;
-  --ww-rank-top: #FB923C;
+  --wa-view-topics: #FB923C;
+  --wa-view-schedule: #2DD4BF;
+  --wa-rank-top: #FB923C;
 
   /* 既有 4 项不变 */
-  --ww-accent-ring: rgba(103, 158, 254, 0.40);
-  --ww-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.40);
-  --ww-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.50);
-  --ww-shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.60);
+  --wa-accent-ring: rgba(103, 158, 254, 0.40);
+  --wa-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.40);
+  --wa-shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.50);
+  --wa-shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.60);
 }
 ```
 
@@ -204,69 +204,69 @@ body[data-ds-dark-theme] .ww-overlay {
 
 | 视图/面 | 生效路径 |
 |---|---|
-| 全部台面 | `.ww-content` / `.ww-content--flush`（base.css）与 `.ww-rail`（rail.css）底 = bg-page → 蓝灰；顶栏融合底（topbar.css `.ww-topbar`）同 |
+| 全部台面 | `.wa-content` / `.wa-content--flush`（base.css）与 `.wa-rail`（rail.css）底 = bg-page → 蓝灰；顶栏融合底（topbar.css `.wa-topbar`）同 |
 | 全部线框 | border/divider 新值贯穿 12 个 css 的全部 border 引用（卡/输入框/表头/分隔线） |
-| 写作台 rail 选中行 | rail.css `.ww-rail-btn--active` 底 = accent-subtle → dark 下首次成立（#1E2B4D + accent #679EFE ≈5.2:1） |
+| 写作台 rail 选中行 | rail.css `.wa-rail-btn--active` 底 = accent-subtle → dark 下首次成立（#1E2B4D + accent #679EFE ≈5.2:1） |
 | 写作台 rail 筛选 chip / 设置 nav 激活 / 关键词筛选钮 | accent-subtle 底同上自动修复 |
-| 热榜命中行 | panels.css `.ww-hotspot--hit` 底 = accent-subtle（同上） |
+| 热榜命中行 | panels.css `.wa-hotspot--hit` 底 = accent-subtle（同上） |
 | 编辑器选区 | editor.css `.cm-selectionBackground` = accent-subtle（同上） |
 | 编辑器状态栏 / segmented 槽 / 表头类凹区 | surface-sunken 新值（蓝灰槽 on 蓝灰台，border 双保险构造不变） |
-| 预览画布井 | preview.css `.ww-preview__frame` 底 = canvas-well 新值 |
+| 预览画布井 | preview.css `.wa-preview__frame` 底 = canvas-well 新值 |
 | 暂停定时卡 / locked 区 | surface-sunken 新值 |
 | 骨架屏全部 | skeleton 新值 |
-| 浮层 | `.ww-overlay` 底 = bg-page；浮层阴影 overlay/modal light 侧蓝黑化 |
+| 浮层 | `.wa-overlay` 底 = bg-page；浮层阴影 overlay/modal light 侧蓝黑化 |
 | 深色主题 | §3-2 覆写块全量 |
 
 ### 4-1 顶栏分段导航：域识别色激活（topbar.css + TopBar.tsx）
 
-**DOM 增量**：`TopBar.tsx` 每个 `button.ww-tab` 加 `data-view="writing" | "topics" | "schedule"`（新属性，类名/结构/testid 不动）。
+**DOM 增量**：`TopBar.tsx` 每个 `button.wa-tab` 加 `data-view="writing" | "topics" | "schedule"`（新属性，类名/结构/testid 不动）。
 
 ```css
 /* topbar.css 末尾追加（Bluewash §4-1）：
  * 激活段按域分色：写作=accent 蓝（默认，含设置页兜底）/ 选题=热力橙 / 定时=青。
  * 激活片本身仍是 surface 白底+微影（识别色只染文字与 icon，微面积纪律）。 */
-.ww-tab--active[data-view='topics'] { color: var(--ww-view-topics); }
-.ww-tab--active[data-view='topics'] svg { color: var(--ww-view-topics); }
-.ww-tab--active[data-view='topics']:hover { color: var(--ww-view-topics); }
-.ww-tab--active[data-view='topics']:hover svg { color: var(--ww-view-topics); }
+.wa-tab--active[data-view='topics'] { color: var(--wa-view-topics); }
+.wa-tab--active[data-view='topics'] svg { color: var(--wa-view-topics); }
+.wa-tab--active[data-view='topics']:hover { color: var(--wa-view-topics); }
+.wa-tab--active[data-view='topics']:hover svg { color: var(--wa-view-topics); }
 
-.ww-tab--active[data-view='schedule'] { color: var(--ww-view-schedule); }
-.ww-tab--active[data-view='schedule'] svg { color: var(--ww-view-schedule); }
-.ww-tab--active[data-view='schedule']:hover { color: var(--ww-view-schedule); }
-.ww-tab--active[data-view='schedule']:hover svg { color: var(--ww-view-schedule); }
+.wa-tab--active[data-view='schedule'] { color: var(--wa-view-schedule); }
+.wa-tab--active[data-view='schedule'] svg { color: var(--wa-view-schedule); }
+.wa-tab--active[data-view='schedule']:hover { color: var(--wa-view-schedule); }
+.wa-tab--active[data-view='schedule']:hover svg { color: var(--wa-view-schedule); }
 ```
 
-（默认 `.ww-tab--active` = accent 不动，写作/设置走默认；hover 稳定规则同既有限定性写法，防止通用 :hover 刷回。）
+（默认 `.wa-tab--active` = accent 不动，写作/设置走默认；hover 稳定规则同既有限定性写法，防止通用 :hover 刷回。）
 
 ### 4-2 页头识别点（base.css + 各页 pagebar）
 
-**DOM 增量**：各页 `.ww-pagebar` 标题前加 `<span class="ww-pagebar__dot" data-view="…"/>`（新元素，无结构改动；不想要的页面不加即无点）。只给三个域页加（写作/选题/定时），设置页不加。
+**DOM 增量**：各页 `.wa-pagebar` 标题前加 `<span class="wa-pagebar__dot" data-view="…"/>`（新元素，无结构改动；不想要的页面不加即无点）。只给三个域页加（写作/选题/定时），设置页不加。
 
 ```css
 /* base.css pagebar 段追加（Bluewash §4-2）：8px 域识别点，圆点不是侧条 */
-.ww-pagebar__dot {
+.wa-pagebar__dot {
   flex: none;
   width: 8px;
   height: 8px;
-  border-radius: var(--ww-radius-full);
-  background: var(--ww-accent);          /* 写作域默认；data-view 变体覆盖 */
+  border-radius: var(--wa-radius-full);
+  background: var(--wa-accent);          /* 写作域默认；data-view 变体覆盖 */
 }
-.ww-pagebar__dot[data-view='topics'] { background: var(--ww-view-topics); }
-.ww-pagebar__dot[data-view='schedule'] { background: var(--ww-view-schedule); }
+.wa-pagebar__dot[data-view='topics'] { background: var(--wa-view-topics); }
+.wa-pagebar__dot[data-view='schedule'] { background: var(--wa-view-schedule); }
 ```
 
-（`.ww-pagebar` 已是 flex + gap 12px，dot 自然落位标题左侧；纯 CSS 圆点，非图标、非 emoji。）
+（`.wa-pagebar` 已是 flex + gap 12px，dot 自然落位标题左侧；纯 CSS 圆点，非图标、非 emoji。）
 
 ### 4-3 热榜 Top3 名次（panels.css + hotspots-panel.tsx）
 
-**DOM 增量**：rank ≤ 3 的 `.ww-hotspot__rank` 追加修饰类 `ww-hotspot__rank--top`（rank span 已有类，只加修饰）。
+**DOM 增量**：rank ≤ 3 的 `.wa-hotspot__rank` 追加修饰类 `wa-hotspot__rank--top`（rank span 已有类，只加修饰）。
 
 ```css
 /* panels.css 热榜段追加（Bluewash §4-3）：Top3 名次橙 + 500 字重；
  * 4+ 保持 fg-tertiary/400。双色数据节奏：蓝=命中行底，橙=热度名次。 */
-.ww-hotspot__rank--top {
-  color: var(--ww-rank-top);
-  font-weight: var(--ww-weight-medium);
+.wa-hotspot__rank--top {
+  color: var(--wa-rank-top);
+  font-weight: var(--wa-weight-medium);
 }
 ```
 
@@ -274,29 +274,29 @@ body[data-ds-dark-theme] .ww-overlay {
 
 ```css
 /* workbench.css：启动卡 glyph 升级品牌（首屏零文章时的品牌浸染时刻） */
-.ww-startup__glyph {
-  background: var(--ww-accent-subtle);   /* 原 --ww-surface-sunken */
-  color: var(--ww-accent);               /* 原 --ww-fg-secondary */
+.wa-startup__glyph {
+  background: var(--wa-accent-subtle);   /* 原 --wa-surface-sunken */
+  color: var(--wa-accent);               /* 原 --wa-fg-secondary */
 }
 
 /* states.css：hero 空态 glyph 同语言；次级空态 glyph 保持 sunken（安静）。
- * DOM 增量：hero 空态（.ww-empty--hero 内）的 glyph span 加修饰类
- * ww-empty__glyph--brand；默认 .ww-empty__glyph 不动。 */
-.ww-empty__glyph--brand {
-  background: var(--ww-accent-subtle);
-  color: var(--ww-accent);
+ * DOM 增量：hero 空态（.wa-empty--hero 内）的 glyph span 加修饰类
+ * wa-empty__glyph--brand；默认 .wa-empty__glyph 不动。 */
+.wa-empty__glyph--brand {
+  background: var(--wa-accent-subtle);
+  color: var(--wa-accent);
 }
 ```
 
-（`.ww-startup__glyph-sub` / `.ww-empty__glyph-sub` 的遮罩底 bg-page 自动换新值，无需改。）
+（`.wa-startup__glyph-sub` / `.wa-empty__glyph-sub` 的遮罩底 bg-page 自动换新值，无需改。）
 
 ### 4-5 侧边栏入口品牌锚（overlay.css）
 
 ```css
 /* overlay.css sidebar entry 段追加（Bluewash §4-5）：
  * 入口 icon 染品牌蓝——宿主灰 footer 里的品牌锚点（Linear/Slack 嵌入面板先例）。
- * 文字保持 --ww-fg（chrome 语境不整行变色）。 */
-.ww-sidebar-entry__btn svg { color: var(--ww-accent); }
+ * 文字保持 --wa-fg（chrome 语境不整行变色）。 */
+.wa-sidebar-entry__btn svg { color: var(--wa-accent); }
 ```
 
 （wide 16px 与 rail 20px icon 同染；hover/active 态不变。）
@@ -356,7 +356,7 @@ body[data-ds-dark-theme] .ww-overlay {
 
 | # | 检查项 | 结果 | 证据 |
 |---|---|---|---|
-| 1 | 所有颜色通过 Design Token 引用 | 通过 | 全部新色进 token（3 新增 + 11 修改），§4 组件触点全 var(--ww-*)；文档 hex 为 token 定义值与核算注记 |
+| 1 | 所有颜色通过 Design Token 引用 | 通过 | 全部新色进 token（3 新增 + 11 修改），§4 组件触点全 var(--wa-*)；文档 hex 为 token 定义值与核算注记 |
 | 2 | 间距 4px 整数倍 | 通过（零变化） | 本轮零间距改动；pagebar__dot 8px 为新元素尺寸（icon 级微件，同 glyph 40/32 先例类目） |
 | 3 | 字体三栈 | 通过（继承） | 零字体声明变化 |
 | 4 | 标题/正文/等宽层级 | 通过（零变化） | 零字号/字重体系改动（rank-top 的 500 为数据字重，mono 体系内） |

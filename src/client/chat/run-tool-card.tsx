@@ -1,6 +1,6 @@
 import type { Translate } from '../lib/context';
 import type { ContentBlockLike, RunningToolCallLike, ToolCallBlockLike, ToolResultNodeLike } from '../lib/context';
-import type { WewriteRpc } from '../lib/rpc';
+import type { WeChatArticleRpc } from '../lib/rpc';
 import { Icon } from '../components/Icon';
 import { cardT, type CardT } from './card-text';
 import { isOverlayAvailable, openOverlayWithArticle } from './overlay-bridge';
@@ -9,7 +9,7 @@ import { useRunDetail } from './run-detail-hook';
 import { projectStages, StageTrack } from './stage-track';
 
 /**
- * tool.call.toolview keyed `wewrite_run` 渲染器（architecture §5.2，M2）。
+ * tool.call.toolview keyed `wechat_run` 渲染器（architecture §5.2，M2）。
  *
  * - running（RunningToolCall）：run/detail 3s 轮询 → 六步进度卡；RPC 失败 D6 静默
  *   保留末次快照（首帧失败 → 「运行中」占位，不炸卡片）。
@@ -25,7 +25,7 @@ import { projectStages, StageTrack } from './stage-track';
 
 export interface RunToolCardProps {
   readonly block: ToolCallBlockLike;
-  readonly rpc: WewriteRpc;
+  readonly rpc: WeChatArticleRpc;
   readonly t?: Translate;
 }
 
@@ -55,19 +55,19 @@ function textFromBlocks(blocks: readonly ContentBlockLike[] | undefined): string
 function FallbackRunCard({ block, t }: { block: ToolResultNodeLike; t: CardT }) {
   const text = textFromBlocks(block.resultView?.content) || textFromBlocks(block.content);
   return (
-    <article className="ww-chatcard ww-chatcard--run ww-chatcard--fallback">
-      <header className="ww-chatcard__head">
-        <span className="ww-chatcard__kind">{t('chat.cardKind')}</span>
-        <span className="ww-chatcard__title">{block.resultView?.title ?? block.callView?.title ?? block.call?.name ?? ''}</span>
+    <article className="wa-chatcard wa-chatcard--run wa-chatcard--fallback">
+      <header className="wa-chatcard__head">
+        <span className="wa-chatcard__kind">{t('chat.cardKind')}</span>
+        <span className="wa-chatcard__title">{block.resultView?.title ?? block.callView?.title ?? block.call?.name ?? ''}</span>
       </header>
-      <div className="ww-chatcard__body">
-        <p className="ww-chatcard__digest">{text}</p>
+      <div className="wa-chatcard__body">
+        <p className="wa-chatcard__digest">{text}</p>
       </div>
     </article>
   );
 }
 
-function RunningRunCard({ block, rpc, t }: { block: RunningToolCallLike; rpc: WewriteRpc; t: CardT }) {
+function RunningRunCard({ block, rpc, t }: { block: RunningToolCallLike; rpc: WeChatArticleRpc; t: CardT }) {
   const args = parseArgsRaw(block.argsRaw);
   const topic = typeof args.topic === 'string' ? args.topic : (block.callView?.title ?? '');
   // selector 推导：args/rawInput 内嵌真 runId 优先；只有 callId 时走 {callId}——
@@ -83,17 +83,17 @@ function RunningRunCard({ block, rpc, t }: { block: RunningToolCallLike; rpc: We
   const progress = projectStages(detail?.steps);
 
   return (
-    <article className="ww-chatcard ww-chatcard--run ww-chatcard--running">
-      <header className="ww-chatcard__head">
-        <span className="ww-chatcard__kind">{t('chat.cardKind')}</span>
-        <span className="ww-chatcard__title" title={topic}>
+    <article className="wa-chatcard wa-chatcard--run wa-chatcard--running">
+      <header className="wa-chatcard__head">
+        <span className="wa-chatcard__kind">{t('chat.cardKind')}</span>
+        <span className="wa-chatcard__title" title={topic}>
           {topic ? `《${topic}》` : ''}
         </span>
-        <span className="ww-chatcard__meta">{t('chat.running')}</span>
+        <span className="wa-chatcard__meta">{t('chat.running')}</span>
       </header>
-      <div className="ww-chatcard__body">
+      <div className="wa-chatcard__body">
         <StageTrack progress={progress} t={t} />
-        <p className="ww-chatcard__note">{detail ? t('chat.runEta') : t('chat.seeWorkbench')}</p>
+        <p className="wa-chatcard__note">{detail ? t('chat.runEta') : t('chat.seeWorkbench')}</p>
       </div>
     </article>
   );
@@ -105,18 +105,18 @@ function SettledRunCard({ block, t }: { block: ToolResultNodeLike; t: CardT }) {
 
   if (!meta.ok) {
     return (
-      <article className="ww-chatcard ww-chatcard--run ww-chatcard--failed">
-        <header className="ww-chatcard__head">
-          <span className="ww-chatcard__kind">{t('chat.cardKind')}</span>
-          <span className="ww-chatcard__title" title={meta.topic}>
+      <article className="wa-chatcard wa-chatcard--run wa-chatcard--failed">
+        <header className="wa-chatcard__head">
+          <span className="wa-chatcard__kind">{t('chat.cardKind')}</span>
+          <span className="wa-chatcard__title" title={meta.topic}>
             《{meta.topic}》
           </span>
-          <span className="ww-chatcard__meta ww-chatcard__meta--danger">{t('chat.runFailed')}</span>
+          <span className="wa-chatcard__meta wa-chatcard__meta--danger">{t('chat.runFailed')}</span>
         </header>
-        <div className="ww-chatcard__body">
-          <p className="ww-chatcard__digest">{meta.error?.message ?? t('chat.runFailed')}</p>
-          <p className="ww-chatcard__note">{t('chat.seeWorkbench')}</p>
-          {meta.error ? <span className="ww-chatcard__code">{meta.error.code}</span> : null}
+        <div className="wa-chatcard__body">
+          <p className="wa-chatcard__digest">{meta.error?.message ?? t('chat.runFailed')}</p>
+          <p className="wa-chatcard__note">{t('chat.seeWorkbench')}</p>
+          {meta.error ? <span className="wa-chatcard__code">{meta.error.code}</span> : null}
         </div>
       </article>
     );
@@ -125,23 +125,23 @@ function SettledRunCard({ block, t }: { block: ToolResultNodeLike; t: CardT }) {
   const articleId = meta.articleId;
   const canOpen = Boolean(articleId) && isOverlayAvailable();
   return (
-    <article className="ww-chatcard ww-chatcard--run ww-chatcard--settled">
-      <header className="ww-chatcard__head">
-        <span className="ww-chatcard__kind">{t('chat.cardKind')}</span>
-        <span className="ww-chatcard__title" title={meta.title ?? meta.topic}>
+    <article className="wa-chatcard wa-chatcard--run wa-chatcard--settled">
+      <header className="wa-chatcard__head">
+        <span className="wa-chatcard__kind">{t('chat.cardKind')}</span>
+        <span className="wa-chatcard__title" title={meta.title ?? meta.topic}>
           《{meta.title ?? meta.topic}》
         </span>
-        {meta.gatePassed ? <span className="ww-chatcard__chip ww-chatcard__chip--ok">{t('chat.gatePassed')}</span> : null}
+        {meta.gatePassed ? <span className="wa-chatcard__chip wa-chatcard__chip--ok">{t('chat.gatePassed')}</span> : null}
       </header>
-      <div className="ww-chatcard__body">
-        {meta.digest ? <p className="ww-chatcard__digest">{meta.digest}</p> : null}
+      <div className="wa-chatcard__body">
+        {meta.digest ? <p className="wa-chatcard__digest">{meta.digest}</p> : null}
       </div>
       {canOpen && articleId ? (
-        <footer className="ww-chatcard__actions">
+        <footer className="wa-chatcard__actions">
           <button
             type="button"
-            className="ww-chatcard__action"
-            data-testid="ww-chatcard-open-workbench"
+            className="wa-chatcard__action"
+            data-testid="wa-chatcard-open-workbench"
             onClick={() => openOverlayWithArticle(articleId)}
           >
             <Icon name="square-pen" size={16} />

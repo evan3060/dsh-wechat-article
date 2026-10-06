@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { HotspotItem, HotspotItemDigest as HotspotItemDigestDto } from '@/shared/contract';
-import { WewriteRpcError } from '../lib/rpc';
+import { WeChatArticleRpcError } from '../lib/rpc';
 import {
   clearDigestFailure,
   describeDigestError,
@@ -15,9 +15,9 @@ import { useStore } from '../store';
 
 /**
  * 热榜逐条 AI 速览块（uiux v0.3 §1，视觉规格 uiux-v0.3-design §D1）：
- * 行内嵌入件（无卡框），挂在 .ww-hotspot__expand 内原文链接行之后。
+ * 行内嵌入件（无卡框），挂在 .wa-hotspot__expand 内原文链接行之后。
  * 首次展开自动生成（懒加载），loading 骨架 / 错误 ErrorNote+重试 / ready 全量渲染。
- * 逐条缓存 localStorage dsh-wewrite.hotspot-item-digests，键 = URL，当日有效（次日重生成）。
+ * 逐条缓存 localStorage dsh-wechat-article.hotspot-item-digests，键 = URL，当日有效（次日重生成）。
  *
  * QA qa-digest 修复（2026-08-20）：
  * - 错误文案走 describeDigestError（LLM 错误人话映射，JSON 墙兜底）；
@@ -26,7 +26,7 @@ import { useStore } from '../store';
  * - loading 骨架下给时长预期；source=title 时徽记改「仅凭标题」并附参考性 caption。
  */
 
-const DIGEST_ITEM_STORAGE_KEY = 'dsh-wewrite.hotspot-item-digests';
+const DIGEST_ITEM_STORAGE_KEY = 'dsh-wechat-article.hotspot-item-digests';
 
 type DigestSource = 'article' | 'title';
 
@@ -93,16 +93,16 @@ function DigestLine({ line }: { line: string }) {
   const leadPrefix = LEAD_PREFIXES.find((prefix) => line.startsWith(prefix));
   if (leadPrefix) {
     return (
-      <p className="ww-hotspot__digest-lead">
-        <span className="ww-hotspot__digest-prefix">{leadPrefix}</span>
+      <p className="wa-hotspot__digest-lead">
+        <span className="wa-hotspot__digest-prefix">{leadPrefix}</span>
         {line.slice(leadPrefix.length)}
       </p>
     );
   }
   if (line.startsWith('·')) {
     return (
-      <p className="ww-hotspot__digest-point">
-        <span className="ww-hotspot__digest-mark" aria-hidden="true">·</span>
+      <p className="wa-hotspot__digest-point">
+        <span className="wa-hotspot__digest-mark" aria-hidden="true">·</span>
         <span>{line.replace(/^·\s*/, '')}</span>
       </p>
     );
@@ -149,7 +149,7 @@ export function HotspotItemDigest({ item }: { item: HotspotItem }) {
       setEntry(next);
       setPhase('idle');
     } catch (error) {
-      const failureMessage = error instanceof WewriteRpcError ? error.message : String(error);
+      const failureMessage = error instanceof WeChatArticleRpcError ? error.message : String(error);
       rememberDigestFailure(item.url, failureMessage);
       setMessage(failureMessage);
       setPhase('error');
@@ -169,28 +169,28 @@ export function HotspotItemDigest({ item }: { item: HotspotItem }) {
   const sourceLabel = entry?.source === 'article' ? '读了原文' : '仅凭标题';
 
   return (
-    <div className="ww-hotspot__digest" data-testid="ww-hotspot-digest">
-      <div className="ww-hotspot__digest-head">
-        <span className="ww-hotspot__digest-icon"><Icon name="wand-sparkles" size={16} /></span>
-        <span className="ww-hotspot__digest-label">AI 速览</span>
+    <div className="wa-hotspot__digest" data-testid="wa-hotspot-digest">
+      <div className="wa-hotspot__digest-head">
+        <span className="wa-hotspot__digest-icon"><Icon name="wand-sparkles" size={16} /></span>
+        <span className="wa-hotspot__digest-label">AI 速览</span>
         {entry && !busy && phase !== 'error' ? (
           <>
             <span
-              className={`ww-hotspot__digest-source ww-hotspot__digest-source--${entry.source}`}
-              data-testid="ww-hotspot-digest-source"
+              className={`wa-hotspot__digest-source wa-hotspot__digest-source--${entry.source}`}
+              data-testid="wa-hotspot-digest-source"
             >
               <Icon name={entry.source === 'article' ? 'check' : 'eye-off'} size={12} />
               {sourceLabel}
             </span>
-            <span className="ww-hotspot__digest-time">{formatTime(entry.generatedAtIso)}</span>
+            <span className="wa-hotspot__digest-time">{formatTime(entry.generatedAtIso)}</span>
           </>
         ) : null}
       </div>
-      <div className="ww-hotspot__digest-body" data-testid="ww-hotspot-digest-body">
+      <div className="wa-hotspot__digest-body" data-testid="wa-hotspot-digest-body">
         {busy ? (
           <>
             <SkeletonBlock lines={3} />
-            <p className="ww-hotspot__digest-wait">AI 生成中，约 5–10 秒</p>
+            <p className="wa-hotspot__digest-wait">AI 生成中，约 5–10 秒</p>
           </>
         ) : phase === 'error' ? (
           <ErrorNote
@@ -200,7 +200,7 @@ export function HotspotItemDigest({ item }: { item: HotspotItem }) {
               <Button
                 variant="outline"
                 size="sm"
-                data-testid="ww-hotspot-digest-retry"
+                data-testid="wa-hotspot-digest-retry"
                 onClick={() => {
                   clearDigestFailure(item.url);
                   void generate();
@@ -218,7 +218,7 @@ export function HotspotItemDigest({ item }: { item: HotspotItem }) {
               .filter((line) => line.length > 0)
               .map((line, index) => <DigestLine key={`d${index}`} line={line} />)}
             {entry.source === 'title' ? (
-              <p className="ww-hotspot__digest-note">未读原文，解读仅供参考，请以原文为准</p>
+              <p className="wa-hotspot__digest-note">未读原文，解读仅供参考，请以原文为准</p>
             ) : null}
           </>
         ) : null}

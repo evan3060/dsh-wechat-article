@@ -10,10 +10,10 @@ import { z } from 'zod';
 
 const ToolErrorSchema = z.strictObject({ code: z.string().min(1), message: z.string() });
 
-/** wewrite_run 终态枚举（execute 只在终态 settle；running/queued 等非终态拒）。 */
+/** wechat_run 终态枚举（execute 只在终态 settle；running/queued 等非终态拒）。 */
 export const RUN_TOOL_TERMINAL_STATUSES = ['succeeded', 'failed', 'cancelled', 'interrupted'] as const;
 
-/** wewrite_run 的 canonical value（execute 返回，过 output.schema 校验）。 */
+/** wechat_run 的 canonical value（execute 返回，过 output.schema 校验）。 */
 export const RunToolValueSchema = z.strictObject({
   ok: z.boolean(),
   runId: z.string().min(1),
@@ -36,13 +36,13 @@ export const RunToolMetaSchema = z.strictObject({
   digest: z.string().max(200).optional(),
   gatePassed: z.boolean().optional(),
   error: ToolErrorSchema.optional(),
-  tool: z.literal('wewrite_run'),
+  tool: z.literal('wechat_run'),
   topic: z.string(),
 });
 export type RunToolMeta = z.infer<typeof RunToolMetaSchema>;
 
 export const PushToolMetaSchema = z.strictObject({
-  tool: z.literal('wewrite_push_draft'),
+  tool: z.literal('wechat_push_draft'),
   articleId: z.string().min(1),
   title: z.string(),
   ok: z.boolean(),
@@ -52,7 +52,7 @@ export const PushToolMetaSchema = z.strictObject({
 export type PushToolMeta = z.infer<typeof PushToolMetaSchema>;
 
 export const RewriteToolMetaSchema = z.strictObject({
-  tool: z.literal('wewrite_rewrite'),
+  tool: z.literal('wechat_rewrite'),
   charsIn: z.number().int().min(0),
   charsOut: z.number().int().min(0),
   ok: z.boolean(),
@@ -69,7 +69,7 @@ export const SuggestTopicItemSchema = z.strictObject({
 export type SuggestTopicItem = z.infer<typeof SuggestTopicItemSchema>;
 
 export const SuggestTopicsMetaSchema = z.strictObject({
-  tool: z.literal('wewrite_suggest_topics'),
+  tool: z.literal('wechat_suggest_topics'),
   topics: z.array(SuggestTopicItemSchema),
 });
 export type SuggestTopicsMeta = z.infer<typeof SuggestTopicsMetaSchema>;

@@ -1,7 +1,7 @@
 /**
- * /wewrite slash 命令（M3 / AC-M3-01，architecture §3）：host ctx.commands 注册，
+ * /wechat-article slash 命令（M3 / AC-M3-01，architecture §3）：host ctx.commands 注册，
  * handler 不进模型（S9：command/run 是 known 事件，未注册 commandview 也有通用卡兜底）。
- * handler 解析 invocation.rawInput → startRun（等效调用 wewrite_run 工具的启动语义）；
+ * handler 解析 invocation.rawInput → startRun（等效调用 wechat_run 工具的启动语义）；
  * recordInput: true——输入记录进会话（回放可见）。注册失败 try/catch 降级（D8）。
  *
  * 宿主契约（dsh-commands normalizeDefinition/normalizeResult，rc.7 实测三处硬校验）：
@@ -13,12 +13,12 @@
  */
 
 import type { HostContext } from '../platform';
-import type { WeWriteService } from '../service';
+import type { WeChatArticleService } from '../service';
 
-const COMMAND_NAME = 'wewrite';
+const COMMAND_NAME = 'wechat';
 
 /** 宿主 CommandResult 的最小结构面（窄面刻意，真源在 @deepseek-ai/dsh-commands）。 */
-export interface WewriteCommandResult {
+export interface WeChatArticleCommandResult {
   readonly kind: 'success' | 'error';
   readonly text: string;
 }
@@ -33,32 +33,32 @@ function parseTopic(rawInput: string): string {
   return rawInput.trim();
 }
 
-export function registerWewriteCommand(ctx: HostContext, service: WeWriteService): (() => void) | undefined {
+export function registerWeChatArticleCommand(ctx: HostContext, service: WeChatArticleService): (() => void) | undefined {
   try {
     const registered = ctx.commands?.register({
       name: COMMAND_NAME,
-      description: '启动 WeWrite 写作管线：/wewrite <主题>（等效调用 wewrite_run，进度见写作台运行历史）',
+      description: '启动 公众号写作管线：/wechat <主题>（等效调用 wechat_run，进度见写作台运行历史）',
       input: { hint: '文章主题（留空则从热榜选题）' },
       recordInput: true,
-      handler: async (invocation: CommandInvocationLike): Promise<WewriteCommandResult> => {
+      handler: async (invocation: CommandInvocationLike): Promise<WeChatArticleCommandResult> => {
         const topic = parseTopic(invocation?.rawInput ?? '');
         if (!topic) {
           return {
             kind: 'error',
-            text: '请在 /wewrite 后带上主题，例如 /wewrite Cloudflare Workers 冷启动实测',
+            text: '请在 /wechat-article 后带上主题，例如 /wechat-article Cloudflare Workers 冷启动实测',
           };
         }
         const { runId } = service.startRun({ trigger: 'manual', params: { topicMode: 'fixed', topic, imageCount: 0 } });
         return {
           kind: 'success',
-          text: `已提交写作管线（runId: ${runId}），进度可在 WeWrite 写作台运行历史查看`,
+          text: `已提交写作管线（runId: ${runId}），进度可在 公众号写作台运行历史查看`,
         };
       },
     });
     if (typeof registered === 'function') return registered as () => void;
     return undefined;
   } catch (error) {
-    console.warn(`dsh-wewrite: /wewrite 命令注册降级：${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`dsh-wechat-article: /wechat-article 命令注册降级：${error instanceof Error ? error.message : String(error)}`);
     return undefined;
   }
 }

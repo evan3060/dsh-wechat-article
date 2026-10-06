@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import type { ReactNode } from 'react';
 import type { RunParams, SnapshotResponse } from '@/shared/contract';
 import type { Translate } from './lib/context';
-import type { WewriteRpc } from './lib/rpc';
+import type { WeChatArticleRpc } from './lib/rpc';
 import type { Route } from './lib/router';
 import { normalizeRoute } from './lib/router';
 import type { ToastApi, ToastMessage } from './components/Toast';
@@ -23,8 +23,8 @@ export interface GenerationState {
   overlayOpen: boolean;
 }
 
-export interface WewriteStore {
-  rpc: WewriteRpc;
+export interface WeChatArticleStore {
+  rpc: WeChatArticleRpc;
   t: Translate;
   route: Route;
   navigate(route: Route): void;
@@ -42,15 +42,15 @@ export interface WewriteStore {
   narrow: boolean;
 }
 
-const StoreContext = createContext<WewriteStore | null>(null);
+const StoreContext = createContext<WeChatArticleStore | null>(null);
 
-export function useStore(): WewriteStore {
+export function useStore(): WeChatArticleStore {
   const store = useContext(StoreContext);
-  if (!store) throw new Error('useStore 必须在 WewriteProvider 内使用');
+  if (!store) throw new Error('useStore 必须在 WeChatArticleProvider 内使用');
   return store;
 }
 
-export function WewriteProvider({ rpc, t, narrow, children }: { rpc: WewriteRpc; t: Translate; narrow: boolean; children: ReactNode }) {
+export function WeChatArticleProvider({ rpc, t, narrow, children }: { rpc: WeChatArticleRpc; t: Translate; narrow: boolean; children: ReactNode }) {
   const [route, setRoute] = useState<Route>({ kind: 'home' });
   const [snapshot, setSnapshot] = useState<SnapshotState>({ status: 'loading' });
   const [toastMessages, setToastMessages] = useState<readonly ToastMessage[]>([]);
@@ -132,7 +132,7 @@ export function WewriteProvider({ rpc, t, narrow, children }: { rpc: WewriteRpc;
     return snapshot.data.runs.find((run) => run.id === generation.runId);
   }, [snapshot, generation]);
 
-  const value = useMemo<WewriteStore>(
+  const value = useMemo<WeChatArticleStore>(
     () => ({
       rpc,
       t,

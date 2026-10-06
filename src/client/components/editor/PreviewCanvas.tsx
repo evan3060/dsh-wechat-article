@@ -6,7 +6,7 @@ import { Icon } from '../Icon';
 /**
  * 375px 微信预览画布（PreviewCanvas，DESIGN §4.2）。
  *
- * - 底 --ww-canvas-bg 固定浅色（公众号文章永远浅底，不随宿主主题）。
+ * - 底 --wa-canvas-bg 固定浅色（公众号文章永远浅底，不随宿主主题）。
  * - 内容 = article/preview 的真实产物 HTML（与推草稿箱载荷字节一致，AC-8）；
  *   宿主侧已转义 script/iframe，画布内为 UGC 排版主题域。
  * - 刷新期间画布角标「渲染中…」，不整屏遮罩。
@@ -51,24 +51,24 @@ export function PreviewCanvas({
   const zoomId = String(Math.round(zoom * 100));
 
   return (
-    <section className="ww-preview" aria-label="微信预览画布">
-      <div className="ww-preview__bar">
-        <span className="ww-preview__bar-title">
+    <section className="wa-preview" aria-label="微信预览画布">
+      <div className="wa-preview__bar">
+        <span className="wa-preview__bar-title">
           <Icon name="smartphone" size={16} /> 微信预览
         </span>
-        <div className="ww-preview__controls">
+        <div className="wa-preview__controls">
           <Menu
             open={zoomMenuOpen}
             anchor={
               <button
                 type="button"
-                className="ww-preview__zoom"
+                className="wa-preview__zoom"
                 aria-label="预览缩放"
                 aria-expanded={zoomMenuOpen}
                 aria-haspopup="menu"
                 onClick={() => setZoomMenuOpen((open) => !open)}
               >
-                <span className="ww-preview__zoom-value">{zoomId}%</span>
+                <span className="wa-preview__zoom-value">{zoomId}%</span>
                 <Icon name="chevron-down" size={16} />
               </button>
             }
@@ -87,14 +87,14 @@ export function PreviewCanvas({
             anchor={
               <button
                 type="button"
-                className="ww-preview__theme"
+                className="wa-preview__theme"
                 aria-label="切换排版主题"
                 aria-expanded={themeMenuOpen}
                 aria-haspopup="menu"
                 onClick={() => setThemeMenuOpen((open) => !open)}
               >
                 <Icon name="palette" size={16} />
-                <span className="ww-preview__theme-name">{theme}</span>
+                <span className="wa-preview__theme-name">{theme}</span>
                 <Icon name="chevron-down" size={16} />
               </button>
             }
@@ -109,27 +109,27 @@ export function PreviewCanvas({
           />
         </div>
       </div>
-      <div className="ww-preview__frame">
-        {rendering ? <span className="ww-preview__rendering">渲染中…</span> : null}
+      <div className="wa-preview__frame">
+        {rendering ? <span className="wa-preview__rendering">渲染中…</span> : null}
         {html === undefined ? (
-          <div className="ww-preview__skeleton" aria-hidden="true">
-            <span className="ww-preview__skeleton-title" />
-            <span className="ww-preview__skeleton-meta" />
-            <span className="ww-preview__skeleton-line" />
-            <span className="ww-preview__skeleton-line" />
-            <span className="ww-preview__skeleton-line ww-preview__skeleton-line--short" />
+          <div className="wa-preview__skeleton" aria-hidden="true">
+            <span className="wa-preview__skeleton-title" />
+            <span className="wa-preview__skeleton-meta" />
+            <span className="wa-preview__skeleton-line" />
+            <span className="wa-preview__skeleton-line" />
+            <span className="wa-preview__skeleton-line wa-preview__skeleton-line--short" />
           </div>
         ) : (
           <div
-            className="ww-preview__canvas"
+            className="wa-preview__canvas"
             style={zoom !== 1 ? { transform: `scale(${zoom})`, transformOrigin: 'top center' } : undefined}
           >
-            <header className="ww-preview__canvas-head">
-              <p className="ww-preview__account">{author}</p>
-              <p className="ww-preview__date">{today}</p>
+            <header className="wa-preview__canvas-head">
+              <p className="wa-preview__account">{author}</p>
+              <p className="wa-preview__date">{today}</p>
             </header>
             {/* preview-ugc：宿主渲染的微信排版产物（已过转义），UGC 域允许富文本 */}
-            <div className="ww-preview__content" dangerouslySetInnerHTML={{ __html: html }} />
+            <div className="wa-preview__content" dangerouslySetInnerHTML={{ __html: html }} />
           </div>
         )}
       </div>

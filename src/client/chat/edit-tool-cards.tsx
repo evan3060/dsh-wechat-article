@@ -5,7 +5,7 @@ import { cardT, type CardT } from './card-text';
 import { safeParsePushMeta, safeParseRewriteMeta, type PushToolMeta, type RewriteToolMeta } from './meta';
 
 /**
- * tool.call.toolview keyed `wewrite_rewrite` / `wewrite_push_draft` 渲染器（M2）。
+ * tool.call.toolview keyed `wechat_rewrite` / `wechat_push_draft` 渲染器（M2）。
  *
  * 两工具 settled 即终态（无轮询）：meta 驱动终态卡；schema 不符 → resultView 文本
  * 兜底（AC-M2-07 同 run 卡）；running → 标题 + 「运行中」占位。
@@ -40,14 +40,14 @@ function CardShell({
   children: ReactNode;
 }) {
   return (
-    <article className={`ww-chatcard ww-chatcard--edit${tone === 'danger' ? ' ww-chatcard--failed' : ''}`}>
-      <header className="ww-chatcard__head">
-        <span className="ww-chatcard__kind">{kind}</span>
-        <span className="ww-chatcard__title" title={title}>
+    <article className={`wa-chatcard wa-chatcard--edit${tone === 'danger' ? ' wa-chatcard--failed' : ''}`}>
+      <header className="wa-chatcard__head">
+        <span className="wa-chatcard__kind">{kind}</span>
+        <span className="wa-chatcard__title" title={title}>
           {title}
         </span>
       </header>
-      <div className="ww-chatcard__body">{children}</div>
+      <div className="wa-chatcard__body">{children}</div>
     </article>
   );
 }
@@ -57,7 +57,7 @@ function FallbackEditCard({ block, kind }: { block: ToolResultNodeLike; kind: st
   const text = textFromBlocks(block.resultView?.content) || textFromBlocks(block.content);
   return (
     <CardShell kind={kind} title={block.resultView?.title ?? block.callView?.title ?? ''}>
-      <p className="ww-chatcard__digest">{text}</p>
+      <p className="wa-chatcard__digest">{text}</p>
     </CardShell>
   );
 }
@@ -65,9 +65,9 @@ function FallbackEditCard({ block, kind }: { block: ToolResultNodeLike; kind: st
 function ErrorBody({ code, message, t }: { code?: string; message: string; t: CardT }) {
   return (
     <>
-      <p className="ww-chatcard__digest">{message}</p>
-      {code === 'wechat-40164' ? <p className="ww-chatcard__note">{t('chat.errorHint.ip')}</p> : null}
-      {code ? <span className="ww-chatcard__code">{code}</span> : null}
+      <p className="wa-chatcard__digest">{message}</p>
+      {code === 'wechat-40164' ? <p className="wa-chatcard__note">{t('chat.errorHint.ip')}</p> : null}
+      {code ? <span className="wa-chatcard__code">{code}</span> : null}
     </>
   );
 }
@@ -78,7 +78,7 @@ export function RewriteToolCard({ block, t }: EditToolCardProps) {
   if (!isSettled(block)) {
     return (
       <CardShell kind={kind} title={block.callView?.title ?? kind}>
-        <p className="ww-chatcard__note">{tt('chat.running')}</p>
+        <p className="wa-chatcard__note">{tt('chat.running')}</p>
       </CardShell>
     );
   }
@@ -96,7 +96,7 @@ export function RewriteToolCard({ block, t }: EditToolCardProps) {
       kind={kind}
       title={tt('chat.rewriteDone', { from: String(meta.charsIn), to: String(meta.charsOut) })}
     >
-      <span className="ww-chatcard__code">
+      <span className="wa-chatcard__code">
         {meta.charsIn} → {meta.charsOut}
       </span>
     </CardShell>
@@ -109,7 +109,7 @@ export function PushToolCard({ block, t }: EditToolCardProps) {
   if (!isSettled(block)) {
     return (
       <CardShell kind={kind} title={block.callView?.title ?? kind}>
-        <p className="ww-chatcard__note">{tt('chat.running')}</p>
+        <p className="wa-chatcard__note">{tt('chat.running')}</p>
       </CardShell>
     );
   }
@@ -124,7 +124,7 @@ export function PushToolCard({ block, t }: EditToolCardProps) {
   }
   return (
     <CardShell kind={kind} title={`《${meta.title}》 · ${tt('chat.pushDone')}`}>
-      {meta.mediaId ? <span className="ww-chatcard__code">{meta.mediaId}</span> : null}
+      {meta.mediaId ? <span className="wa-chatcard__code">{meta.mediaId}</span> : null}
     </CardShell>
   );
 }

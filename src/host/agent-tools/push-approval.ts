@@ -1,14 +1,14 @@
 /**
  * 推送审批闸（OD-1 / ADR-014，architecture §4.4）：tools/pre-execute waterfall 监听器，
- * 对 wewrite_push_draft 的调用返回 {kind:'ask'} 触发宿主审批面板；他人调用必须 next() 透传。
+ * 对 wechat_push_draft 的调用返回 {kind:'ask'} 触发宿主审批面板；他人调用必须 next() 透传。
  * fail-closed 双层：武装失败（ctx.on 抛错/返回非函数）→ 调用方不注册 push 工具（D14①）；
  * 句柄被回收后 execute 体内 isArmed() 复查拒绝（D14②）——未确认的微信 API 调用构造上不可达。
  */
 
 import type { HostContext } from '../platform';
-import type { WeWriteService } from '../service';
+import type { WeChatArticleService } from '../service';
 
-export const PUSH_TOOL_NAME = 'wewrite_push_draft';
+export const PUSH_TOOL_NAME = 'wechat_push_draft';
 
 /** 审批句柄：stop 交入口统一回收；isArmed 供 push 工具 execute 兜底复查。 */
 export interface PushApprovalHandle {
@@ -23,7 +23,7 @@ function extractArticleId(args: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-function safeLookupTitle(service: WeWriteService, articleId: string): string {
+function safeLookupTitle(service: WeChatArticleService, articleId: string): string {
   try {
     const title = articleId ? service.lookupArticleTitle(articleId) : '';
     if (typeof title === 'string' && title) return title;
@@ -34,7 +34,7 @@ function safeLookupTitle(service: WeWriteService, articleId: string): string {
 }
 
 /** 门禁结论（AC-M1-05：确认提示须含文章标题与门禁结论）：从文章状态同步推断。 */
-function describeGateVerdict(service: WeWriteService, articleId: string): string {
+function describeGateVerdict(service: WeChatArticleService, articleId: string): string {
   try {
     const hit = service.listArticles().find((item) => item.id === articleId);
     if (!hit) return '门禁结论请以写作台报告为准';
@@ -46,7 +46,7 @@ function describeGateVerdict(service: WeWriteService, articleId: string): string
   }
 }
 
-export function composePushAskReason(service: WeWriteService, args: unknown): string {
+export function composePushAskReason(service: WeChatArticleService, args: unknown): string {
   const articleId = extractArticleId(args);
   const title = safeLookupTitle(service, articleId);
   return `即将把《${title}》推送到微信公众号草稿箱（仅保存草稿，不群发）。${describeGateVerdict(service, articleId)}`;
@@ -56,7 +56,7 @@ export function composePushAskReason(service: WeWriteService, args: unknown): st
  * 武装审批监听器；未武装返回 undefined（由 registerAgentTools 捕获后不注册 push 工具）。
  * 注意：armed 状态是每个句柄独立的——实例回收即失效，不受其他实例遗留影响。
  */
-export function createPushApproval(ctx: HostContext, service: WeWriteService): PushApprovalHandle | undefined {
+export function createPushApproval(ctx: HostContext, service: WeChatArticleService): PushApprovalHandle | undefined {
   let stop: (() => void) | undefined;
   try {
     stop = ctx.on?.('tools/pre-execute', ((exec: unknown, next: unknown) => {
@@ -67,11 +67,11 @@ export function createPushApproval(ctx: HostContext, service: WeWriteService): P
       return { kind: 'ask', reason: composePushAskReason(service, call.arguments) };
     }) as (...args: unknown[]) => unknown);
   } catch (error) {
-    console.warn(`dsh-wewrite: 推送审批监听器注册失败（push 工具不注册，fail-closed）：${error instanceof Error ? error.message : String(error)}`);
+    console.warn(`dsh-wechat-article: 推送审批监听器注册失败（push 工具不注册，fail-closed）：${error instanceof Error ? error.message : String(error)}`);
     return undefined;
   }
   if (typeof stop !== 'function') {
-    console.warn('dsh-wewrite: tools/pre-execute 订阅未返回回收函数（push 工具不注册，fail-closed）');
+    console.warn('dsh-wechat-article: tools/pre-execute 订阅未返回回收函数（push 工具不注册，fail-closed）');
     return undefined;
   }
   let armed = true;
@@ -90,7 +90,7 @@ export function createPushApproval(ctx: HostContext, service: WeWriteService): P
 }
 
 /** 公开契约（测试钉死）：返回 disposer；未武装返回 undefined。 */
-export function armPushApproval(ctx: HostContext, service: WeWriteService): (() => void) | undefined {
+export function armPushApproval(ctx: HostContext, service: WeChatArticleService): (() => void) | undefined {
   const handle = createPushApproval(ctx, service);
   return handle ? handle.stop : undefined;
 }

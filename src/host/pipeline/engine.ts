@@ -108,7 +108,7 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
   const nowIso = () => (deps.now ? deps.now().toISOString() : new Date().toISOString());
   const controllers = new Map<string, AbortController>();
   const completionWaiters = new Map<string, Set<(record: RunRecord | undefined) => void>>();
-  const ABORT_SENTINEL = Symbol('wewrite-abort');
+  const ABORT_SENTINEL = Symbol('wechat-article-abort');
   function throwAborted(): never {
     throw ABORT_SENTINEL;
   }
@@ -183,7 +183,7 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
             const outcome = await streamLlmText(
               deps.llm,
               {
-                purpose: 'wewrite-pipeline',
+                purpose: 'wechat-article-pipeline',
                 system: pipelineSystemPrompt(),
                 user: outlineUserPrompt(topic, params.brief, retryMissing),
                 ...llmCall,
@@ -221,7 +221,7 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
             const outcome = await streamLlmText(
               deps.llm,
               {
-                purpose: 'wewrite-pipeline',
+                purpose: 'wechat-article-pipeline',
                 system: pipelineSystemPrompt(),
                 user: draftUserPrompt(topic, outline, params.brief, retryMissing, retryInvisible),
                 ...llmCall,

@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>dsh-wewrite 架构图</title>
+<title>dsh-wechat-article 架构图</title>
 <!--
-  dsh-wewrite 架构图真源（2026-08-19，替换 codex 文生图版）。
+  dsh-wechat-article 架构图真源（2026-08-19，替换 codex 文生图版）。
   配色/字体与官网 site.css、插件 tokens.css 同源：#4176E6 纯色平涂、1px 线框、零渐变零 emoji，
   图标 = lucide-react 同库 stroke 1.75（与插件 UI 的 Icon.tsx 同语言）。
   渲染：tools/diagram/render.mjs（playwright 截图，出网箭头按 #mod-wechat 实测坐标定位）。
@@ -181,7 +181,7 @@
 <body>
 <div id="canvas">
   <div class="topbar">
-    <div class="topbar__title"><b>dsh-wewrite</b> · v0.1 · 单包双端 Cordis 插件</div>
+    <div class="topbar__title"><b>dsh-wechat-article</b> · v0.1 · 单包双端 Cordis 插件</div>
     <div class="legend">
       <span class="legend__item"><span class="legend__solid"></span>本机调用</span>
       <span class="legend__item"><span class="legend__dash"></span>出本机</span>
@@ -201,7 +201,7 @@
             <span class="chip">React 18</span>
             <span class="chip">http://127.0.0.1:3080</span>
           </span>
-          <span class="cap">会话视图环 · wewrite tab</span>
+          <span class="cap">会话视图环 · wechat-article tab</span>
         </div>
         <div class="client__panels">
           <span class="panel-pill">选题</span>
@@ -232,8 +232,8 @@
         </div>
         <div class="card plugin">
           <div class="plugin__head">
-            <span class="plugin__name">dsh-wewrite 宿主插件</span>
-            <span class="chip chip--blue">WeWriteService · 唯一写权威 · 操作串行化</span>
+            <span class="plugin__name">dsh-wechat-article 宿主插件</span>
+            <span class="chip chip--blue">WeChatArticleService · 唯一写权威 · 操作串行化</span>
           </div>
           <div class="modules">
             <div class="card mod" id="mod-pipeline">

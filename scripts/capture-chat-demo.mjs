@@ -2,7 +2,7 @@
 /**
  * 对话深度结合演示采集 v2（2026-08-24）：v1 教训——关浏览器=exec.signal 取消管线
  * （两条 run interrupted）。v2 全程保持浏览器打开直到 turn 真正完成（tail 行出现），
- * 单会话两条链路串行：① agent 工具路径 ② /wewrite 命令路径。429 速率限制=智谱免费层
+ * 单会话两条链路串行：① agent 工具路径 ② /wechat-article 命令路径。429 速率限制=智谱免费层
  * 瞬时限流，脚本对单条失败容忍（截图现状并继续）。
  */
 import { chromium } from 'playwright';
@@ -37,26 +37,26 @@ if (!(await getComposer().count())) {
 }
 
 async function waitForTail(timeoutMs) {
-  const tail = page.locator('.ww-chatcard--tail').first();
+  const tail = page.locator('.wa-chatcard--tail').first();
   const t0 = Date.now();
   let count = 0;
   while (Date.now() - t0 < timeoutMs) {
     if (await tail.count()) {
-      const prev = count; count = await page.locator('.ww-chatcard--tail').count();
-      if (count > 0 && count === prev && count > 0) { await sleep(4000); if (await page.locator('.ww-chatcard--tail').count() === count) return count; }
+      const prev = count; count = await page.locator('.wa-chatcard--tail').count();
+      if (count > 0 && count === prev && count > 0) { await sleep(4000); if (await page.locator('.wa-chatcard--tail').count() === count) return count; }
     }
     await sleep(5000);
   }
-  return await page.locator('.ww-chatcard--tail').count();
+  return await page.locator('.wa-chatcard--tail').count();
 }
 
 // ---------- ① agent 工具路径 ----------
 const c1 = getComposer();
 await c1.click();
-await c1.fill('用 wewrite 写一篇题为《为什么程序员应该写技术博客》的公众号短文');
+await c1.fill('用 wechat 写一篇题为《为什么程序员应该写技术博客》的公众号短文');
 await c1.press('Enter');
 console.log('① 消息已发送');
-const runCard = page.locator('.ww-chatcard--run').first();
+const runCard = page.locator('.wa-chatcard--run').first();
 if (await runCard.waitFor({ state: 'visible', timeout: 300000 }).catch(() => null)) {
   console.log('① 运行卡出现 ✅');
   await sleep(20000);
@@ -70,14 +70,14 @@ if (await runCard.waitFor({ state: 'visible', timeout: 300000 }).catch(() => nul
   await shot(page, '09-chat-debug-notool');
 }
 
-// ---------- ② /wewrite 命令路径 ----------
+// ---------- ② /wechat-article 命令路径 ----------
 await sleep(2000);
 const c2 = getComposer();
 if (await c2.count()) {
   await c2.click();
-  await c2.fill('/wewrite 一句话起稿：AI 时代的公众号写作工作流');
+  await c2.fill('/wechat-article 一句话起稿：AI 时代的公众号写作工作流');
   await c2.press('Enter');
-  console.log('② /wewrite 已提交');
+  console.log('② /wechat-article 已提交');
   await sleep(6000);
   await shot(page, '11-chat-command');
   const tails2 = await waitForTail(420000);

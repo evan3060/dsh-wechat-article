@@ -42,8 +42,8 @@ export function EditorHeadActions({
 }) {
   const [pushMenuOpen, setPushMenuOpen] = useState(false);
   return (
-    <div className="ww-editor-head__actions">
-      <div className="ww-view-tabs" role="tablist" aria-label="编辑器视图">
+    <div className="wa-editor-head__actions">
+      <div className="wa-view-tabs" role="tablist" aria-label="编辑器视图">
         {VIEW_TABS.map((tab) => (
           <button
             key={tab.key}
@@ -51,12 +51,12 @@ export function EditorHeadActions({
             role="tab"
             aria-selected={view === tab.key}
             aria-label={tab.label}
-            data-testid={`ww-view-tab-${tab.key}`}
-            className={view === tab.key ? 'ww-view-tab ww-view-tab--active' : 'ww-view-tab'}
+            data-testid={`wa-view-tab-${tab.key}`}
+            className={view === tab.key ? 'wa-view-tab wa-view-tab--active' : 'wa-view-tab'}
             onClick={() => onViewChange(tab.key)}
           >
             <Icon name={tab.icon} size={16} />
-            <span className="ww-view-tab__label">{tab.label}</span>
+            <span className="wa-view-tab__label">{tab.label}</span>
           </button>
         ))}
       </div>
@@ -66,7 +66,7 @@ export function EditorHeadActions({
         anchor={
           <button
             type="button"
-            className="ww-menu-trigger ww-menu-trigger--accent"
+            className="wa-menu-trigger wa-menu-trigger--accent"
             aria-expanded={pushMenuOpen}
             aria-haspopup="menu"
             onClick={() => setPushMenuOpen((open) => !open)}

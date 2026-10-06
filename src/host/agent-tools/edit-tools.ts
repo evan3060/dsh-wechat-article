@@ -1,11 +1,11 @@
 /**
- * wewrite_rewrite / wewrite_push_draft（Spec §5 / architecture §4.2）。
+ * wechat_rewrite / wechat_push_draft（Spec §5 / architecture §4.2）。
  * rewrite：透传 service.rewriteText（既有 45s 超时语义保留），返回值携带改写全文
  * ——模型需要看到改写结果才能继续对话。push：执行前先过审批 armed 复查（fail-closed D14②）。
  */
 
-import type { ToolRunContext, WewriteToolDefinition } from '../platform';
-import type { WeWriteService } from '../service';
+import type { ToolRunContext, WeChatArticleToolDefinition } from '../platform';
+import type { WeChatArticleService } from '../service';
 import type { PushApprovalHandle } from './push-approval';
 import { asArgsRecord, callView, errorToCodeMessage, jsonSchema, optionalString, resultView, textBlocks, toolError } from './output-helpers';
 
@@ -32,9 +32,9 @@ function parseRewriteArgs(args: unknown): RewriteArgs | { error: ReturnType<type
   return { text, instruction, title };
 }
 
-export function buildRewriteTool(service: WeWriteService): WewriteToolDefinition {
+export function buildRewriteTool(service: WeChatArticleService): WeChatArticleToolDefinition {
   return {
-    name: 'wewrite_rewrite',
+    name: 'wechat_rewrite',
     description: 'AI 改写一段文字（保持原意，按 instruction 调整风格），返回改写后全文。适合对文章段落做口语化、缩写、换角度等精修。',
     timeoutMs: 60000,
     parameters: {
@@ -56,7 +56,7 @@ export function buildRewriteTool(service: WeWriteService): WewriteToolDefinition
         const record = asArgsRecord(value);
         const ok = record.ok !== false;
         return {
-          tool: 'wewrite_rewrite',
+          tool: 'wechat_rewrite',
           charsIn: typeof asArgsRecord(args).text === 'string' ? String(asArgsRecord(args).text).length : 0,
           charsOut: typeof record.text === 'string' ? record.text.length : 0,
           ok,
@@ -91,15 +91,15 @@ export function buildRewriteTool(service: WeWriteService): WewriteToolDefinition
   };
 }
 
-export function buildPushTool(service: WeWriteService, approval: PushApprovalHandle): WewriteToolDefinition {
+export function buildPushTool(service: WeChatArticleService, approval: PushApprovalHandle): WeChatArticleToolDefinition {
   return {
-    name: 'wewrite_push_draft',
+    name: 'wechat_push_draft',
     description:
       '把一篇已渲染的文章推送到微信公众号草稿箱（只进草稿箱，不群发；群发永远由号主在公众平台后台人工执行）。'
-      + '调用前会弹出确认面板（含文章标题与门禁结论），未经确认不会发起任何微信 API 调用。article_id 可先用 wewrite_list_articles 查询。',
+      + '调用前会弹出确认面板（含文章标题与门禁结论），未经确认不会发起任何微信 API 调用。article_id 可先用 wechat_list_articles 查询。',
     timeoutMs: 120000,
     parameters: {
-      article_id: { type: 'string', required: true, description: '文章 ID（wewrite_list_articles 可查）' },
+      article_id: { type: 'string', required: true, description: '文章 ID（wechat_list_articles 可查）' },
     },
     output: {
       schema: jsonSchema(
@@ -122,7 +122,7 @@ export function buildPushTool(service: WeWriteService, approval: PushApprovalHan
         const ok = record.ok !== false;
         const articleId = typeof record.articleId === 'string' && record.articleId ? record.articleId : String(asArgsRecord(args).article_id ?? '');
         return {
-          tool: 'wewrite_push_draft',
+          tool: 'wechat_push_draft',
           articleId,
           title: typeof record.title === 'string' ? record.title : '',
           ok,
@@ -133,9 +133,9 @@ export function buildPushTool(service: WeWriteService, approval: PushApprovalHan
     },
     async execute(args: unknown, _exec: ToolRunContext) {
       const articleId = optionalString(asArgsRecord(args).article_id);
-      if (!articleId) return toolError('article-required', '缺少 article_id 参数：请先用 wewrite_list_articles 查询文章 ID');
+      if (!articleId) return toolError('article-required', '缺少 article_id 参数：请先用 wechat_list_articles 查询文章 ID');
       if (!approval.isArmed()) {
-        return toolError('push-approval-unavailable', '审批通道不可用，已拒绝推送（fail-closed）：请到 WeWrite 写作台手动推送');
+        return toolError('push-approval-unavailable', '审批通道不可用，已拒绝推送（fail-closed）：请到 公众号写作台手动推送');
       }
       try {
         const result = await service.pushArticleDraft(articleId);

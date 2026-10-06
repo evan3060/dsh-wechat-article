@@ -11,14 +11,14 @@ import { setOverlayOpen } from '../chat/overlay-bridge';
  * 不抢输入框焦点、不插入任何文本。
  * S8 纪律：owner（InputZone）是 point-in-time 快照，本组件不自订阅、不读宿主态。
  */
-export function WewriteComposerButton(_props: InputZonePropsLike) {
+export function WeChatArticleComposerButton(_props: InputZonePropsLike) {
   const t = cardT();
   return (
-    <div className="ww-composer-entry">
+    <div className="wa-composer-entry">
       <button
         type="button"
-        className="ww-composer-entry__btn"
-        data-testid="ww-composer-entry"
+        className="wa-composer-entry__btn"
+        data-testid="wa-composer-entry"
         aria-label={t('chat.workbenchEntry')}
         title={t('chat.workbenchEntry')}
         onClick={() => setOverlayOpen(true)}

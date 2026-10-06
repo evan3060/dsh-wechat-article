@@ -1,12 +1,12 @@
 /**
- * WeWrite 词典（zh 为主、en 结构预留——Spec §10 i18n 口径）。
+ * 公众号词典（zh 为主、en 结构预留——Spec §10 i18n 口径）。
  *
- * 注册到 ctx.locale.register('wewrite', …)；面板内长文案为 DESIGN.md §9 写死的
+ * 注册到 ctx.locale.register('wechat-article', …)；面板内长文案为 DESIGN.md §9 写死的
  * 真实中文产品文案（真源在页面层，不进词典）；词典只收导航/通用动作/连接态
  * 这类跨页复用短语。bind() 拿到的 t 缺键时回退 zh 原文。
  */
 
-export const LOCALE_NAMESPACE = 'wewrite';
+export const LOCALE_NAMESPACE = 'wechat-article';
 
 export const zh = {
   'topbar.write': '写作',
@@ -71,9 +71,9 @@ export const zh = {
   'chat.workbenchEntry': '打开写作台',
 } as const;
 
-export type WewriteLocaleKey = keyof typeof zh;
+export type WeChatArticleLocaleKey = keyof typeof zh;
 
-export const en: Record<WewriteLocaleKey, string> = {
+export const en: Record<WeChatArticleLocaleKey, string> = {
   'topbar.write': 'Write',
   'topbar.hotspots': 'Topics',
   'topbar.schedule': 'Schedule',

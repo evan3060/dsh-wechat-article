@@ -1,4 +1,4 @@
-# Spec - dsh-wewrite v0.1.0
+# Spec - dsh-wechat-article v0.1.0
 
 > 生成日期：2026-08-18（项目总监 Jarvis）
 > 基于：PRD v0.1（docs/prd.md）+ 架构文档 v0.1（docs/tech-architecture.md，含 F1-F32 事实清单与 ADR-001~009）+ UIUX 方向文档 v0.1（docs/uiux-direction.md）
@@ -63,7 +63,7 @@
 
 ## 5. RPC 端点清单（锁定——开发唯一依据；契约载体=`src/shared/contract.ts` zod schema，双端共用；OpenAPI 不适用因无独立 HTTP 服务，架构 §6）
 
-通道 `dsh-wewrite`，authority `loopback`（F13）。payload/response 全过 zod 双端校验。
+通道 `dsh-wechat-article`，authority `loopback`（F13）。payload/response 全过 zod 双端校验。
 
 | endpoint | request | response | 说明 |
 |---|---|---|---|
@@ -86,7 +86,7 @@
 | `wechat/pushDraft` | `{articleId}` | `{mediaId,thumbMediaId}` | 用户显式动作；全链路校验 |
 | `wechat/diagnose` | `{}` | `{reachable,ipWhitelisted?,errcode?,hint}` | 40164 特判 |
 
-## 6. 数据表清单（锁定——storage domain `dsh-wewrite` v1；zod schema 为权威，字段详见架构 §5）
+## 6. 数据表清单（锁定——storage domain `dsh-wechat-article` v1；zod schema 为权威，字段详见架构 §5）
 
 | 表/全局 | 核心字段 | 约束 |
 |---|---|---|
@@ -100,18 +100,18 @@
 
 | 页面 | 面板内路由 | 核心组件 | 对应 RPC | Token 主题 |
 |---|---|---|---|---|
-| 写作台 | `/` | 今日待办/最近文章卡/主题输入条 | snapshot, run/start | ww-light |
-| 选题中心 | `/hotspots` | 热榜列表/关键词订阅右栏 | hotspots/fetch, run/start | ww-light |
-| 文章库 | `/articles` | 表格列表/状态点/门禁分列 | article/list | ww-light |
-| 编辑器（下钻） | `/articles/:id` | CodeMirror 6 左栏+375px 预览画布右栏+状态栏 | article/get,save,preview, wechat/pushDraft | ww-light |
-| 定时任务 | `/schedule` | 排队队列/执行历史 | schedule/*, snapshot | ww-light |
-| 设置 | `/settings` | 左栏 5 组竖导航（公众号/模型/图片/代理/发布纪律） | config/*, credentials/*, llm/options, wechat/diagnose | ww-light |
+| 写作台 | `/` | 今日待办/最近文章卡/主题输入条 | snapshot, run/start | wa-light |
+| 选题中心 | `/hotspots` | 热榜列表/关键词订阅右栏 | hotspots/fetch, run/start | wa-light |
+| 文章库 | `/articles` | 表格列表/状态点/门禁分列 | article/list | wa-light |
+| 编辑器（下钻） | `/articles/:id` | CodeMirror 6 左栏+375px 预览画布右栏+状态栏 | article/get,save,preview, wechat/pushDraft | wa-light |
+| 定时任务 | `/schedule` | 排队队列/执行历史 | schedule/*, snapshot | wa-light |
+| 设置 | `/settings` | 左栏 5 组竖导航（公众号/模型/图片/代理/发布纪律） | config/*, credentials/*, llm/options, wechat/diagnose | wa-light |
 
-挂载：conversation.view tab（F9 官方证实路径）注册 WeWrite 工作台；rc.6 无全局槽位（F12 UNKNOWN，已按 tab 形态锁定）。宿主 settings.plugin.item 挂「入口卡」。浅/深主题跟随宿主 `--dsw-*`（不自带主题开关）。
+挂载：conversation.view tab（F9 官方证实路径）注册 公众号工作台；rc.6 无全局槽位（F12 UNKNOWN，已按 tab 形态锁定）。宿主 settings.plugin.item 挂「入口卡」。浅/深主题跟随宿主 `--dsw-*`（不自带主题开关）。
 
 ## 8. 设计 Token（锁定；Phase 2 产出 design-tokens.json + tokens.css 双产物）
 
-- 主色：`--ww-accent` = 宿主 deepseek-500 `#4176E6` 纯色平涂（dark: `#679EFE`）；**零渐变 token**（P0②由构造保证）
+- 主色：`--wa-accent` = 宿主 deepseek-500 `#4176E6` 纯色平涂（dark: `#679EFE`）；**零渐变 token**（P0②由构造保证）
 - 中性：全量引用宿主 `--dsw-alias-*`（bg-base #FFFFFF / label-primary #0F1115 / border-l1-l4 黑 alpha 分层）
 - 字体：系统中文栈（PingFang SC 回退）+ JetBrains Mono 等宽用于 slug/模型名/规则 ID/RRULE 原文
 - 语义色：success `#22C55E` / warn `#F59E0B` / error `#EC1313`（挂宿主 state token）

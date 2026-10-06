@@ -1,5 +1,5 @@
 /**
- * MiniMax 海螺图片生成。凭据走 WEWRITE_IMG_MINIMAX（Bearer）。
+ * MiniMax 海螺图片生成。凭据走 WECHAT_ARTICLE_IMG_MINIMAX（Bearer）。
  */
 
 import { declareProvider } from './transport';

@@ -76,8 +76,8 @@ export function ArticleManage({
         anchor={
           <button
             type="button"
-            className="ww-editor-head__menu"
-            data-testid="ww-article-menu"
+            className="wa-editor-head__menu"
+            data-testid="wa-article-menu"
             aria-expanded={menuOpen}
             aria-haspopup="menu"
             aria-label="文章管理"
@@ -111,7 +111,7 @@ export function ArticleManage({
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setRenameOpen(false)}>取消</Button>
-            <Button variant="primary" size="sm" className="ww-btn-accent" onClick={() => void confirmRename()} disabled={renameBusy || renameDraft.trim().length === 0}>
+            <Button variant="primary" size="sm" className="wa-btn-accent" onClick={() => void confirmRename()} disabled={renameBusy || renameDraft.trim().length === 0}>
               {renameBusy ? '保存中…' : '保存'}
             </Button>
           </>
@@ -119,7 +119,7 @@ export function ArticleManage({
       >
         <input
           type="text"
-          className="ww-rename-input"
+          className="wa-rename-input"
           value={renameDraft}
           onChange={(event) => setRenameDraft(event.target.value)}
           onKeyDown={(event) => {
@@ -138,13 +138,13 @@ export function ArticleManage({
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setDeleteOpen(false)}>取消</Button>
-            <Button variant="ghost" size="sm" className="ww-danger-ghost" onClick={() => void confirmDelete()} disabled={deleteBusy}>
+            <Button variant="ghost" size="sm" className="wa-danger-ghost" onClick={() => void confirmDelete()} disabled={deleteBusy}>
               {deleteBusy ? '删除中…' : '确认删除'}
             </Button>
           </>
         }
       >
-        <p className="ww-modal-note">
+        <p className="wa-modal-note">
           <CodeChip>{article.slug}</CodeChip> 将从本地存储移除。
         </p>
       </Modal>

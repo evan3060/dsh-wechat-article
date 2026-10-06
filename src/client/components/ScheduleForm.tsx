@@ -71,20 +71,20 @@ export function ScheduleForm({
       footer={
         <>
           <Button variant="ghost" size="sm" onClick={onCancel}>取消</Button>
-          <Button variant="primary" size="sm" className="ww-btn-accent" onClick={() => onSubmit({ id: initial?.id, name: name.trim(), rrule, timeZone })} disabled={busy || nameInvalid}>
+          <Button variant="primary" size="sm" className="wa-btn-accent" onClick={() => onSubmit({ id: initial?.id, name: name.trim(), rrule, timeZone })} disabled={busy || nameInvalid}>
             {busy ? '保存中…' : submitLabel}
           </Button>
         </>
       }
     >
-      <div className="ww-schedule-form">
-        <label className="ww-field">
-          <span className="ww-field__label">任务名</span>
+      <div className="wa-schedule-form">
+        <label className="wa-field">
+          <span className="wa-field__label">任务名</span>
           <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="如：每日早四点" aria-label="任务名" />
         </label>
-        <div className="ww-field-row">
-          <label className="ww-field ww-field--time">
-            <span className="ww-field__label">时刻</span>
+        <div className="wa-field-row">
+          <label className="wa-field wa-field--time">
+            <span className="wa-field__label">时刻</span>
             <Input
               type="number"
               min={0}
@@ -93,7 +93,7 @@ export function ScheduleForm({
               onChange={(event) => setHour(clamp(parseInt(event.target.value, 10), 0, 23))}
               aria-label="小时"
             />
-            <span className="ww-field__colon">:</span>
+            <span className="wa-field__colon">:</span>
             <Input
               type="number"
               min={0}
@@ -104,15 +104,15 @@ export function ScheduleForm({
             />
           </label>
         </div>
-        <div className="ww-field">
-          <span className="ww-field__label">重复</span>
-          <div className="ww-field__pills" role="radiogroup" aria-label="重复规则">
+        <div className="wa-field">
+          <span className="wa-field__label">重复</span>
+          <div className="wa-field__pills" role="radiogroup" aria-label="重复规则">
             <Pill active={repeat === 'once'} onClick={() => setRepeat('once')}>一次</Pill>
             <Pill active={repeat === 'daily'} onClick={() => setRepeat('daily')}>每天</Pill>
             <Pill active={repeat === 'weekly'} onClick={() => setRepeat('weekly')}>每周</Pill>
           </div>
           {repeat === 'weekly' ? (
-            <div className="ww-field__pills" role="radiogroup" aria-label="星期">
+            <div className="wa-field__pills" role="radiogroup" aria-label="星期">
               {WEEKDAYS.map((day) => (
                 <Pill key={day.id} active={weekday === day.id} onClick={() => setWeekday(day.id)}>
                   {day.label}
@@ -121,13 +121,13 @@ export function ScheduleForm({
             </div>
           ) : null}
         </div>
-        <div className="ww-rrule-preview">
-          <span className="ww-rrule-preview__label">
+        <div className="wa-rrule-preview">
+          <span className="wa-rrule-preview__label">
             <Icon name="calendar-clock" size={16} /> {describeRrule(rrule)}
           </span>
           <CodeChip>{rrule}</CodeChip>
         </div>
-        <p className="ww-field-note">发布目标：草稿箱（锁定）——群发不可撤回，v0.1 不提供自动群发。</p>
+        <p className="wa-field-note">发布目标：草稿箱（锁定）——群发不可撤回，v0.1 不提供自动群发。</p>
       </div>
     </Modal>
   );

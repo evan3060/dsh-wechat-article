@@ -32,9 +32,9 @@ for (const name of ['对话', 'Chat']) {
 }
 
 const report = await page.evaluate(() => ({
-  chatcards: document.querySelectorAll('[class*="ww-chatcard"]').length,
-  runCards: document.querySelectorAll('.ww-chatcard--run').length,
-  tails: document.querySelectorAll('.ww-chatcard--tail').length,
+  chatcards: document.querySelectorAll('[class*="wa-chatcard"]').length,
+  runCards: document.querySelectorAll('.wa-chatcard--run').length,
+  tails: document.querySelectorAll('.wa-chatcard--tail').length,
   openDeskBtns: [...document.querySelectorAll('button')].filter((b) => /打开写作台|在写作台打开/.test(b.textContent || '')).length,
   timelineSnippet: (document.querySelector('[class*=conversation], main')?.textContent || '').slice(0, 300),
 }));

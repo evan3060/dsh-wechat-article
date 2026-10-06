@@ -49,7 +49,7 @@ export function EditorSplitter({ ratio, onRatioChange }: { ratio: number; onRati
 
   return (
     <div
-      className="ww-splitter"
+      className="wa-splitter"
       role="separator"
       aria-orientation="vertical"
       aria-label="调整编辑与预览分栏"

@@ -42,7 +42,7 @@ export function RewritePopover({
   target: RewriteTarget;
   /** 文章题名（语气锚点，可选——useArticleDoc 的 article.title 传下来）。 */
   title?: string;
-  /** 相对 .ww-editor 容器的定位（§D2-4 定位与避让规则）。 */
+  /** 相对 .wa-editor 容器的定位（§D2-4 定位与避让规则）。 */
   left: number;
   top: number;
   onApply: (target: RewriteTarget, nextText: string) => void;
@@ -114,10 +114,10 @@ export function RewritePopover({
   return (
     <div
       ref={popoverRef}
-      className="ww-rewrite-popover"
+      className="wa-rewrite-popover"
       role="dialog"
       aria-label="AI 改写"
-      data-testid="ww-rewrite-popover"
+      data-testid="wa-rewrite-popover"
       style={{ left, top }}
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
@@ -128,8 +128,8 @@ export function RewritePopover({
     >
       <input
         ref={inputRef}
-        className="ww-rewrite-popover__input"
-        data-testid="ww-rewrite-input"
+        className="wa-rewrite-popover__input"
+        data-testid="wa-rewrite-input"
         aria-label="改写指令"
         placeholder="一句话说明怎么改，如：更口语一点"
         value={instruction}
@@ -141,15 +141,15 @@ export function RewritePopover({
         }}
       />
       {error ? (
-        <p className="ww-rewrite-popover__error" data-testid="ww-rewrite-error" role="alert">{error}</p>
+        <p className="wa-rewrite-popover__error" data-testid="wa-rewrite-error" role="alert">{error}</p>
       ) : null}
-      <div className="ww-rewrite-popover__quickrow">
+      <div className="wa-rewrite-popover__quickrow">
         {QUICK_CHIPS.map((chip) => (
           <button
             key={chip.id}
             type="button"
-            className="ww-rewrite-popover__quick"
-            data-testid={`ww-rewrite-quick-${chip.id}`}
+            className="wa-rewrite-popover__quick"
+            data-testid={`wa-rewrite-quick-${chip.id}`}
             disabled={busy}
             onClick={() => void submit(chip.label)}
           >
@@ -157,17 +157,17 @@ export function RewritePopover({
           </button>
         ))}
       </div>
-      <div className="ww-rewrite-popover__foot">
-        <Button variant="ghost" size="sm" data-testid="ww-rewrite-cancel" onClick={cancel}>
+      <div className="wa-rewrite-popover__foot">
+        <Button variant="ghost" size="sm" data-testid="wa-rewrite-cancel" onClick={cancel}>
           {busy ? '中止' : '取消'}
         </Button>
         <Button
           variant="primary"
           size="sm"
-          className="ww-btn-accent"
-          data-testid="ww-rewrite-go"
+          className="wa-btn-accent"
+          data-testid="wa-rewrite-go"
           disabled={busy}
-          icon={<Icon name={busy ? 'loader-circle' : 'wand-sparkles'} size={16} className={busy ? 'ww-spin' : undefined} />}
+          icon={<Icon name={busy ? 'loader-circle' : 'wand-sparkles'} size={16} className={busy ? 'wa-spin' : undefined} />}
           onClick={() => void submit(instruction)}
         >
           {busy ? '改写中…' : '改写'}

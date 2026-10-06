@@ -31,12 +31,12 @@ for (let i = 0; i < n && !(gotFinal && gotApproval); i++) {
   const st = await page.evaluate(() => {
     const approval = /allow|refuse|允许|拒绝|批准/.test(document.body.innerText.slice(0, 6000));
     return {
-      run: document.querySelectorAll('.ww-chatcard--run').length,
-      tail: document.querySelectorAll('.ww-chatcard--tail').length,
+      run: document.querySelectorAll('.wa-chatcard--run').length,
+      tail: document.querySelectorAll('.wa-chatcard--tail').length,
       openDesk: [...document.querySelectorAll('button')].filter((b) => /打开写作台|在写作台打开/.test(b.textContent || '')).length,
       approval,
-      runText: (document.querySelector('.ww-chatcard--run')?.textContent || '').replace(/\s+/g, ' ').slice(0, 140),
-      tailText: (document.querySelector('.ww-chatcard--tail')?.textContent || '').replace(/\s+/g, ' ').slice(0, 120),
+      runText: (document.querySelector('.wa-chatcard--run')?.textContent || '').replace(/\s+/g, ' ').slice(0, 140),
+      tailText: (document.querySelector('.wa-chatcard--tail')?.textContent || '').replace(/\s+/g, ' ').slice(0, 120),
     };
   });
   console.log(`[${i}] ${label} →`, JSON.stringify(st));
@@ -47,10 +47,10 @@ for (let i = 0; i < n && !(gotFinal && gotApproval); i++) {
     if (st.openDesk > 0) {
       await page.getByRole('button', { name: /打开写作台|在写作台打开/ }).first().click().catch(() => {});
       await sleep(3500);
-      if (await page.locator('[data-testid="ww-overlay"]').count()) {
+      if (await page.locator('[data-testid="wa-overlay"]').count()) {
         await shot(page, '13-chat-card-to-overlay');
         console.log('卡片→浮层联动 ✅');
-        await page.locator('[data-testid="ww-overlay-close"]').first().click().catch(async () => page.keyboard.press('Escape'));
+        await page.locator('[data-testid="wa-overlay-close"]').first().click().catch(async () => page.keyboard.press('Escape'));
         await sleep(1500);
       }
     }

@@ -1,8 +1,8 @@
-# dsh-wewrite 产品需求文档（PRD）
+# dsh-wechat-article 产品需求文档（PRD）
 
 | 项 | 内容 |
 |---|---|
-| 产品 | dsh-wewrite — DeepSeek Harness（DSH）微信公众号 AI 写作插件 |
+| 产品 | dsh-wechat-article — DeepSeek Harness（DSH）微信公众号 AI 写作插件 |
 | 版本 | v0.1 PRD（对应产品 v0.1.0） |
 | 作者 | 许清楚（MVP 专家团 PM），2026-08-18 |
 | 状态 | Draft → 待项目总监裁决 |
@@ -22,7 +22,7 @@
 3. **开源管线工具上手门槛高**：md2wechat-skill（Go CLI）等项目的用户反馈集中在三件事——微信 IP 白名单/凭据配置踩坑、CLI 环境折腾、出稿慢（知乎实测者原话大意：「用那点时间我手动排版 10 篇都够了」，来源见 §3）。
 4. **没有定时化**：以上方案几乎都没有「RRULE 定时跑管线 → 自动进草稿箱」的能力，内容创作者每天仍要手动触发。
 
-**现在怎么解决、为什么不行**：Jerry 自己用一条私有 skill 管线（workspace-writer/wewrite，经真实生产使用检验）解决了这个问题，但它是个人工作流，不是产品——没有配置界面、没有安装路径、没有对外文档。**dsh-wewrite 要做的就是把这条已验证的管线产品化给所有 DSH 用户**：一条命令安装，界面里配好凭据和供应商，之后「给主题出一篇」或「每天 4 点自动跑」。
+**现在怎么解决、为什么不行**：Jerry 自己用一条私有 skill 管线（workspace-writer/wechat-article，经真实生产使用检验）解决了这个问题，但它是个人工作流，不是产品——没有配置界面、没有安装路径、没有对外文档。**dsh-wechat-article 要做的就是把这条已验证的管线产品化给所有 DSH 用户**：一条命令安装，界面里配好凭据和供应商，之后「给主题出一篇」或「每天 4 点自动跑」。
 
 ---
 
@@ -43,7 +43,7 @@
 
 ### 2.3 核心场景（3 个）
 
-**场景 A — 给定主题出稿**：用户在 DSH Web UI 里对 dsh-wewrite 说「写一篇关于 XX 的公众号文章」。管线执行：选题确认 → 联网研究 → 写作 → 质量门禁 → 排版 → 配图 → 推草稿箱。用户在编辑器 tab 里预览微信样式、改稿、重新推草稿。全程 10-20 分钟，人只在选题确认和终稿过目两个点介入。
+**场景 A — 给定主题出稿**：用户在 DSH Web UI 里对 dsh-wechat-article 说「写一篇关于 XX 的公众号文章」。管线执行：选题确认 → 联网研究 → 写作 → 质量门禁 → 排版 → 配图 → 推草稿箱。用户在编辑器 tab 里预览微信样式、改稿、重新推草稿。全程 10-20 分钟，人只在选题确认和终稿过目两个点介入。
 
 **场景 B — 热门榜选题**：用户打开「热门榜」面板，看到 AI/科技向热榜（Hacker News、微博/知乎等聚合）条目，点选一条 → 以该热点为主题进入场景 A。
 
@@ -59,14 +59,14 @@
 |---|---|---|---|---|---|
 | [doocs/md](https://github.com/doocs/md) | Web 编辑器（开源） | Markdown→微信图文渲染、主题样式、多图床、AI 助手小功能、浏览器扩展 [doocs/cose](https://github.com/doocs/cose) 多平台同步 | 排版体验成熟、社区大（微信排版事实标准）、可私有部署 | **只有排版**：无选题、无管线、无定时；进草稿箱仍靠复制粘贴/扩展 | 免费开源 |
 | [geekjourneyx/md2wechat-skill](https://github.com/geekjourneyx/md2wechat-skill) | Go CLI（开源，最接近的竞品） | md→微信 HTML→封面配图→就绪检查→推草稿箱；6 家图片供应商；小绿书图文 | 管线化、机器可读命令、有 inspect 诊断；**同样把「微信固定出网代理」和 gpt-image-2 作为关键路径**（与我们判断一致，交叉验证） | 用户反馈三大痛点：① 微信 IP 白名单（errcode 40164）与凭据门槛高；② CLI/Go 环境对非开发者不友好，出稿慢；③ 免费模式只出提示词不出成品 HTML，免费/付费边界后置暴露（来源：[zread issue 分析](https://zread.ai/geekjourneyx/md2wechat-skill/5-issues-and-feedbacks)） | 免费模式 + 付费 API 代理（md2wechat.com） |
-| [imraywang/wewrite](https://github.com/imraywang/wewrite) | Agent Skill（开源） | 抓热点→选题→搜素材→按人格出稿→审稿→配图/排版/推草稿 | 全流程概念与我们最像 | 纯 skill 无 UI、无配置界面、无定时调度、无安装分发形态；绑定特定 Agent 运行时 | 免费开源 |
+| [imraywang/wechat-article](https://github.com/imraywang/wechat-article) | Agent Skill（开源） | 抓热点→选题→搜素材→按人格出稿→审稿→配图/排版/推草稿 | 全流程概念与我们最像 | 纯 skill 无 UI、无配置界面、无定时调度、无安装分发形态；绑定特定 Agent 运行时 | 免费开源 |
 | [iniwap/AIWriteX](https://github.com/iniwap/AIWriteX) | CrewAI 多智能体平台（开源） | 热点选题+实时搜索+AI 创作+排版+配图+自动发布 | 功能面最全、有 Web UI | 重（Python/CrewAI 独立部署）、不是 DSH 原生、自动发布与「人过目」价值观冲突 | 免费开源（自托管成本高） |
 | [135编辑器](https://www.135editor.com/) | SaaS | 135AI 写作（40+ 场景）、「生文 Agent」3 秒成文+排版、SVG 互动 | 运营者基数大（官网宣称 2000 万，UNVERIFIED 宣传口径）、排版模板海量 | 闭源 SaaS、订阅制、模型非用户自己的、风格不可控、内容数据过第三方 | 免费+订阅会员 |
 | [壹伴](https://yiban.io/) | 浏览器插件（闭源） | 嵌入公众号后台，AI 编辑器+模板+数据+定时群发 60+ 功能 | 与公众号后台贴合最紧、上手快 | 闭源、年订阅（搜索口径约 400 万用户，UNVERIFIED）；群发自动化强但无「管线可复现」概念 | 基础免费+年订阅 |
 | [讯飞绘文](https://turbodesk.xfyun.cn/) | 企业 SaaS | AI 写作+选题+配图+排版+发布一体（宣称通用稿 30 分钟） | 企业级全流程、多平台分发 | 偏企业定价、闭源黑盒、重平台 | 套餐/按量 |
-| [titanwings/dsh-automation](https://github.com/titanwings/dsh-automation) | DSH 插件（非竞品，参照物） | RRULE 调度、每次 dispatch 起新 Agent+Session、运行历史带 revision 快照、Web UI tab | 证明了 DSH 内做定时任务+UI tab 的完整形态（FACTS 实测 v0.1.5） | 不做内容生产，与 dsh-wewrite 无重叠 | 免费开源 |
+| [titanwings/dsh-automation](https://github.com/titanwings/dsh-automation) | DSH 插件（非竞品，参照物） | RRULE 调度、每次 dispatch 起新 Agent+Session、运行历史带 revision 快照、Web UI tab | 证明了 DSH 内做定时任务+UI tab 的完整形态（FACTS 实测 v0.1.5） | 不做内容生产，与 dsh-wechat-article 无重叠 | 免费开源 |
 
-**DSH 生态空白确认**：`AdamPlatin123/awesome-dsh-plugins`（[仓库](https://github.com/AdamPlatin123/awesome-dsh-plugins)）的研究目录收录约 60 个插件（dsh-weixin-bot / dsh-wecom-bot 为 IM 桥接，dsh-feishu-bot 为飞书 bot 等），**没有任何一个微信公众号写作/发布管线插件**。PLUGINS.md 登记清单目前仅 4 条且支持 PR 收录（约定 `@dsh-external/*` scope + repo 打 `dsh-plugin` topic）。→ **dsh-wewrite 是 DSH 生态内该品类第一个**，先发窗口明确。
+**DSH 生态空白确认**：`AdamPlatin123/awesome-dsh-plugins`（[仓库](https://github.com/AdamPlatin123/awesome-dsh-plugins)）的研究目录收录约 60 个插件（dsh-weixin-bot / dsh-wecom-bot 为 IM 桥接，dsh-feishu-bot 为飞书 bot 等），**没有任何一个微信公众号写作/发布管线插件**。PLUGINS.md 登记清单目前仅 4 条且支持 PR 收录（约定 `@dsh-external/*` scope + repo 打 `dsh-plugin` topic）。→ **dsh-wechat-article 是 DSH 生态内该品类第一个**，先发窗口明确。
 
 ### 3.2 热门榜数据源可用性（场景 B 的供给面）
 
@@ -78,7 +78,7 @@
 
 **结论**：选题数据源供给无风险；合规姿态是「用户自备聚合源 URL + 公开 HN API」。
 
-### 3.3 我们的差异化（用户为什么选 dsh-wewrite）
+### 3.3 我们的差异化（用户为什么选 dsh-wechat-article）
 
 1. **DSH 原生，一条命令装进已有生产力工具**：竞品要么是独立部署的重平台（AIWriteX），要么是裸 CLI（md2wechat-skill），要么是 SaaS（135/壹伴/讯飞）。我们装进用户每天已经在用的本地 harness，模型、会话、UI tab 全部复用，零额外部署。
 2. **管线源自真实生产使用**：不是 prompt demo，是 Jerry 实际运营纪律的产物（质量门禁 --strict、编号配图一致性门禁都在管线里）。
@@ -306,7 +306,7 @@ RICE 口径：Reach=受影响用户占比（1-10）；Impact=单用户影响（0
 在干净机器上执行并通过以下全程，才判定 v0.1 交付完成：
 
 1. `npx @deepseek-ai/dsh plugin --profile web add github:jerryjiao/dsh-wewrite#v0.1.0` 安装且无 plain dependency 警告（dsh.bundle 生效、no-build 生效）。
-2. 打开 DSH Web UI → 出现 dsh-wewrite tab → 空状态引导到设置页。
+2. 打开 DSH Web UI → 出现 dsh-wechat-article tab → 空状态引导到设置页。
 3. 设置页填入测试公众号凭据 + 任一模型供应商 → 连接测试通过（含故意填错 secret 看到分类报错）。
 4. 热门榜面板出现 HN 条目；选一条「以此为题」。
 5. 管线跑通：四阶段进度可见 → 门禁报告生成 → 编辑器可改稿、预览 <1s 刷新。
@@ -321,7 +321,7 @@ RICE 口径：Reach=受影响用户占比（1-10）；Impact=单用户影响（0
 
 - doocs/md: https://github.com/doocs/md ／ 在线版 https://md.doocs.org/ ／ 扩展 https://github.com/doocs/cose
 - md2wechat-skill: https://github.com/geekjourneyx/md2wechat-skill ／ issue 痛点分析 https://zread.ai/geekjourneyx/md2wechat-skill/5-issues-and-feedbacks ／ 凭据与 IP 白名单 https://zread.ai/geekjourneyx/md2wechat-skill/23-wechat-credentials-and-ip-whitelist
-- wewrite（imraywang）: https://github.com/imraywang/wewrite
+- wechat-article（imraywang）: https://github.com/imraywang/wechat-article
 - AIWriteX: https://github.com/iniwap/AIWriteX
 - workbuddy-wechat-publisher: https://github.com/cnproduct/workbuddy-wechat-publisher
 - DailyHotApi: https://github.com/imsyy/DailyHotApi
