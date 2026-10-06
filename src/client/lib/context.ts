@@ -174,7 +174,7 @@ export interface GenericResultViewLike {
   readonly content?: readonly ContentBlockLike[];
 }
 
-/** 运行中的工具调用（dsh-client-runtime RunningToolCall 的消费面）。 */
+/** 运行中的工具调用（dsh-client-ui-chat RunningToolCall 的消费面（rc.2 起；rc.7 时在 dsh-client-runtime））。 */
 export interface RunningToolCallLike {
   readonly callId: string;
   readonly name: string;
