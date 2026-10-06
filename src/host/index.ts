@@ -3,14 +3,21 @@
  * inject 声明缺失时 Cordis 拒载（loud failure）；服务面在 apply 内再做 feature detection
  * 降级（§9.1）。凭据只经 ctx.credentials，storage 只走 domain（ADR-005/006）。
  *
- * inject 含 'commands'（M3 /wechat-article）：cordis getter 对未声明服务直接抛
+ * inject 含 'commands'（M3 /wechat）：cordis getter 对未声明服务直接抛
  * "cannot get property ... without inject"，ctx.commands?. 可选链防不住——必须静态声明。
  * pending 风险评估（conversationEvents 教训）：dsh-base 是「every dsh profile 的 shared
  * core」（宿主 dsh-base/cordis.patch.yml 头注释），commands 行在其 bundle 内恒在，
  * 静态声明不会永久 pending——与 client 侧动态子 fiber 模式的取舍依据即此。
  */
 
-import { z } from 'zod';
+// Config 用 schemastery 而非 zod：DSH 0.2.0-rc.2 的配置投影只认原生 Schemastery schema，
+// 判定谓词是 dsh-app-boot/lib/index.js:2163 的 isNativeConfigSchema —— 要求
+// `Reflect.get(schema, Symbol.for('schemastery')) === true` 且 `typeof schema.type === 'string'`
+// 且 `schema.meta` 是对象。zod 的 '~standard' 走 StandardSchemaV1，不带该品牌符号，
+// 会投影为 status:'unsupported'（插件仍能加载，但设置页没有配置项）。
+// 注：Cordis 本身接受任意 StandardSchemaV1，所以这一步只影响**投影**，不影响**加载**。
+// 整数约束用 .step(1)（schemastery 无 .int()/.integer()）。
+import z from '@deepseek-ai/schemastery';
 import { domainSpec } from './domain';
 import { resolveLogger, type CredentialsService, type HostContext, type LlmService } from './platform';
 import { registerAgentTools } from './agent-tools';
@@ -24,7 +31,7 @@ export const inject = ['storageDomain', 'agents', 'sessions', 'connection', 'llm
 
 export const Config = z.object({
   agentToolsEnabled: z.boolean().default(false),
-  schedulerTickSeconds: z.number().int().min(5).default(30),
+  schedulerTickSeconds: z.number().step(1).min(5).default(30),
 });
 
 /** credentials 服务缺失时的内存兜底（§9.1：降级可用，警告提示）。 */
@@ -54,7 +61,7 @@ function fallbackLlm(logger: { warn(message: string): void }): LlmService {
 }
 
 export async function apply(ctx: HostContext, rawConfig: unknown): Promise<void> {
-  const config = Config.parse(rawConfig ?? {});
+  const config = Config(rawConfig ?? {});
   const logger = resolveLogger(ctx, 'dsh-wechat-article');
   const storageDomain = ctx.storageDomain;
   if (!storageDomain) {
