@@ -1,13 +1,22 @@
-import { RPC_CHANNEL } from '@/shared/contract';
+import { API_PREFIX } from '@/shared/contract';
 import type { ClientContext } from './context';
 
 /**
- * connection.rpc.call('dsh-wechat-article', endpoint, payload) 封装。
+ * 写作台端点调用封装（[rc.2] 改走 `fetch` 直连，不再经 `connection.rpc.call`）。
  *
- * - 通道名取自共享契约（RPC_CHANNEL），endpoint 受 rpcContract 双端 zod 校验，
+ * [rc.2] 传输层变更的来由（详见 src/host/rpc.ts 的注释）：
+ *   宿主的 `connection.rpc.call(channel, endpoint, …)` 把 channel 直接拼进 URL
+ *   （`${channel}/${endpoint}`.slice(1)），而自定义通道在 rc.2 无法注册：
+ *     - `rpc.handle` 内部取 `owner.webServer.register(route)`，owner 是 connection
+ *       服务自己 fiber 的 ctx，该 fiber 自 0.1.5-rc.1（2026-09-10）起不再声明
+ *       webServer 依赖 → 抛 `cannot get property "webServer" without inject`。
+ *     - `intercept('/api')` 独占，已被宿主 dsh-api-gateway 占用。
+ *   故 host 侧改注册 `connection.fetch` 精确路由（每个端点一条 `/api/dsh-wechat-article/<endpoint>`），
+ *   客户端对应直连该路径。响应信封 `{ok:true,value}` / `{ok:false,error:{code,message,details}}`
+ *   与官方 fetch 路由逐字段一致，故错误归一与微信 errcode 分类（AC-1/AC-6）逻辑原样保留。
+ *
+ * - 路径前缀取自共享契约（API_PREFIX），endpoint 受 rpcContract 双端 zod 校验，
  *   前端不做二次校验（宿主侧已拒非法形状）。
- * - 错误统一归一为 WeChatArticleRpcError，message 保留宿主原始信息；
- *   微信 errcode 分类（AC-1/AC-6）由 describeRpcError 解析展示层文案。
  */
 
 export class WeChatArticleRpcError extends Error {
@@ -73,16 +82,35 @@ export interface WeChatArticleRpc {
 }
 
 export function createRpc(ctx: ClientContext): WeChatArticleRpc {
+  // ctx 在当前实现里不再参与传输（fetch 走同源 cookie 鉴权，官方 fetch 路由同样如此），
+  // 保留参数以维持既有调用契约与后续按会话注入的可能。
+  void ctx;
   return {
     async call<T>(endpoint: string, payload: unknown = {}, signal?: AbortSignal): Promise<T> {
       try {
-        const raw = await ctx.connection.rpc.call(RPC_CHANNEL, endpoint, payload, signal);
-        // 平台信封：{result:{ok:true,value}} / {ok:false,error}（host rpc.ts 对端同契约）
-        const envelope = (raw as { result?: { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } } }).result ?? (raw as { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } });
-        if (envelope && envelope.ok === true) return envelope.value as T;
-        if (envelope && envelope.ok === false) {
-          throw new WeChatArticleRpcError(endpoint, `${envelope.error?.code ? `[${envelope.error.code}] ` : ''}${envelope.error?.message ?? `调用 ${endpoint} 失败`}`);
+        const response = await fetch(`${API_PREFIX}/${endpoint}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload ?? {}),
+          signal,
+        });
+        // 宿主在进路由前就可能拒（如 415 非 JSON content-type）；这类响应没有信封，
+        // 统一归一为 WeChatArticleRpcError，message 保留状态码便于排查。
+        const raw: unknown = await response.json().catch(() => undefined);
+        const envelope = raw as
+          | { ok?: boolean; value?: unknown; error?: { code?: string; message?: string } }
+          | undefined;
+        if (envelope?.ok === true) return envelope.value as T;
+        if (envelope?.ok === false) {
+          throw new WeChatArticleRpcError(
+            endpoint,
+            `${envelope.error?.code ? `[${envelope.error.code}] ` : ''}${envelope.error?.message ?? `调用 ${endpoint} 失败`}`,
+          );
         }
+        if (!response.ok) {
+          throw new WeChatArticleRpcError(endpoint, `调用 ${endpoint} 失败：HTTP ${response.status}`);
+        }
+        // 200 但无信封：形状漂移，直接透传原值（与旧实现同语义）
         return raw as T;
       } catch (cause) {
         if (cause instanceof WeChatArticleRpcError) throw cause;
