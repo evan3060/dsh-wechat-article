@@ -1,10 +1,20 @@
 /**
- * RPC 适配层（架构 §3：薄，只做 payload 校验 + 转发 service + 响应形状复核）。
- * 通道 authority=loopback（F13：控制无人值守写面的通道仅本机回环）。
+ * 写作台 HTTP 适配层（架构 §3：薄，只做 payload 校验 + 转发 service + 响应形状复核）。
+ *
+ * [rc.2] 旧的「通道 authority=loopback」约定随 rpc.handle 弃用一并移除：当前走
+ * `connection.fetch` 精确路由面，鉴权与来源围栏由宿主 /api 通道统一施加
+ * （connection 的 admit()/requestRejection 对每条 /api 请求生效），
+ * 插件侧不再自带通道级 authority 概念。详见 registerWeChatArticleRpc 的注释。
  */
 
-import { RPC_CHANNEL, rpcContract, type RunParams, type RpcEndpoint } from '../shared/contract';
-import type { ConnectionRpcService, HostLogger } from './platform';
+import {
+  API_PREFIX,
+  RPC_ENDPOINTS,
+  rpcContract,
+  type RunParams,
+  type RpcEndpoint,
+} from '../shared/contract';
+import type { ConnectionFetchService, HostLogger } from './platform';
 import type { WeChatArticleService } from './service';
 
 type ContractEntry = { readonly request: { safeParse(input: unknown): { success: boolean; data?: unknown; error?: { issues: { path: (string | number)[]; message: string }[] } } }; readonly response: { safeParse(input: unknown): { success: boolean; data?: unknown; error?: { issues: { path: (string | number)[]; message: string }[] } } } };
@@ -165,58 +175,92 @@ function toHostRpcErrorEnvelope(
   };
 }
 
-/** 注册 loopback 通道；rpc 服务缺失时降级为 no-op + 警告（架构 §9.1）。 */
+/**
+ * 注册写作台的 Web 面板端点（rc.2 走 `connection.fetch.register` 精确路由面）。
+ *
+ * [rc.2] 为什么不再用 `rpc.handle(channel, …)`（实测定位，勿轻易回退）：
+ *   ① handle：宿主实现内部执行 `owner.webServer.register(route)`
+ *      （dsh-client-connection/lib/index.js:640-656），而 `owner` 来自
+ *      `get rpc() { const owner = this.ctx }` —— 那是 **connection 服务自己 fiber**
+ *      的 ctx。该 fiber 自 **0.1.5-rc.1（2026-09-10）** 起不再声明 webServer 依赖
+ *      （对照实测：0.1.2-rc.1 的 inject 是 ['webServer','credentials']，
+ *        0.1.5-rc.1 起只剩 ['credentials']）→ 抛
+ *        `cannot get property "webServer" without inject`。
+ *      在插件自己的 inject 里补 webServer **无效**（实测已证）。
+ *   ② intercept('/api', …)：/api 是**独占**槽（同文件 :666
+ *      `if (this.interceptors.has(channel)) throw`），已被宿主 dsh-api-gateway 占用。
+ *   ③ Typert：本地端点注册表 TypertLocalRegistry 只有 get/hasSeen/list/subscribe，
+ *      **无 register**；本地端点仅能由代码生成的 Typert 包贡献（需 model+codec），
+ *      普通插件拿不到。且 /api interceptor 独占，无路由可承接。
+ *
+ * 改用 `connection.fetch.register`：精确 Fetch 路由面，只要求 path 在 /api 之下、
+ * 每段匹配 /^[A-Za-z0-9_$.-]+$/、methods 非空不重复；无独占限制、不依赖 webServer，
+ * 且匹配优先于 /api 的 RPC interceptor。四个官方插件在用（session-controller /
+ * session-log-export / ui-deliverables / file-upload）。
+ *
+ * 代价：fetch 面是**精确**路由（createSharedFetchHandler 用 fetchRoutes.get(pathname)
+ * 查表），故 RPC_ENDPOINTS 的每个端点各注册一条路由，而非一条前缀路由。
+ * 请求/响应信封 `{ok:true,value}` / `{ok:false,error:{code,message,details}}`
+ * 与官方 fetch 路由逐字段一致（对照 dsh-client-file-upload 的 handleFileUploadHttp），
+ * 故既有 dispatch + 双端 zod 校验 + 错误分类逻辑**原样保留**。
+ */
 export function registerWeChatArticleRpc(
-  rpc: ConnectionRpcService | undefined,
+  connection: { readonly fetch?: ConnectionFetchService } | undefined,
   service: WeChatArticleService,
   logger?: HostLogger,
 ): Promise<() => void> {
-  if (!rpc) {
-    logger?.warn('dsh-wechat-article: connection.rpc 服务缺失，Web 面板不可用（Agent 工具仍可用）');
+  if (!connection?.fetch) {
+    logger?.warn('dsh-wechat-article: connection.fetch 服务缺失，Web 面板不可用（Agent 工具仍可用）');
     return Promise.resolve(() => undefined);
   }
   const truncate = (text: string): string => (text.length > 500 ? `${text.slice(0, 500)}…` : text);
 
-  // [rc.2] RPC 通道注册：rc.2 的 handle 只收**两个**参数（rpc.d.ts:130-138），
-  // rc.7 的第三个 options（{ authority: 'loopback' }）在 rc.2 已不存在 → 已删除。
-  //
-  // 已知限制（两条路都走不通，已实测，见 docs 规划 §15.14b）：
-  //   ① handle(channel, handler)：宿主实现内部执行 `owner.webServer.register(route)`
-  //      （dsh-client-connection/lib/index.js:640-656），而 owner 来自
-  //      `get rpc() { const owner = this.ctx }` —— 那是 connection 服务**自己 fiber** 的
-  //      ctx，未声明 webServer 依赖 → 抛 "cannot get property \"webServer\" without inject"。
-  //      在插件自己的 inject 里补 webServer 无效（实测已证）。
-  //   ② intercept('/api', …)：/api 是**独占**槽（同文件 :666
-  //      `if (this.interceptors.has(channel)) throw`），已被宿主 dsh-api-gateway 占用 →
-  //      抛 "shared RPC channel \"/api\" already has an interceptor"。
-  //
-  // 因此本函数**可能抛错**，调用方（src/host/index.ts）已把它单独 try/catch 隔离：
-  // Web 面板不可用，但 Agent 工具 / 命令 / 调度器照常注册（wewrite 降级不崩纪律）。
-  const registered = rpc.handle(
-    RPC_CHANNEL,
-    async (endpoint: string, payload: unknown) => {
-      const entry = (rpcContract as Record<string, ContractEntry | undefined>)[endpoint];
-      if (!entry) throw new Error(`未知端点：${endpoint}`);
-      const parsedRequest = entry.request.safeParse(payload ?? {});
-      if (!parsedRequest.success || parsedRequest.data === undefined) {
-        const issues = parsedRequest.error?.issues ?? [];
-        throw new Error(`请求校验失败（${endpoint}）：${issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`);
+  /** 单一端点的执行体：校验 → dispatch → 复核响应形状 → 包信封。 */
+  const run = async (endpoint: string, payload: unknown): Promise<{ ok: true; value: unknown } | { ok: false; error: { code: string; message: string; details: Record<string, never> } }> => {
+    const entry = (rpcContract as Record<string, ContractEntry | undefined>)[endpoint];
+    if (!entry) throw new Error(`未知端点：${endpoint}`);
+    const parsedRequest = entry.request.safeParse(payload ?? {});
+    if (!parsedRequest.success || parsedRequest.data === undefined) {
+      const issues = parsedRequest.error?.issues ?? [];
+      throw new Error(`请求校验失败（${endpoint}）：${issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`);
+    }
+    try {
+      const result = await dispatch(service, endpoint as RpcEndpoint, parsedRequest.data as RpcPayload);
+      const checked = entry.response.safeParse(result);
+      if (!checked.success || checked.data === undefined) {
+        const issues = checked.error?.issues ?? [];
+        throw new Error(`响应形状漂移（${endpoint}）：${issues[0] ? `${issues[0].path.join('.')}: ${issues[0].message}` : '未知问题'}`);
       }
-      // 平台 RPC 信封契约（dsh-automation 真身）：handler 返回 {ok:true,value} /
-      // {ok:false,error:{code,message}}——裸值会在客户端 result 联合校验处炸（2026-08-19 实测）。
-      try {
-        const result = await dispatch(service, endpoint as RpcEndpoint, parsedRequest.data as RpcPayload);
-        const checked = entry.response.safeParse(result);
-        if (!checked.success || checked.data === undefined) {
-          const issues = checked.error?.issues ?? [];
-          throw new Error(`响应形状漂移（${endpoint}）：${issues[0] ? `${issues[0].path.join('.')}: ${issues[0].message}` : '未知问题'}`);
+      return { ok: true as const, value: checked.data };
+    } catch (error) {
+      return toHostRpcErrorEnvelope(error, truncate);
+    }
+  };
+
+  const disposers: Array<() => void | Promise<void>> = [];
+  for (const endpoint of RPC_ENDPOINTS) {
+    const path = `${API_PREFIX}/${endpoint}`;
+    const stop = connection.fetch.register({
+      path,
+      methods: ['POST'],
+      requestBody: 'buffered',
+      fetch: async (request: Request) => {
+        if (request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() !== 'application/json') {
+          return new Response('content type must be application/json', { status: 415 });
         }
-        return { ok: true as const, value: checked.data };
-      } catch (error) {
-        return toHostRpcErrorEnvelope(error, truncate);
-      }
-    },
-  );
-  if (typeof registered === 'function') return Promise.resolve(registered);
-  return registered.then((dispose) => dispose ?? (() => undefined));
+        let payload: unknown;
+        try {
+          payload = await request.json();
+        } catch {
+          return Response.json({ ok: false, error: { code: 'gateway/bad-request', message: 'body is not JSON', details: {} } }, { status: 400 });
+        }
+        return Response.json(await run(endpoint, payload));
+      },
+    });
+    if (typeof stop === 'function') disposers.push(stop);
+    else if (stop && typeof (stop as Promise<() => void>).then === 'function') disposers.push(() => void (stop as Promise<() => void>));
+  }
+  return Promise.resolve(() => {
+    for (const dispose of disposers.reverse()) void dispose();
+  });
 }

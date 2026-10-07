@@ -67,44 +67,75 @@ describe('[rc.2] RPC 降级隔离', () => {
     expect(index()).not.toMatch(/RPC_AUTHORITY/);
   });
 
-  it('rpc.ts 用 handle 的 rc.2 两参形状（无 authority 第三参）', () => {
+  it('rpc.ts 改走 connection.fetch 精确路由（不再用 rpc.handle）', () => {
     const src = read('rpc.ts');
-    expect(src).toMatch(/rpc\.handle\(\s*RPC_CHANNEL,/);
-    // 只看代码行：注释里保留 authority 的历史说明是合理的（记录 rc.7→rc.2 的迁移）
+    // 只看代码行：注释里记录历史路径（handle/intercept 为何走不通）是刻意保留的
     const code = src
       .split('\n')
       .filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
       .join('\n');
+    expect(code).toMatch(/connection\.fetch\.register\(/);
+    expect(code, '代码里不应再注册 rpc 通道').not.toMatch(/rpc\.handle\(/);
+    expect(code, '代码里不应再注册 /api 拦截器').not.toMatch(/rpc\.intercept\(/);
     expect(code, '代码里不应再出现 authority 选项').not.toMatch(/authority/);
   });
 
-  it('注释记录了两条被实测封死的路径（防止后人重走弯路）', () => {
+  it('注释记录了三条被实测封死的路径 + 断点版本（防止后人重走弯路）', () => {
     const src = read('rpc.ts');
     expect(src).toMatch(/webServer/);
-    expect(src).toMatch(/already has an interceptor/);
+    expect(src).toMatch(/interceptors\.has/);
+    expect(src).toMatch(/Typert/);
+    // 断点：connection 服务自 0.1.5-rc.1 起移除 webServer 依赖
+    expect(src).toMatch(/0\.1\.5-rc\.1/);
   });
 });
 
-describe('[rc.2] rpc.handle 的运行期降级行为', () => {
-  it('宿主抛错时 registerWeChatArticleRpc 让错误冒泡（由调用方隔离，而非静默成功）', async () => {
+describe('[rc.2] fetch 路由装配的运行期行为', () => {
+  it('某条路由注册抛错时错误冒泡给调用方（由 index.ts 的内层 catch 隔离）', async () => {
     const { registerWeChatArticleRpc } = await import('@/host/rpc');
     const boom = {
-      handle: () => {
-        throw new Error('cannot get property "webServer" without inject');
+      fetch: {
+        register: () => {
+          throw new Error('connection: exact Fetch route already registered');
+        },
       },
-      intercept: () => () => undefined,
     };
-    const service = {} as never;
-    // 错误必须冒泡给调用方 —— 否则 index.ts 的内层 catch 形同虚设
-    expect(() => registerWeChatArticleRpc(boom as never, service)).toThrow(/webServer/);
+    // 错误必须冒泡 —— 否则 index.ts 的内层 catch 形同虚设
+    expect(() => registerWeChatArticleRpc(boom as never, {} as never)).toThrow(/already registered/);
   });
 
-  it('rpc 服务缺失时仍降级为 no-op（不抛）', async () => {
+  it('connection / fetch 缺失时降级为 no-op（不抛，warn 而已）', async () => {
     const { registerWeChatArticleRpc } = await import('@/host/rpc');
     const warn = vi.fn();
-    await expect(registerWeChatArticleRpc(undefined, {} as never, { warn } as never)).resolves.toBeTypeOf(
-      'function',
-    );
-    expect(warn).toHaveBeenCalled();
+    const logger = { warn } as never;
+    // 三种缺失形态都要降级
+    for (const arg of [undefined, {}, { fetch: undefined }]) {
+      await expect(registerWeChatArticleRpc(arg as never, {} as never, logger)).resolves.toBeTypeOf('function');
+    }
+    expect(warn).toHaveBeenCalledTimes(3);
+  });
+
+  it('注册成功时为每个端点各注册一条精确路由，dispose 可回收全部', async () => {
+    const { registerWeChatArticleRpc } = await import('@/host/rpc');
+    const { API_PREFIX, RPC_ENDPOINTS } = await import('@/shared/contract');
+    const registered: string[] = [];
+    const stops: Array<() => void> = [];
+    const connection = {
+      fetch: {
+        register: (route: { path: string }) => {
+          registered.push(route.path);
+          const stop = () => undefined;
+          stops.push(stop);
+          return stop;
+        },
+      },
+    };
+    const dispose = await registerWeChatArticleRpc(connection as never, {} as never);
+    expect(registered).toHaveLength(RPC_ENDPOINTS.length);
+    expect(registered.every((p) => p.startsWith(`${API_PREFIX}/`)), '每条都在 /api 前缀下且以 / 分隔').toBe(true);
+    expect(registered).toContain(`${API_PREFIX}/snapshot`);
+    expect(registered).toContain(`${API_PREFIX}/wechat/pushDraft`);
+    dispose();
+    expect(stops).toHaveLength(RPC_ENDPOINTS.length);
   });
 });

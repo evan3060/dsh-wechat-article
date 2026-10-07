@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { registerWeChatArticleRpc } from '@/host/rpc';
-import type { ConnectionRpcService, RpcHandler } from '@/host/platform';
+import type { RpcHandler } from '@/host/platform';
 import { WeChatArticleServiceError } from '@/host/service-errors';
 import type { WeChatArticleService } from '@/host/service';
 
@@ -30,21 +30,32 @@ const HOST_RPC_ERROR_CODES = [
 
 const DIGEST_ITEM = { rank: 1, title: '某热榜条目', url: 'https://a.test/1' };
 
-/** 注册一个只关心的 digestHotspotItem 的 stub service，捕获注册进宿主 rpc 的 handler。 */
+/**
+ * rc.2：插件改走 `connection.fetch.register` 精确路由面（每个端点一条路由），
+ * 这里 stub 出 fetch 面，捕获注册进来的路由以便直接调用其 fetch handler。
+ */
 async function captureHandler(digestHotspotItem: () => Promise<never>): Promise<RpcHandler> {
   let captured: RpcHandler | undefined;
-  // rc.2：插件用 rpc.handle(channel, handler)（两参，无 authority options）。
-  // 注：真宿主上 handle 会因连接服务 fiber 缺 webServer 而抛错，但那是运行时问题；
-  // 本 stub 只验证 handler 的**行为契约**（校验 / 转发 / 信封）。
-  const rpc: ConnectionRpcService = {
-    handle(_channel, handler) {
-      captured = handler as RpcHandler;
-      return () => undefined;
+  const connection = {
+    fetch: {
+      register(route: { path: string; fetch: (request: Request) => Promise<Response> | Response }) {
+        if (!route.path.endsWith('/hotspots/digestItem')) return () => undefined;
+        captured = (async (endpoint: string, payload: unknown) => {
+          const response = await route.fetch(
+            new Request('http://x' + route.path, {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(payload),
+            }),
+          );
+          return (await response.json()) as unknown;
+        }) as RpcHandler;
+        return () => undefined;
+      },
     },
-    intercept: () => () => undefined,
   };
-  await registerWeChatArticleRpc(rpc, { digestHotspotItem } as unknown as WeChatArticleService);
-  if (!captured) throw new Error('rpc handler 未注册');
+  await registerWeChatArticleRpc(connection, { digestHotspotItem } as unknown as WeChatArticleService);
+  if (!captured) throw new Error('digestItem 路由未注册');
   return captured;
 }
 

@@ -35,17 +35,17 @@ export interface StorageDomainService {
 export type RpcHandler = (endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>;
 
 /**
- * 宿主 `connection.rpc` 窄面。[rc.2] rc.2 真实形状（dsh-client-connection
+ * 宿主 `connection.rpc` 窄面。rc.2 真实形状（dsh-client-connection
  * lib/types/rpc.d.ts:130-147）只有两个方法，且 `handle` 只收两个参数：
  *   handle(channel, handler): () => Promise<void>
  *   intercept(channel: '/api', matches, handler): () => Promise<void>
  * rc.7 的 `handle(channel, handler, { authority })` 第三个 options 参数在 rc.2 **不存在**。
  *
- * 注意：实践上本插件只用 `intercept`：rc.2 的 `handle` 实现内部会取
- * `owner.webServer.register(route)`，而 `owner` 是 connection 服务自己 fiber 的 ctx
- * （`get rpc() { const owner = this.ctx }`），该 fiber 未声明 webServer 依赖 →
- * 抛 `cannot get property "webServer" without inject`。`intercept` 走 Map 实现无此依赖，
- * 且是官方（dsh-api-gateway/lib/index.js:624）唯一在用的 RPC 注册方式。
+ *  实践上本插件**两个都不用**，改用下面的 `connection.fetch`：
+ *   - `handle` 内部取 `owner.webServer.register(route)`，owner 是 connection 服务
+ *     自己 fiber 的 ctx；该 fiber 自 0.1.5-rc.1（2026-09-10）起不再声明 webServer
+ *     依赖 → 抛 `cannot get property "webServer" without inject`。
+ *   - `intercept('/api', …)` 是独占槽，已被宿主 dsh-api-gateway 占用。
  */
 export interface ConnectionRpcService {
   handle(channel: string, handler: RpcHandler): Promise<void | (() => void)> | (() => void);
@@ -54,6 +54,25 @@ export interface ConnectionRpcService {
     matches: (endpoint: string) => boolean,
     handler: RpcHandler,
   ): Promise<void | (() => void)> | (() => void);
+}
+
+/** 一条精确 Fetch 路由（rc.2 `connection.fetch.register` 的入参形状）。 */
+export interface ConnectionFetchRoute {
+  /** 绝对路径，必须在 `/api` 之下且每段匹配 /^[A-Za-z0-9_$.-]+$/。 */
+  readonly path: string;
+  readonly methods: readonly string[];
+  readonly requestBody: 'buffered' | 'streaming';
+  fetch(request: Request): Promise<Response> | Response;
+}
+
+/**
+ * `connection.fetch` 窄面：精确路径注册面，**无独占限制、不依赖 webServer**，
+ * 且匹配优先于 `/api` 的 RPC interceptor（createSharedFetchHandler 先查
+ * fetchRoutes 再查 interceptors）。四个官方插件在用：dsh-api-session-controller、
+ * dsh-session-log-export、dsh-client-ui-deliverables、dsh-client-file-upload。
+ */
+export interface ConnectionFetchService {
+  register(route: ConnectionFetchRoute): (() => void) | Promise<() => void>;
 }
 
 export interface CredentialDescriptor {
@@ -188,7 +207,7 @@ export type HostEffectBody = () => Promise<(() => Promise<void> | void) | void> 
 /** apply(ctx) 收到的宿主上下文：全部服务可选（feature detection）。 */
 export interface HostContext {
   readonly storageDomain?: StorageDomainService;
-  readonly connection?: { readonly rpc: ConnectionRpcService };
+  readonly connection?: { readonly rpc: ConnectionRpcService; readonly fetch?: ConnectionFetchService };
   readonly credentials?: CredentialsService;
   readonly llm?: LlmService;
   readonly tools?: ToolsService;

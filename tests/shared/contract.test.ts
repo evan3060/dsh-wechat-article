@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   RPC_CHANNEL,
+  API_PREFIX,
   CONTRACT_VERSION,
   RPC_ENDPOINTS,
   rpcContract,
@@ -15,7 +16,6 @@ import {
   ConfigViewSchema,
   SnapshotResponseSchema,
 } from '@/shared/contract';
-import type { ConnectionRpcService } from '@/host/platform';
 import type { WeChatArticleService } from '@/host/service';
 import { registerWeChatArticleRpc } from '@/host/rpc';
 
@@ -658,41 +658,55 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
   });
 
   function captureHandler() {
-    let handler: ((endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>) | undefined;
-    let channel = '';
-    // rc.2：handle 只有两参（旧 { authority } 第三参已删除）。
-    const rpc: ConnectionRpcService = {
-      handle: vi.fn((ch: string, h: typeof handler) => {
-        channel = ch;
-        handler = h;
-        return () => undefined;
-      }) as unknown as ConnectionRpcService['handle'],
-      intercept: vi.fn(() => () => undefined) as unknown as ConnectionRpcService['intercept'],
-    };
+    // rc.2：插件改走 connection.fetch.register 精确路由面——每个端点一条路由。
+    const routes = new Map<string, (request: Request) => Promise<Response> | Response>();
+    const register = vi.fn((route: { path: string; methods: readonly string[]; requestBody: string; fetch: (r: Request) => Promise<Response> | Response }) => {
+      routes.set(route.path, route.fetch);
+      return () => undefined;
+    });
+    const connection = { fetch: { register } };
     const service = {
       runDetail: vi.fn(async () => runDetailResponse()),
     } as unknown as WeChatArticleService;
     return {
-      rpc,
+      connection,
       service,
-      call: (endpoint: string, payload: unknown) => {
-        if (!handler) throw new Error('handler 未被注册');
-        return handler(endpoint, payload, new AbortController().signal);
+      call: async (endpoint: string, payload: unknown) => {
+        const path = `${API_PREFIX}/${endpoint}`;
+        const fetch = routes.get(path);
+        if (!fetch) throw new Error(`路由未注册：${path}`);
+        const response = await fetch(
+          new Request(`http://x${path}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+        );
+        return (await response.json()) as unknown;
       },
-      registered: () => ({ channel, hasHandler: typeof handler === 'function' }),
+      registered: () => ({
+        paths: [...routes.keys()],
+        hasRunDetail: routes.has(`${API_PREFIX}/run/detail`),
+        methods: register.mock.calls[0]?.[0]?.methods,
+        requestBody: register.mock.calls[0]?.[0]?.requestBody,
+      }),
     };
   }
 
-  it('[rc.2] handle 两参注册，通道名带前导斜杠（authority 第三参已移除）', async () => {
+  it('[rc.2] 改走 fetch 精确路由：每个端点一条 /api 前缀路径，POST + buffered', async () => {
     const cap = captureHandler();
-    await registerWeChatArticleRpc(cap.rpc, cap.service);
-    expect(cap.registered().channel).toBe('/dsh-wechat-article');
-    expect(cap.registered().hasHandler).toBe(true);
+    await registerWeChatArticleRpc(cap.connection, cap.service);
+    const r = cap.registered();
+    expect(r.paths.length, '23 个端点各注册一条').toBe(RPC_ENDPOINTS.length);
+    expect(r.paths.every((p) => p.startsWith(API_PREFIX + '/')), '全部在 /api 前缀下').toBe(true);
+    expect(r.paths).toContain(`${API_PREFIX}/run/detail`);
+    expect(r.methods).toEqual(['POST']);
+    expect(r.requestBody).toBe('buffered');
   });
 
   it('AC-M2-01: run/detail 合法请求 → 信封 {ok:true,value}，value 过响应 schema，service.runDetail 透传选择器', async () => {
     const cap = captureHandler();
-    await registerWeChatArticleRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.connection, cap.service);
     const envelope = (await cap.call('run/detail', { runId: 'run_42' })) as { ok: boolean; value?: unknown };
     expect(cap.service.runDetail).toHaveBeenCalledWith({ runId: 'run_42' });
     expect(envelope.ok).toBe(true);
@@ -701,22 +715,24 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
 
   it('M2 callId 兜底链: run/detail 按 callId 查询 → 透传 {callId} 选择器（runId 直查路径不受影响）', async () => {
     const cap = captureHandler();
-    await registerWeChatArticleRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.connection, cap.service);
     const envelope = (await cap.call('run/detail', { callId: 'call_9' })) as { ok: boolean; value?: unknown };
     expect(cap.service.runDetail).toHaveBeenCalledWith({ callId: 'call_9' });
     expect(envelope.ok).toBe(true);
     expect(rpcContract['run/detail'].response.safeParse(envelope.value).success).toBe(true);
   });
 
-  it('既有失败面回归：未知端点按现状契约抛错（不返回裸值——裸值会在客户端 result 联合校验处炸）', async () => {
+  it('[rc.2] 未知端点不会被注册成路由（精确路由表里查无此路，天然 404）', async () => {
     const cap = captureHandler();
-    await registerWeChatArticleRpc(cap.rpc, cap.service);
-    await expect(cap.call('endpoint/does-not-exist', {})).rejects.toThrow(/未知端点/);
+    await registerWeChatArticleRpc(cap.connection, cap.service);
+    // fetch 面按 pathname 查表：未注册的端点根本不进 handler，也就不会回裸值
+    expect(cap.registered().paths).not.toContain(`${API_PREFIX}/endpoint/does-not-exist`);
+    await expect(cap.call('endpoint/does-not-exist', {})).rejects.toThrow(/路由未注册/);
   });
 
   it('既有失败面回归：请求 schema 不符按现状契约抛错（错误信息含端点名）', async () => {
     const cap = captureHandler();
-    await registerWeChatArticleRpc(cap.rpc, cap.service);
+    await registerWeChatArticleRpc(cap.connection, cap.service);
     await expect(cap.call('run/start', {})).rejects.toThrow(/run\/start/);
   });
 

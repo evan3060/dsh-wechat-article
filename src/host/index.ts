@@ -93,7 +93,7 @@ export async function apply(ctx: HostContext, rawConfig: unknown): Promise<void>
       // 「Agent 调用不到 wechat_* 工具」的真根因（已实测定位）。
       // 隔离后：Web 面板功能暂不可用，但 Agent 工具照常注册（wewrite「降级不崩」纪律）。
       try {
-        const stopRpc = registerWeChatArticleRpc(ctx.connection?.rpc, service, logger);
+        const stopRpc = registerWeChatArticleRpc(ctx.connection, service, logger);
         disposers.push(() => {
           void Promise.resolve(stopRpc).then((dispose) => dispose?.());
         });

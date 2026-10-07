@@ -31,9 +31,20 @@ import {
 export * from './schema-base';
 export * from './view-schemas';
 
-// 平台 RPC 目标串带前导斜杠（dsh-automation 真身：rpc.handle("/dsh-automation", ...)，
-// 客户端同通道串拼接 endpoint 成 "/dsh-wechat-article/snapshot"——无斜杠会 invalid RPC target，2026-08-19 实测）。
+// [rc.2] 通道串不再用于注册（rpc.handle 在 rc.2 必然抛 webServer 错，见 src/host/rpc.ts 注释），
+// 仅保留作端点命名空间与历史兼容。实际 HTTP 路径前缀见 API_PREFIX。
 export const RPC_CHANNEL = '/dsh-wechat-article';
+
+/**
+ * [rc.2] 写作台端点的 HTTP 路径前缀（**不含结尾斜杠**，拼接时须自行加 `/`）。
+ *
+ * `connection.fetch.register` 的路径必须落在 `/api` 之下且每段匹配
+ * /^[A-Za-z0-9_$.-]+$/（宿主 endpointFromPath 的校验），故前缀为
+ * `/api/dsh-wechat-article`，每个端点拼成一条**精确**路由
+ * （fetch 面按 pathname 查表，不支持前缀匹配）。
+ */
+export const API_PREFIX = '/api/dsh-wechat-article';
+
 export const CONTRACT_VERSION = 1;
 
 export const RPC_ENDPOINTS = [
