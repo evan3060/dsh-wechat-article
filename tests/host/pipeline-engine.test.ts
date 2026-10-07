@@ -80,7 +80,8 @@ interface DepsOverrides {
   topicSource?: { fetch: (limit: number) => Promise<{ title: string; url: string; source: string; rank: number }[]> };
   gates?: { run: (input: { markdown: string }) => Promise<{ passed: boolean; report: unknown }> };
   renderer?: { convert: (input: { markdown: string; theme?: string }) => string };
-  images?: { generate: (input: { count: number }) => Promise<{ coverImageId?: string; bodyImageIds: string[] }> };
+  images?: { generate: (input: { count: number; articleId?: string }) => Promise<{ coverImageId?: string; bodyImageIds: string[] }> };
+  onProduced?: (output: { markdown: string; runId: string }) => Promise<string | void>;
 }
 
 function makeDeps(overrides: DepsOverrides = {}) {
@@ -95,6 +96,7 @@ function makeDeps(overrides: DepsOverrides = {}) {
       overrides.gates ??
       { run: vi.fn(async (_input: { markdown: string }) => ({ passed: true, report: { strict: true } })) },
     renderer: overrides.renderer ?? { convert: vi.fn(() => '<section style="color:#0F1115">html</section>') },
+    ...(overrides.onProduced ? { onProduced: overrides.onProduced } : {}),
     images: overrides.images ?? { generate: vi.fn(async () => ({ coverImageId: 'img_0', bodyImageIds: ['img_1'] })) },
   };
   return deps;
@@ -477,5 +479,47 @@ describe('await done 句柄（chat-integration M1：service.runCompletion 的 en
     const [record, doneId] = await Promise.all([viaAwaitDone, done]);
     expect(record?.status).toBe('succeeded');
     expect(doneId).toBe(runId);
+  });
+});
+
+/**
+ * 回归：render 步必须把产出的 articleId **回绑到 run 记录**。
+ *
+ * 缺陷（wewrite 遗留 P0-1 同源，2026-10-07 端到端实跑发现）：引擎拿到
+ * `onProduced` 返回的 articleId 后只存进局部变量 `producedArticleId` 传给
+ * images 步，**从未写回 run** → `run.articleId` 恒为 undefined。后果：
+ *   ① 聊天运行卡的「打开写作台」按钮永远不显示（run-tool-card 读 record.articleId）
+ *   ② run/detail 拿不到 articleId，前端无法从运行跳到文章
+ *   ③ images 步的 ImageRecord.articleId 溯源断链。
+ */
+describe('run.articleId 回绑（P0-1 回归）', () => {
+  it('onProduced 返回 articleId → run.articleId 被写入', async () => {
+    const deps = makeDeps({ onProduced: vi.fn(async () => 'art_from_render') });
+    const engine = makeEngine(deps);
+    const runId = await engine.start({ trigger: 'manual', params: baseParams });
+    const run = deps.store.get(runId);
+    expect(run?.status).toBe('succeeded');
+    expect(run?.articleId, '成功跑完的 run 必须能溯源到产出文章').toBe('art_from_render');
+  });
+
+  it('articleId 同时传给 images.generate（溯源不断链）', async () => {
+    const deps = makeDeps({
+      onProduced: vi.fn(async () => 'art_for_images'),
+      images: { generate: vi.fn(async () => ({ coverImageId: 'img_0', bodyImageIds: ['img_1'] })) },
+    });
+    const engine = makeEngine(deps);
+    await engine.start({ trigger: 'manual', params: baseParams });
+    expect(deps.images.generate).toHaveBeenCalledWith(
+      expect.objectContaining({ articleId: 'art_for_images' }),
+    );
+  });
+
+  it('onProduced 返回空/非字符串 → run.articleId 保持未设置（不写脏值）', async () => {
+    const deps = makeDeps({ onProduced: vi.fn(async () => undefined) });
+    const engine = makeEngine(deps);
+    const runId = await engine.start({ trigger: 'manual', params: baseParams });
+    const run = deps.store.get(runId);
+    expect(run?.status).toBe('succeeded');
+    expect(run?.articleId ?? undefined).toBeUndefined();
   });
 });

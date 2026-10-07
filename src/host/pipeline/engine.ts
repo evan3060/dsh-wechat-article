@@ -273,7 +273,16 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
           patchStep(runId, stepName, { metrics: { htmlChars: html.length } });
           if (deps.onProduced) {
             const returnedArticleId = await deps.onProduced({ markdown: draft, runId });
-            if (typeof returnedArticleId === 'string' && returnedArticleId) producedArticleId = returnedArticleId;
+            if (typeof returnedArticleId === 'string' && returnedArticleId) {
+              producedArticleId = returnedArticleId;
+              // 回绑 run.articleId：产出的文章必须能被 run 溯源，否则
+              // ① 聊天运行卡的「打开写作台」按钮永远不显示（run-tool-card 读 record.articleId）
+              // ② run/detail 拿不到 articleId，前端无法从运行跳到文章
+              // ③ images 步的 ImageRecord.articleId 溯源断链。
+              // 修的正是 wewrite docs/qa-test-plan.md:70 记录的 P0-1 同源缺陷：
+              // 当时只写 run metrics，articleId 从不回绑。
+              deps.store.update(runId, (run) => ({ ...run, articleId: returnedArticleId }));
+            }
           }
         } else {
           const count = params.imageCount ?? 0;
