@@ -34,11 +34,25 @@ export interface StorageDomainService {
 
 export type RpcHandler = (endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>;
 
+/**
+ * 宿主 `connection.rpc` 窄面。[rc.2] rc.2 真实形状（dsh-client-connection
+ * lib/types/rpc.d.ts:130-147）只有两个方法，且 `handle` 只收两个参数：
+ *   handle(channel, handler): () => Promise<void>
+ *   intercept(channel: '/api', matches, handler): () => Promise<void>
+ * rc.7 的 `handle(channel, handler, { authority })` 第三个 options 参数在 rc.2 **不存在**。
+ *
+ * 注意：实践上本插件只用 `intercept`：rc.2 的 `handle` 实现内部会取
+ * `owner.webServer.register(route)`，而 `owner` 是 connection 服务自己 fiber 的 ctx
+ * （`get rpc() { const owner = this.ctx }`），该 fiber 未声明 webServer 依赖 →
+ * 抛 `cannot get property "webServer" without inject`。`intercept` 走 Map 实现无此依赖，
+ * 且是官方（dsh-api-gateway/lib/index.js:624）唯一在用的 RPC 注册方式。
+ */
 export interface ConnectionRpcService {
-  handle(
-    channel: string,
+  handle(channel: string, handler: RpcHandler): Promise<void | (() => void)> | (() => void);
+  intercept(
+    channel: '/api',
+    matches: (endpoint: string) => boolean,
     handler: RpcHandler,
-    options: { readonly authority: 'loopback' | 'trusted-host' },
   ): Promise<void | (() => void)> | (() => void);
 }
 

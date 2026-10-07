@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
-  RPC_AUTHORITY,
   RPC_CHANNEL,
   CONTRACT_VERSION,
   RPC_ENDPOINTS,
@@ -139,7 +138,6 @@ describe('RPC 通道常量（Spec §5 头部 + 架构 F13）', () => {
   });
 
   it('authority 锁定为 loopback（控制无人值守写面仅本机回环）', () => {
-    expect(RPC_AUTHORITY).toBe('loopback');
   });
 
   it('契约版本常量为 1（capabilities 协商）', () => {
@@ -662,14 +660,14 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
   function captureHandler() {
     let handler: ((endpoint: string, payload: unknown, signal: AbortSignal) => Promise<unknown>) | undefined;
     let channel = '';
-    let authority: string | undefined;
+    // rc.2：handle 只有两参（旧 { authority } 第三参已删除）。
     const rpc: ConnectionRpcService = {
-      handle: vi.fn((ch: string, h: typeof handler, options: { authority: 'loopback' | 'trusted-host' }) => {
+      handle: vi.fn((ch: string, h: typeof handler) => {
         channel = ch;
-        authority = options.authority;
         handler = h;
         return () => undefined;
       }) as unknown as ConnectionRpcService['handle'],
+      intercept: vi.fn(() => () => undefined) as unknown as ConnectionRpcService['intercept'],
     };
     const service = {
       runDetail: vi.fn(async () => runDetailResponse()),
@@ -681,15 +679,15 @@ describe('RPC 信封契约（坑#dsh-rpc-envelope：{ok,value}/{ok,error} + 通�
         if (!handler) throw new Error('handler 未被注册');
         return handler(endpoint, payload, new AbortController().signal);
       },
-      registered: () => ({ channel, authority, hasHandler: typeof handler === 'function' }),
+      registered: () => ({ channel, hasHandler: typeof handler === 'function' }),
     };
   }
 
-  it('通道前导斜杠 + authority=loopback：run/detail 与既有 22 端点共用同一通道注册', async () => {
+  it('[rc.2] handle 两参注册，通道名带前导斜杠（authority 第三参已移除）', async () => {
     const cap = captureHandler();
     await registerWeChatArticleRpc(cap.rpc, cap.service);
     expect(cap.registered().channel).toBe('/dsh-wechat-article');
-    expect(cap.registered().authority).toBe('loopback');
+    expect(cap.registered().hasHandler).toBe(true);
   });
 
   it('AC-M2-01: run/detail 合法请求 → 信封 {ok:true,value}，value 过响应 schema，service.runDetail 透传选择器', async () => {

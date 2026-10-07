@@ -3,7 +3,7 @@
  * 通道 authority=loopback（F13：控制无人值守写面的通道仅本机回环）。
  */
 
-import { RPC_AUTHORITY, RPC_CHANNEL, rpcContract, type RunParams, type RpcEndpoint } from '../shared/contract';
+import { RPC_CHANNEL, rpcContract, type RunParams, type RpcEndpoint } from '../shared/contract';
 import type { ConnectionRpcService, HostLogger } from './platform';
 import type { WeChatArticleService } from './service';
 
@@ -177,6 +177,21 @@ export function registerWeChatArticleRpc(
   }
   const truncate = (text: string): string => (text.length > 500 ? `${text.slice(0, 500)}…` : text);
 
+  // [rc.2] RPC 通道注册：rc.2 的 handle 只收**两个**参数（rpc.d.ts:130-138），
+  // rc.7 的第三个 options（{ authority: 'loopback' }）在 rc.2 已不存在 → 已删除。
+  //
+  // 已知限制（两条路都走不通，已实测，见 docs 规划 §15.14b）：
+  //   ① handle(channel, handler)：宿主实现内部执行 `owner.webServer.register(route)`
+  //      （dsh-client-connection/lib/index.js:640-656），而 owner 来自
+  //      `get rpc() { const owner = this.ctx }` —— 那是 connection 服务**自己 fiber** 的
+  //      ctx，未声明 webServer 依赖 → 抛 "cannot get property \"webServer\" without inject"。
+  //      在插件自己的 inject 里补 webServer 无效（实测已证）。
+  //   ② intercept('/api', …)：/api 是**独占**槽（同文件 :666
+  //      `if (this.interceptors.has(channel)) throw`），已被宿主 dsh-api-gateway 占用 →
+  //      抛 "shared RPC channel \"/api\" already has an interceptor"。
+  //
+  // 因此本函数**可能抛错**，调用方（src/host/index.ts）已把它单独 try/catch 隔离：
+  // Web 面板不可用，但 Agent 工具 / 命令 / 调度器照常注册（wewrite 降级不崩纪律）。
   const registered = rpc.handle(
     RPC_CHANNEL,
     async (endpoint: string, payload: unknown) => {
@@ -201,7 +216,6 @@ export function registerWeChatArticleRpc(
         return toHostRpcErrorEnvelope(error, truncate);
       }
     },
-    { authority: RPC_AUTHORITY },
   );
   if (typeof registered === 'function') return Promise.resolve(registered);
   return registered.then((dispose) => dispose ?? (() => undefined));

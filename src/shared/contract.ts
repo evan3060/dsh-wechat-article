@@ -34,7 +34,6 @@ export * from './view-schemas';
 // 平台 RPC 目标串带前导斜杠（dsh-automation 真身：rpc.handle("/dsh-automation", ...)，
 // 客户端同通道串拼接 endpoint 成 "/dsh-wechat-article/snapshot"——无斜杠会 invalid RPC target，2026-08-19 实测）。
 export const RPC_CHANNEL = '/dsh-wechat-article';
-export const RPC_AUTHORITY = 'loopback';
 export const CONTRACT_VERSION = 1;
 
 export const RPC_ENDPOINTS = [

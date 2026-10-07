@@ -27,6 +27,9 @@ import { WeChatArticleService } from './service';
 
 export const name = 'dsh-wechat-article';
 
+// [rc.2] 注：此处曾因 rpc.handle 需要 webServer 而补进 inject，但真正的修法是改用
+// rpc.intercept（见 src/host/rpc.ts 的注释）——handle 内部的 owner 是 connection
+// 服务自己的 fiber ctx，我们在 inject 里声明 webServer 也救不了。
 export const inject = ['storageDomain', 'agents', 'sessions', 'connection', 'llm', 'credentials', 'tools', 'commands'];
 
 export const Config = z.object({
@@ -84,10 +87,21 @@ export async function apply(ctx: HostContext, rawConfig: unknown): Promise<void>
     });
     const disposers: Array<() => void | Promise<void>> = [];
     try {
-      const stopRpc = registerWeChatArticleRpc(ctx.connection?.rpc, service, logger);
-      disposers.push(() => {
-        void Promise.resolve(stopRpc).then((dispose) => dispose?.());
-      });
+      // [rc.2] RPC 单独隔离（rc.2）：registerWeChatArticleRpc 在 rc.2 上**必然抛错**
+      // （两条注册路径都不可用，详见 src/host/rpc.ts 的注释）。若不隔离，它会被外层
+      // catch 吞掉，导致下面的工具 / 命令 / 调度器**整块不注册** —— 那才是
+      // 「Agent 调用不到 wechat_* 工具」的真根因（已实测定位）。
+      // 隔离后：Web 面板功能暂不可用，但 Agent 工具照常注册（wewrite「降级不崩」纪律）。
+      try {
+        const stopRpc = registerWeChatArticleRpc(ctx.connection?.rpc, service, logger);
+        disposers.push(() => {
+          void Promise.resolve(stopRpc).then((dispose) => dispose?.());
+        });
+      } catch (rpcError) {
+        logger.warn(
+          `dsh-wechat-article: RPC 通道注册失败，Web 面板不可用（Agent 工具不受影响）：${rpcError instanceof Error ? rpcError.message : String(rpcError)}`,
+        );
+      }
       // AC-M1-12：注册初值与运行期闸门统一走 service.agentToolsEnabled()（单一真源，可热翻转）
       for (const stop of registerAgentTools(ctx, service, { enabled: service.agentToolsEnabled() })) {
         disposers.push(stop);
