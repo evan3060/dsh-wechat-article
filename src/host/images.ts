@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { CREDENTIAL_REFS, DEFAULT_IMAGE_PROVIDER_CHAIN, IMAGE_PROVIDER_IDS, type ImageProviderId } from '../shared/image-provider-ids';
+import { CREDENTIAL_REFS, DEFAULT_IMAGE_PROVIDER_CHAIN, type ImageProviderId } from '../shared/image-provider-ids';
 import type { ImageProviderConfig } from '../shared/contract';
 import type { ImageRecord, SettingsRecord } from './domain';
 import type { ImagesGenerator } from './pipeline/engine';
@@ -19,8 +19,16 @@ import { createMinimaxProvider } from './providers/minimax';
 import { createOpenAiProvider } from './providers/openai';
 import { createOpenrouterProvider } from './providers/openrouter';
 import { createReplicateProvider } from './providers/replicate';
+import { createCustomProvider } from './providers/custom-openai';
 
-export const PROVIDER_FACTORIES: Readonly<Record<ImageProviderId, (fetchImpl?: typeof fetch) => ImageProvider>> = {
+/**
+ * 内置 provider 工厂表（键为内置 9 家的 id）。
+ *
+ * [2026-10-08] 不再是 `Record<ImageProviderId, …>` 的全量表——ImageProviderId 放宽为
+ * string 后不可能穷举。改为按 id 查表，未命中则回落通用 OpenAI 兼容 adapter
+ * （见 `createCustomProvider`）。
+ */
+export const PROVIDER_FACTORIES: Readonly<Record<string, (fetchImpl?: typeof fetch) => ImageProvider>> = {
   openai: createOpenAiProvider,
   doubao: createDoubaoProvider,
   dashscope: createDashscopeProvider,
@@ -64,9 +72,23 @@ export function createImagesGenerator(deps: ImagesGeneratorDeps): ImagesGenerato
           },
         ]),
       );
-      const providers = chain
-        .filter((entry) => (IMAGE_PROVIDER_IDS as readonly string[]).includes(entry.providerId))
-        .map((entry) => PROVIDER_FACTORIES[entry.providerId](deps.fetchImpl));
+      // [2026-10-08] 解除 providerId 硬编码：不再 filter 掉未内置的 provider——
+      // 内置 id 查 PROVIDER_FACTORIES 拿专用 adapter，自定义 id 走通用 OpenAI 兼容
+      // adapter（createCustomProvider）。旧代码的 `.filter(IMAGE_PROVIDER_IDS.includes)`
+      // 会把 `newapi` 之类静默丢弃，用户配了却永远不生效。
+      //
+      // 自定义 provider 缺 baseUrl 时不静默跳过（那会让用户以为配错了顺序），
+      // 而是抛明确错误——schema 层已用 refine 拦过一次，这里是运行期兜底。
+      const providers = chain.map((entry) => {
+        const factory = PROVIDER_FACTORIES[entry.providerId];
+        if (factory) return factory(deps.fetchImpl);
+        if (!entry.baseUrl?.trim()) {
+          throw new Error(
+            `自定义出图供应商「${entry.providerId}」缺少 baseUrl：请在设置 → 图片供应商里补上 OpenAI 兼容服务地址（如 https://host/v1）`,
+          );
+        }
+        return createCustomProvider(entry.providerId, deps.fetchImpl);
+      });
       const resolveConfig = (providerId: ImageProviderId): ResolvedProviderConfig =>
         configs.get(providerId) ?? { apiKey: '' };
 

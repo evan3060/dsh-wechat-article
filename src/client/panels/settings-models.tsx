@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Menu } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { MenuEntry } from '@deepseek-ai/dsh-client-ui-primitives';
 import type { ImageProviderConfig } from '@/shared/contract';
-import { CREDENTIAL_REFS, DEFAULT_PROVIDER_MODELS, IMAGE_PROVIDER_IDS } from '@/shared/image-provider-ids';
+import { isBuiltinImageProviderId, CREDENTIAL_REFS, DEFAULT_PROVIDER_MODELS, IMAGE_PROVIDER_IDS } from '@/shared/image-provider-ids';
 import type { ImageProviderId } from '@/shared/image-provider-ids';
 import { CodeChip } from '../components/bits';
 import { Icon } from '../components/Icon';
@@ -127,7 +127,14 @@ export function ImagesSection({ config, rpc, onSaved }: SectionProps) {
           <li key={item.providerId} className="wa-provider">
             <span className="wa-provider__order">{index + 1}</span>
             <CodeChip>{item.providerId}</CodeChip>
-            <span className="wa-provider__model">{item.model ?? DEFAULT_PROVIDER_MODELS[item.providerId as ImageProviderId] ?? '默认模型'}</span>
+            {/* [2026-10-08] providerId 已放宽为任意字符串（自定义 provider 走通用
+                OpenAI 兼容 adapter），故不能直接用 string 索引封闭的缺省模型表——
+                先窄化到内置 id；未内置的看用户是否配了 model，都没有则给出可行动提示。 */}
+            <span className="wa-provider__model">
+              {item.model
+                ?? (isBuiltinImageProviderId(item.providerId) ? DEFAULT_PROVIDER_MODELS[item.providerId] : undefined)
+                ?? '未指定模型'}
+            </span>
             <ConfiguredBadge descriptor={config.credentials[item.credentialRef]} />
             <span className="wa-provider__ops">
               <button type="button" className="wa-icon-btn" aria-label={`上移 ${item.providerId}`} onClick={() => move(index, -1)} disabled={index === 0}>

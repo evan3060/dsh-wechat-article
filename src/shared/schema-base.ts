@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { IMAGE_PROVIDER_IDS } from './image-provider-ids';
+import { isBuiltinImageProviderId } from './image-provider-ids';
 
 /** IANA 时区校验（Intl 真实解析，'UTC+8'/'Mars/Olympus' 等均拒）。 */
 export function isValidTimeZone(timeZone: string): boolean {
@@ -22,12 +22,27 @@ export const CredentialRefSchema = z.string().regex(/^[A-Z][A-Z0-9_]*$/, { messa
 
 export const IMAGE_SIZES = z.enum(['1024x1024', '1024x1536', '1536x1024', '1344x768', '768x1344']);
 
+/**
+ * 一条出图供应商配置。
+ *
+ * [2026-10-08] providerId 由 `z.enum(IMAGE_PROVIDER_IDS)`（封闭 9 家）放宽为任意
+ * 非空字符串：未内置的 id 走通用 OpenAI 兼容 adapter（见 images.ts 的 PROVIDER_FACTORIES
+ * 回落分支），换服务不必改代码。内置 9 家仍各有专用 adapter 与缺省模型。
+ *
+ * baseUrl：自定义 provider **必填**（内置的可用 adapter 里的 defaultBaseUrl）。
+ * 缺省留空时自定义 provider 会因拼不出绝对地址而失败——这是刻意的，避免默默打错地址。
+ */
 export const ImageProviderConfigSchema = z.strictObject({
-  providerId: z.enum(IMAGE_PROVIDER_IDS),
-  model: z.string().optional(),
-  baseUrl: z.string().optional(),
+  providerId: z.string().trim().min(1, 'providerId 不能为空'),
+  model: z.string().trim().min(1).optional(),
+  baseUrl: z.string().trim().url().optional(),
   credentialRef: z.string(),
-});
+})
+  .refine(
+    // 内置 provider 可省略 baseUrl（adapter 自带 defaultBaseUrl）；自定义的必须给。
+    (cfg) => isBuiltinImageProviderId(cfg.providerId) || cfg.baseUrl !== undefined,
+    { message: '自定义出图供应商必须填 baseUrl（OpenAI 兼容服务地址，如 https://host/v1）', path: ['baseUrl'] },
+  );
 export type ImageProviderConfig = z.infer<typeof ImageProviderConfigSchema>;
 
 export const LlmOverrideSchema = z.strictObject({
