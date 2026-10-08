@@ -240,3 +240,52 @@ describe('回归：类型面 ImageProviderId 已是开放 string', () => {
     expect(ids).toHaveLength(4);
   });
 });
+describe('回归：自定义 provider 的凭据必须出现在 describe 里', () => {
+  it('settings.imageProviders 里的自定义 credentialRef 会被枚举', async () => {
+    const { WeChatArticleService } = await import('@/host/service');
+    // 最小 stub：只需 deps.credentials.describe 与 storage domain
+    const domain = {
+      global: { get: () => ({ v: 1, settings: {
+        wechatAppId: '', wechatApiBaseUrl: 'https://api.weixin.qq.com', wechatAuthor: '',
+        defaultTheme: 'professional-clean', defaultImageSize: '1024x1024', llmDefault: {},
+        runHistoryLimit: 200, hotspotAggregatorUrl: '', agentToolsEnabled: false,
+        imageProviders: [{
+          providerId: 'newapi', model: 'agnes-image-2.5-flash',
+          baseUrl: 'https://api.example.com/v1', credentialRef: 'WECHAT_ARTICLE_IMG_NEWAPI',
+        }],
+      } }), set: async () => undefined, entries: () => [][Symbol.iterator]() as IterableIterator<[string, never]>, keys: () => [][Symbol.iterator]() as IterableIterator<string> },
+      // storage handle 面：按记录类型取表（platform.ts typedTable 走 domain.table(name)）
+      table: () => ({
+        get: () => undefined,
+        entries: () => [][Symbol.iterator]() as IterableIterator<[string, never]>,
+        keys: () => [][Symbol.iterator]() as IterableIterator<string>,
+        size: 0,
+        put: async () => undefined,
+        delete: async () => false,
+        update: async () => undefined,
+      }),
+      close: () => undefined,
+    };
+    const credentials = {
+      describe: async () => ({ configured: false, writable: true }),
+      set: async () => undefined,
+      resolve: async () => undefined,
+    };
+
+    const service = await WeChatArticleService.open({
+      domain: domain as never,
+      credentials: credentials as never,
+      llm: {} as never,
+      logger: { warn: () => undefined, error: () => undefined, info: () => undefined },
+    });
+
+    const refs = await service.describeCredentials();
+    expect(
+      Object.keys(refs),
+      '自定义 provider 的凭据 ref 必须可见，否则设置页没有配置入口（用户实测症状）',
+    ).toContain('WECHAT_ARTICLE_IMG_NEWAPI');
+    // 内置 9 家仍应保留（用户没配过也要有入口）
+    expect(Object.keys(refs)).toContain('WECHAT_ARTICLE_IMG_OPENAI');
+    expect(Object.keys(refs)).toContain('WECHAT_ARTICLE_WECHAT_SECRET');
+  });
+});

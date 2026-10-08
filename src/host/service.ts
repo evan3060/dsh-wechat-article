@@ -335,7 +335,14 @@ export class WeChatArticleService {
   }
 
   async describeCredentials(): Promise<Record<string, { configured: boolean; writable: boolean }>> {
-    const refs = [CREDENTIAL_REFS.wechatSecret, ...DEFAULT_IMAGE_PROVIDER_CHAIN.map(CREDENTIAL_REFS.image)];
+    // [2026-10-08] 不再只枚举内置 9 家——自定义 provider（providerId 放宽为任意字符串后）
+    // 的凭据 ref 也必须出现在这里，否则设置页拿不到配置入口，用户配了 key 却无从填入
+    // （实测症状：settings.imageProviders 里已有 newapi，但 credentials/describe 不含
+    //  WECHAT_ARTICLE_IMG_NEWAPI → UI 上没有它的凭据位 → 配图步永远失败）。
+    // 用户配置的 ref 优先，随后补上内置 9 家（用户可能没配过，默认链仍要有入口）。
+    const configuredRefs = this.settings.imageProviders.map((entry) => entry.credentialRef);
+    const builtinRefs = DEFAULT_IMAGE_PROVIDER_CHAIN.map(CREDENTIAL_REFS.image);
+    const refs = [...new Set([CREDENTIAL_REFS.wechatSecret, ...configuredRefs, ...builtinRefs])];
     const descriptors: Record<string, { configured: boolean; writable: boolean }> = {};
     for (const ref of refs) {
       const raw = await Promise.resolve(this.deps.credentials.describe(ref));
