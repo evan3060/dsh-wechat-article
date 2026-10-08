@@ -51,7 +51,7 @@ export interface ImagesGeneratorDeps {
 
 export function createImagesGenerator(deps: ImagesGeneratorDeps): ImagesGenerator {
   return {
-    generate: async ({ count, articleId }) => {
+    generate: async ({ count, articleId, title, digest, topics }) => {
       const settings = deps.getSettings();
       const chain = settings.imageProviders.length
         ? settings.imageProviders
@@ -111,10 +111,39 @@ export function createImagesGenerator(deps: ImagesGeneratorDeps): ImagesGenerato
         };
       };
 
-      const cover = await make('为文章生成封面图：风格克制、信息密度高，深色纯色背景，无文字水印');
+      // ── 封面提示词（2026-10-08 由固定句改为内容驱动）────────────────────────
+      // 旧句「风格克制、信息密度高，深色纯色背景，无文字水印」与文章无关，实测产出
+      // 是几块大面积纯色（用户反馈：没有任何意义）。现按标题/摘要构造
+      // 「信息图封面」提示词：要求主体图形 + 图例 + 简短中文标签，替代纯色背景。
+      const subject = (title ?? '微信公众号文章').slice(0, 40);
+      const angle = (digest ?? '').replace(/\s+/g, ' ').slice(0, 120);
+      const coverPrompt = [
+        `为中文文章《${subject}》生成一张**信息图风格的封面图**。`,
+        angle ? `文章主旨：${angle}。` : '',
+        '硬性要求：',
+        '1) 必须有具体视觉主体——用流程箭头、架构分层、对比矩阵、步骤时间轴之一表达文章核心概念，不要纯色背景或抽象色块；',
+        '2) 必须有图例（legend），用色块/线条旁标注简短中文标签说明含义；',
+        '3) 可含 3-6 个简短中文词组作为要点标签（如「占位替换」「CDN 上传」），每组不超过 6 字，横向排布；',
+        '4) 配色克制（深蓝或墨绿主色 + 米白底），元素层级清晰，留白充足；',
+        '5) 输出 2.35:1 附近的横向构图，主体内容避开上下边缘（上下各留约 15% 空白，中心区域放主体），',
+        '不要水印、不要二维码、不要人物照片。',
+      ].filter(Boolean).join('');
+
+      const cover = await make(coverPrompt);
+
+      // ── 正文配图：按小节标题逐张生成，各配各的主题 ─────────────────────────
+      const sections = topics?.length ? topics : [];
       const bodies: ImageRecord[] = [];
       for (let index = 0; index < count; index += 1) {
-        bodies.push(await make(`正文配图 ${index + 1}：克制的信息图风格，单主题，无文字水印`));
+        const section = sections[index]?.slice(0, 30);
+        bodies.push(await make([
+          section
+            ? `为中文文章《${subject}》的「${section}」一节生成信息图配图。`
+            : `为中文文章《${subject}》生成第 ${index + 1} 张正文配图。`,
+          '要求：单一主题的示意图或图表，结构清晰，',
+          '含简短中文标签标注关键元素，可带图例说明配色或符号含义，',
+          '配色克制（深蓝/墨绿 + 米白底），留白充足，不要水印与二维码。',
+        ].join('')));
       }
       const stored = [{ ...cover, kind: 'cover' as const }, ...bodies];
       await deps.persist(stored);

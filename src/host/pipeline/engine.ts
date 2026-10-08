@@ -41,8 +41,23 @@ export interface Renderer {
 }
 
 export interface ImagesGenerator {
-  /** articleId 为 render 步落库的文章 id（供 ImageRecord 溯源与回绑）。 */
-  generate(input: { count: number; articleId?: string }): Promise<{ coverImageId?: string; bodyImageIds: string[] }>;
+  /**
+   * @param input.articleId render 步落库的文章 id（供 ImageRecord 溯源与回绑）
+   * @param input.title     文章标题——**封面提示词的语义来源**
+   * @param input.digest    文章摘要（封面副信息）
+   * @param input.topics    正文小节标题（正文配图的语义来源）
+   *
+   * [2026-10-08] title/digest/topics 是新增的：此前 generate 只收 count 与 articleId，
+   * 提示词是两句写死的固定句（「为文章生成封面图：风格克制…深色纯色背景」），
+   * 完全不看文章写了什么——实测产出是无意义的大面积纯色块（用户反馈）。
+   */
+  generate(input: {
+    count: number;
+    articleId?: string;
+    title?: string;
+    digest?: string;
+    topics?: readonly string[];
+  }): Promise<{ coverImageId?: string; bodyImageIds: string[] }>;
 }
 
 export interface PipelineDeps {
@@ -295,10 +310,21 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
           }
         } else {
           const count = params.imageCount ?? 0;
+          // [2026-10-08] 从大纲提取小节标题，作为正文配图的语义来源
+          // （此前配图提示词是固定句，配出的是与内容无关的纯色块）。
+          const outlineSections = outline
+            .split('\n')
+            .map((line) => line.match(/^#{2,3}\s+(.+)$/)?.[1]?.trim())
+            .filter((name): name is string => Boolean(name));
           if (count > 0) {
+            // [2026-10-08] 把文章语义传给配图步：封面/正文图提示词据此生成，
+            // 不再是两句与内容无关的固定句（实测：固定句产出无意义纯色块）。
             imagesResult = await deps.images.generate({
               count,
               ...(producedArticleId ? { articleId: producedArticleId } : {}),
+              title: params.brief?.title ?? params.topic,
+              ...(params.brief?.approach ? { digest: params.brief.approach } : {}),
+              ...(outlineSections.length ? { topics: outlineSections } : {}),
             });
             patchStep(runId, stepName, {
               metrics: {
