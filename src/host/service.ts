@@ -98,6 +98,9 @@ export class WeChatArticleService {
       onProduced: ({ markdown, runId }) => this.articles.persistProduced(markdown, runId),
       onImagesBound: ({ articleId, coverImageId, bodyImageIds }) =>
         this.articles.bindImages(articleId, { coverImageId, bodyImageIds }),
+      // [2026-10-08] 正文配图占位替换（补完 llm.ts:185 承诺但从未实现的替换）
+      replacePlaceholders: ({ articleId, bodyImageIds }) =>
+        this.articles.replaceImagePlaceholders(articleId, bodyImageIds),
       now: this.nowFn,
     });
     this.scheduler = createSchedulerService({

@@ -61,6 +61,15 @@ export interface PipelineDeps {
     readonly coverImageId?: string;
     readonly bodyImageIds: readonly string[];
   }) => Promise<void>;
+  /**
+   * [2026-10-08] 把文章正文里的 `![alt](图片待生成)` 占位按 bodyImageIds 顺序换成
+   * data URI（补完 llm.ts:185 提示词承诺但从未实现的替换；实测不替换时推送出的
+   * content 里 `<img>` 数为 0）。返回实际替换处数，供 metrics 记账；无占位返回 0。
+   */
+  readonly replacePlaceholders?: (output: {
+    readonly articleId: string;
+    readonly bodyImageIds: readonly string[];
+  }) => Promise<number | void>;
 }
 
 export interface StartOptions {
@@ -303,6 +312,20 @@ export function createPipelineEngine(deps: PipelineDeps): PipelineEngine {
                 ...(imagesResult.coverImageId ? { coverImageId: imagesResult.coverImageId } : {}),
                 bodyImageIds: imagesResult.bodyImageIds,
               });
+            }
+            // [2026-10-08] 正文配图占位替换：补完 llm.ts:185 提示词承诺但从未实现的
+            // 「后续管线会替换」。因果链与实测证据见 pipeline/image-placeholders.ts 的头注释：
+            // 推送出去的 content 里 <img> 数为 0，因为 ![…](图片待生成) 从未被换成真实图片。
+            // 替换成 data URI：本地预览可直接显示，推送时由 wechat/client.ts 的
+            // replaceImageSources 按出现顺序换成微信 URL（共用同一批 <img> 位置）。
+            if (producedArticleId && deps.onImagesBound && imagesResult.bodyImageIds.length) {
+              const replaced = await deps.replacePlaceholders?.({
+                articleId: producedArticleId,
+                bodyImageIds: imagesResult.bodyImageIds,
+              });
+              if (replaced) {
+                patchStep(runId, stepName, { metrics: { placeholdersReplaced: replaced } });
+              }
             }
           } else {
             patchStep(runId, stepName, { metrics: { skipped: 'imageCount=0' } });

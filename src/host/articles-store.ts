@@ -6,11 +6,12 @@
 import { randomUUID } from 'node:crypto';
 import type { ArticleDetail, ArticleListItem, RunParams } from '../shared/contract';
 import { convertArticle } from '../render/convert';
-import { ArticleRecordSchema, type SettingsRecord } from './domain';
+import { ArticleRecordSchema, type ImageRecord, type SettingsRecord } from './domain';
 import type { DomainTables } from './store';
 import type { RunStore } from './pipeline/engine';
 import { articleToDetail, articleToListItem } from './views';
 import { WeChatArticleServiceError } from './service-errors';
+import { countImagePlaceholders, replaceImagePlaceholders } from './pipeline/image-placeholders';
 
 export interface ArticleStoreDeps {
   readonly tables: DomainTables;
@@ -118,6 +119,41 @@ export class ArticleStore {
         updatedAt: this.deps.nowIso(),
       });
       await this.deps.tables.articles.put(articleId, merged);
+    });
+  }
+
+  /**
+   * 正文配图占位替换（2026-10-08）：把 markdown 里的 `![alt](图片待生成)` 按
+   * bodyImageIds 顺序换成 data URI。
+   *
+   * 为什么需要（实测因果链见 pipeline/image-placeholders.ts 头注释）：
+   * llm.ts:185 的提示词要求 LLM 写占位符并声明「后续管线会替换」，但该替换从未实现，
+   * 导致推送到微信的 content 里 `<img>` 数为 0——正文一张图都没有。
+   *
+   * 用 data URI 而非微信 URL：本地预览可直接显示；真实推送时
+   * wechat/client.ts 的 replaceImageSources 会按出现顺序把这些 `<img src>`
+   * 换成 `mmbiz.qpic.cn` 的 URL（微信正文不接受 base64）。两条路径共用同一批位置。
+   *
+   * @returns 实际替换处数；无占位符、文章不存在或图片缺失返回 0。
+   */
+  async replaceImagePlaceholders(articleId: string, bodyImageIds: readonly string[]): Promise<number> {
+    const images = bodyImageIds
+      .map((id) => this.deps.tables.images.get(id))
+      .filter((image): image is ImageRecord => Boolean(image?.base64));
+    if (!images.length) return 0;
+    return this.deps.serialize(async () => {
+      const record = this.deps.tables.articles.get(articleId);
+      if (!record?.markdown) return 0;
+      const before = countImagePlaceholders(record.markdown);
+      if (!before) return 0;
+      const replaced = replaceImagePlaceholders(record.markdown, images);
+      const after = countImagePlaceholders(replaced);
+      if (after === before) return 0;
+      await this.deps.tables.articles.put(
+        articleId,
+        ArticleRecordSchema.parse({ ...record, markdown: replaced, updatedAt: this.deps.nowIso() }),
+      );
+      return before - after;
     });
   }
 }
