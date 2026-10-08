@@ -20,7 +20,20 @@ export function escapeCode(text: string): string {
 
 /** URL 协议白名单 + 危险字符黑名单（含引号，杜绝属性逃逸注入）。 */
 const URL_SAFE_CHARS = /^[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+$/;
-const URL_SCHEMES = new Set(['http', 'https', 'mailto']);
+/**
+ * 允许的协议。
+ *
+ * `data:` 于 2026-10-08 加入：正文配图占位替换（pipeline/image-placeholders.ts）把
+ * `![alt](图片待生成)` 换成本地 data URI，供写作台预览直接显示（真实推送时
+ * wechat/client.ts 的 replaceImageSources 会再换成 mmbiz.qpic.cn 的 URL）。
+ * 未加前 data URI 被 sanitize 丢弃 → 预览与推送正文里一张图都没有。
+ *
+ * 只放行**图片** data URI（见 DATA_IMAGE_RE），不放行 data:text/html 等可执行载荷。
+ */
+const URL_SCHEMES = new Set(['http', 'https', 'mailto', 'data']);
+
+/** 图片类 data URI：`data:image/<子类型>;base64,<载荷>`。 */
+const DATA_IMAGE_RE = /^data:image\/(?:png|jpe?g|gif|webp|bmp);base64,[A-Za-z0-9+/=]+$/i;
 
 /**
  * URL 消毒：合法返回原串（调用方再做属性转义），非法返回 null（资源被丢弃，保留 alt 文本）。
@@ -32,6 +45,8 @@ export function sanitizeUrl(rawUrl: string): string | null {
   const scheme = url.match(/^([A-Za-z][A-Za-z0-9+.-]*):/);
   if (scheme && !URL_SCHEMES.has(scheme[1].toLowerCase())) return null;
   if (!URL_SAFE_CHARS.test(url)) return null;
+  // data: 额外收紧为「图片 + base64」——通用 data: 可承载 html/svg 等可执行载荷。
+  if (scheme && scheme[1].toLowerCase() === 'data' && !DATA_IMAGE_RE.test(url)) return null;
   return url;
 }
 
